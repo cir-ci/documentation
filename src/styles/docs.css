@@ -138,11 +138,16 @@ header.header {
 .sidebar-content details > summary:hover {
   background: var(--circi-action-hover);
 }
-/* A group's pages hang off a hairline, like the app's nav sections; the current one has an accent rail. */
+/* One line per entry: the current page's 2px accent rail (below). Starlight's hairlines down nested lists are
+   off (its `ul ul li` border, and the old one on `details > ul`), the nesting is only an indent. */
 .sidebar-content details > ul {
-  margin-inline-start: 0.75rem;
-  border-inline-start: 1px solid var(--circi-line-subtle);
-  padding-inline-start: 0.25rem;
+  margin-inline-start: 0.5rem;
+  padding-inline-start: 0;
+}
+.sidebar-content ul ul li {
+  margin-inline-start: 0;
+  border-inline-start: 0;
+  padding-inline-start: 0;
 }
 .sidebar-content a {
   border-radius: var(--circi-radius-control);
