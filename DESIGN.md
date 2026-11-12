@@ -100,7 +100,7 @@ In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a
   setting ("Set by <VAR>", and a save is refused); otherwise the saved value; otherwise the default. Changes apply within about 30 seconds
   on every server process, with no restart. Secrets are write-only and sealed at rest.
 
-Screenshots on disk (`src/assets/screens/`): `build-review-{dark,light}.jpg` (build #22 of the seeded dev Workspace, side by side),
+Screenshots on disk (`src/assets/screens/`): `host-instance-settings`, `host-instance-limits` and `host-health` (Instance settings and Health; Health is scrolled past Services, whose rows show the server's local file path: keep personal paths out of captures), `build-review-{dark,light}.jpg` (build #22 of the seeded dev Workspace, side by side),
 `hero-before.jpg`, `hero-after.jpg`, `hero-diff.jpg` (the same screenshot's baseline, new version and diff, for the landing page).
 The `.jpg` files are Chrome captures of the dashboard, so they are 1x; add more by the same naming.
 
@@ -136,4 +136,5 @@ with `client:visible`. Its tokens use the same `--circi-*` names as `circi-theme
 
 - Reusing real `@circi/ui` components in islands (see above).
 - More dashboard screenshots (Baselines, Triage, Insights, settings) for the `using/` pages, both themes.
-- A diagram for the Self-hosting topology (Caddy, app, Postgres, storage) in the style of `BuildFlow`.
+- A single Self-hosting topology diagram (the TLS, scaling and storage pages each draw their own part with `Diagram`).
+- Section index pages: none exist; the sidebar groups open on their first page.

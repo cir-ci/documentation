@@ -5,14 +5,31 @@ description: Measured throughput of the diff engines, and what it means for sizi
 {/* Source: docs/perf/2026-11-11-diff-engines.md, docs/reference/running-costs.md, packages/config/src/schema.ts (CIRCI_DIFF_ENGINE), perf/ */}
 
 import { Aside } from '@astrojs/starlight/components'
+import SettingCard from '../../../components/SettingCard.astro'
+import Diagram from '../../../components/Diagram.astro'
 
-The pixel comparison runs in the worker, and it is the only CPU-heavy work. CirCI ships three engines, chosen with `CIRCI_DIFF_ENGINE`:
+The pixel comparison runs in the worker, and it is the only CPU-heavy work. CirCI ships three engines.
 
-| Engine | What it is |
-|---|---|
-| `native` (default) | A Rust addon the image ships. Runs off the event loop and across cores. If it can't load, the worker logs a warning and uses `js`. |
-| `js-workers` | The JavaScript comparison (pixelmatch) in a pool of worker threads. No native module. |
-| `js` | The same comparison on the worker's event loop. The simplest. |
+<SettingCard name="CIRCI_DIFF_ENGINE" defaultValue="native" type="native, js-workers or js">
+Which engine compares screenshots. `native` is a Rust addon the image ships: it runs off the event loop and across cores, and if it can't load the worker logs a warning and uses `js`. `js-workers` is the JavaScript comparison (pixelmatch) in a pool of worker threads, with no native module. `js` is the same comparison on the worker's event loop, the simplest.
+</SettingCard>
+
+## At a glance
+
+The chart reads from the load tests below: builds per minute for 20 concurrent builds of 10 screenshots each, on a 12-core machine.
+
+<Diagram viewBox="0 0 720 190" title="Builds per minute by diff engine" desc="For 20 concurrent builds, the js engine finished 118 builds per minute, js-workers 251 and native 261.">
+  <text x="1" y="26" class="d-text">js</text>
+  <rect x="100" y="8" width="213" height="26" rx="4" class="d-box" />
+  <text x="326" y="27" class="d-mono">118</text>
+  <text x="1" y="80" class="d-text">js-workers</text>
+  <rect x="100" y="62" width="452" height="26" rx="4" class="d-box" />
+  <text x="565" y="81" class="d-mono">251</text>
+  <text x="1" y="134" class="d-text">native</text>
+  <rect x="100" y="116" width="470" height="26" rx="4" class="d-box d-box--accent" />
+  <text x="583" y="135" class="d-mono">261</text>
+  <text x="100" y="178" class="d-mono">builds per minute, higher is better</text>
+</Diagram>
 
 ## The numbers
 

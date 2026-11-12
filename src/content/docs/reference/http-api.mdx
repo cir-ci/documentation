@@ -4,7 +4,8 @@ description: The CI API under /v1, the Argos-compatible /v2, the dashboard's JSO
 ---
 {/* Source: apps/server/src/http/app.ts, apps/server/src/http/routes (v1, argos, dashboard, auth.ts, health.ts, internal.ts, integration-webhook.ts), packages/api, apps/server/src/http/hooks */}
 
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, Steps } from '@astrojs/starlight/components'
+import Diagram from '../../../components/Diagram.astro'
 
 CirCI's server exposes four kinds of HTTP surface. Only the CI API and the webhooks are meant for outside programs.
 
@@ -42,10 +43,47 @@ Errors are JSON, `{ "error": "…" }`, with the usual status: `401` for a missin
 
 ## The upload sequence
 
+<Steps>
+
 1. `POST /v1/builds` with the commit, ancestry and file list. Files the server already has verified aren't asked for again.
+
 2. Upload each requested file (parallel, with retries).
+
 3. `POST /v1/builds/:id/finalize` per shard. The build starts processing when the last shard arrives.
+
 4. Poll `GET /v1/builds/:id/status` (this is what `--wait` does) until the build is no longer processing.
+
+</Steps>
+
+<Diagram viewBox="0 0 720 150" title="The upload sequence" desc="Four calls in order: create the build, upload the missing files, finalize each shard, then poll the status until processing ends.">
+  <g>
+    <rect x="1" y="20" width="160" height="100" rx="10" class="d-box" />
+    <text x="16" y="50" class="d-title">Create</text>
+    <text x="16" y="74" class="d-mono">POST /v1/builds</text>
+    <text x="16" y="98" class="d-text">201 and uploads</text>
+  </g>
+  <g>
+    <rect x="187" y="20" width="160" height="100" rx="10" class="d-box" />
+    <text x="202" y="50" class="d-title">Upload</text>
+    <text x="202" y="74" class="d-mono">PUT /v1/files/:sha</text>
+    <text x="202" y="98" class="d-text">only missing files</text>
+  </g>
+  <g>
+    <rect x="373" y="20" width="160" height="100" rx="10" class="d-box" />
+    <text x="388" y="50" class="d-title">Finalize</text>
+    <text x="388" y="74" class="d-mono">POST .../finalize</text>
+    <text x="388" y="98" class="d-text">per shard</text>
+  </g>
+  <g>
+    <rect x="559" y="20" width="160" height="100" rx="10" class="d-box d-box--accent" />
+    <text x="574" y="50" class="d-title">Poll</text>
+    <text x="574" y="74" class="d-mono">GET .../status</text>
+    <text x="574" y="98" class="d-text">until it's done</text>
+  </g>
+  <path d="M164 70h20m-6 -6l6 6l-6 6" class="d-line" />
+  <path d="M350 70h20m-6 -6l6 6l-6 6" class="d-line" />
+  <path d="M536 70h20m-6 -6l6 6l-6 6" class="d-line" />
+</Diagram>
 
 This is an implementation detail of the CLI; prefer `circi upload` over writing your own client.
 

@@ -4,25 +4,48 @@ description: Caddy with automatic certificates, or your own proxy.
 ---
 {/* Source: deploy/Caddyfile, deploy/docker-compose.caddy.yml, deploy/caddy/Dockerfile, deploy/README.md, docs/reference/static-sites.md, packages/config/src/schema.ts (TRUSTED_PROXIES) */}
 
-import { Aside, Tabs, TabItem } from '@astrojs/starlight/components'
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+import SettingCard from '../../../components/SettingCard.astro'
+import Diagram from '../../../components/Diagram.astro'
 
 CirCI speaks plain HTTP on port 3000. Put a TLS proxy in front of it: logins need https, and the session cookie is `__Host-`prefixed over https.
+
+<Diagram viewBox="0 0 720 200" title="The proxy in front of CirCI" desc="Browsers and CI reach the proxy over https. The proxy forwards to CirCI on port 3000 with the Host header unchanged and X-Forwarded-For set. CirCI talks to Postgres and storage. The proxy asks CirCI's internal tls-ask endpoint before it issues a certificate for a custom domain, and never exposes it.">
+  <rect x="1" y="30" width="140" height="100" rx="10" class="d-box" />
+  <text x="18" y="62" class="d-title">Browsers, CI</text>
+  <text x="18" y="86" class="d-mono">https</text>
+  <rect x="257" y="30" width="170" height="100" rx="10" class="d-box d-box--accent" />
+  <text x="274" y="62" class="d-title">TLS proxy</text>
+  <text x="274" y="86" class="d-text">Caddy or your own</text>
+  <rect x="543" y="30" width="176" height="100" rx="10" class="d-box" />
+  <text x="560" y="62" class="d-title">CirCI :3000</text>
+  <text x="560" y="86" class="d-text">plain http</text>
+  <path d="M144 80h110m-6 -6l6 6l-6 6" class="d-line" />
+  <path d="M430 80h110m-6 -6l6 6l-6 6" class="d-line" />
+  <text x="440" y="68" class="d-mono">Host kept</text>
+  <path d="M342 133v38h143v-26m-6 6l6 -6l6 6" class="d-line" />
+  <text x="150" y="192" class="d-mono">/internal/tls-ask: the proxy asks, nobody else reaches it</text>
+</Diagram>
 
 <Tabs>
 <TabItem label="Bundled Caddy">
 
-Set in `.env`:
+<Steps>
 
-```sh
-DASHBOARD_HOST=ci.acme.io
-SITES_HOST=acme-sites.com      # only if you host sites
-```
+1. Set the hosts in `.env`:
 
-then:
+   ```sh
+   DASHBOARD_HOST=ci.acme.io
+   SITES_HOST=acme-sites.com      # only if you host sites
+   ```
 
-```sh
-docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
-```
+2. Give Caddy AWS credentials for Route53 (see below), then start the overlay:
+
+   ```sh
+   docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
+   ```
+
+</Steps>
 
 The overlay adds a `caddy` service (ports 80, 443 and 443/udp, a `caddy-data` volume for certificates), and sets `PUBLIC_URL=https://$DASHBOARD_HOST`, `STATIC_SITES_HOST=$SITES_HOST` and `TRUSTED_PROXIES=172.16.0.0/12,192.168.0.0/16` on the app (Caddy reaches it over the compose network).
 
@@ -33,11 +56,9 @@ Caddy needs **AWS credentials for Route53** to get the wildcard certificate of t
 
 Proxy to `circi:3000` (or the published port) and keep the `Host` header. Then tell CirCI to believe the proxy's `X-Forwarded-For`:
 
-```sh
-TRUSTED_PROXIES=10.0.0.5          # the proxy's address, or a CIDR range such as 172.16.0.0/12
-```
-
-By default nobody is trusted and the client address is the socket's. Behind a proxy without this setting every user shares the proxy's address and one rate limit. `TRUSTED_PROXIES=true` trusts any hop and is only safe when the app can't be reached except through the proxy.
+<SettingCard name="TRUSTED_PROXIES" defaultValue="none" type="IPs or CIDR ranges">
+The proxy's address, or a range such as `172.16.0.0/12`. By default nobody is trusted and the client address is the socket's, so behind a proxy without this setting every user shares the proxy's address and one rate limit. `true` trusts any hop and is only safe when the app can't be reached except through the proxy.
+</SettingCard>
 
 If you host sites, the proxy must pass every host on the sites domain, and any verified custom domain, to CirCI with the `Host` header unchanged, and must **never** expose `/internal/*`.
 
@@ -56,7 +77,15 @@ To use another DNS provider than Route53, swap the `caddy-dns/route53` module in
 
 ## Moving the dashboard to another address
 
-Set the new `PUBLIC_URL`, and put the old one in `PREVIOUS_PUBLIC_URLS` so old links redirect. Keep DNS and TLS for the old address pointing at CirCI. The admin sees a "Moving to …" checklist: people sign in again once (cookies belong to one host), OIDC redirect URIs must be changed to the new address, and a GitHub App's OAuth callback URL has to be updated by hand (its webhook URL is updated automatically).
+<Steps>
+
+1. Set the new `PUBLIC_URL`, and put the old one in `PREVIOUS_PUBLIC_URLS` so old links redirect. Both are read-only in Instance settings: they name their variables, and you change them there and restart.
+
+2. Keep DNS and TLS for the old address pointing at CirCI.
+
+3. Open **Instance**, **Health**. The admin sees a "Moving to …" checklist: people sign in again once (cookies belong to one host), OIDC redirect URIs must be changed to the new address, and a GitHub App's OAuth callback URL has to be updated by hand (its webhook URL is updated automatically).
+
+</Steps>
 
 <Aside type="caution">
 Plain `http://` is fine on localhost only. With a public host and an `http` `PUBLIC_URL`, CirCI logs a warning at start.

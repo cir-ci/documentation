@@ -4,28 +4,71 @@ description: One process, or the server and workers split apart.
 ---
 {/* Source: apps/server/src/cli/server.ts, apps/worker/src (runner.ts, claim-loop.ts, sweeps.ts), packages/config/src/schema.ts, docs/perf/2026-11-11-diff-engines.md, docs/reference/running-costs.md */}
 
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components'
+import SettingCard from '../../../components/SettingCard.astro'
+import Diagram from '../../../components/Diagram.astro'
 
 The worker takes jobs from a queue in Postgres: processing a build (compare and thumbnails), webhook deliveries, git checks and comments, email and Slack, and integration events. It also runs the periodic sweeps (retention, stalled uploads, overdue review requests, triage assignment, job pruning).
 
-## One process
+## One process or many
+
+<Tabs>
+<TabItem label="One process">
 
 `circi all` runs the HTTP server and the worker together. It is right for a small install, and a single container is enough.
 
-## Split
+</TabItem>
+<TabItem label="Split">
 
 ```sh
 circi serve      # HTTP API and dashboard
 circi worker     # background jobs
 ```
 
-Run any number of each from the same image against the same Postgres and storage. Workers claim jobs with `FOR UPDATE SKIP LOCKED`, so several never take the same job, and the sweeps take an exclusive lock, so running them in every worker is safe. Run extra workers when the queue stays above zero (Instance settings, Health shows it).
+Run any number of each from the same image, against the same Postgres and storage. In compose that is two services with `command: ['serve']` and `command: ['worker']`.
+
+</TabItem>
+</Tabs>
+
+<Diagram viewBox="0 0 720 230" title="A split install" desc="Several circi serve processes take requests. Several circi worker processes claim jobs from the queue in Postgres. All of them share the same Postgres and storage. The queue is a table in Postgres, and a notification wakes a worker when a job is queued.">
+  <rect x="1" y="1" width="230" height="90" rx="10" class="d-box" />
+  <text x="20" y="34" class="d-title">circi serve</text>
+  <text x="20" y="58" class="d-text">API and dashboard</text>
+  <text x="20" y="78" class="d-mono">any number</text>
+  <rect x="1" y="139" width="230" height="90" rx="10" class="d-box" />
+  <text x="20" y="172" class="d-title">circi worker</text>
+  <text x="20" y="196" class="d-text">jobs and sweeps</text>
+  <text x="20" y="216" class="d-mono">any number</text>
+  <rect x="291" y="40" width="230" height="150" rx="10" class="d-box d-box--accent" />
+  <text x="310" y="74" class="d-title">Postgres</text>
+  <text x="310" y="98" class="d-text">the job queue</text>
+  <text x="310" y="122" class="d-mono">FOR UPDATE SKIP LOCKED</text>
+  <text x="310" y="146" class="d-mono">LISTEN / NOTIFY</text>
+  <rect x="581" y="40" width="138" height="150" rx="10" class="d-box" />
+  <text x="600" y="74" class="d-title">Storage</text>
+  <text x="600" y="98" class="d-text">disk or S3</text>
+  <path d="M234 60 L288 95" class="d-line" />
+  <path d="M234 170 L288 135" class="d-line" />
+  <path d="M524 115h54m-6 -6l6 6l-6 6" class="d-line" />
+</Diagram>
+
+Workers claim jobs with `FOR UPDATE SKIP LOCKED`, so several never take the same job, and the sweeps take an exclusive lock, so running them in every worker is safe. Run extra workers when the queue stays above zero: **Instance**, **Health** shows it under Background jobs, with each queue's waiting, running and failed counts.
+
+Several servers can run behind one proxy: they share everything through Postgres and storage. A saved Instance setting reaches each process within about 30 seconds. See [Instance settings](/self-hosting/instance-settings/).
 
 ## How a worker spends its time
 
 - Two lanes take builds first and one extra "light" lane never takes a build, so a webhook or an email doesn't wait behind image work. These counts are built in; there is no environment variable for them.
 - A queued job wakes the worker through Postgres `LISTEN/NOTIFY`. When the notification connection is down, or for a missed one, polling finds jobs (every 5 seconds with a listener, 1 second without).
-- A failed job is retried with a doubling wait, `JOB_RETRY_BASE_SECONDS` (2) up to `JOB_RETRY_MAX_SECONDS` (300).
+- A failed job is retried with a doubling wait.
+
+<SettingCard name="JOB_RETRY_BASE_SECONDS" defaultValue="2" type="seconds">
+The first wait before a retry. It doubles each time.
+</SettingCard>
+
+<SettingCard name="JOB_RETRY_MAX_SECONDS" defaultValue="300" type="seconds">
+The longest wait between retries.
+</SettingCard>
 
 ## What to tune
 
@@ -35,6 +78,8 @@ Run any number of each from the same image against the same Postgres and storage
 | No native module, still off the event loop | `CIRCI_DIFF_ENGINE=js-workers`, and `CIRCI_DIFF_THREADS` to cap threads and memory |
 | Fewer retries piling up | `WEBHOOK_TIMEOUT_SECONDS`, `GITHUB_API_TIMEOUT_SECONDS`, `S3_*_TIMEOUT_SECONDS` |
 | Keep the job table small | `JOB_RETENTION_DAYS` |
+
+`WEBHOOK_TIMEOUT_SECONDS` and `JOB_RETENTION_DAYS` are also limits in Instance settings: a variable that is set wins and locks the field, otherwise the saved value applies.
 
 <Aside type="note">
 The native engine spreads each comparison across the machine's cores (rayon). On a host short of cores, the gain is smaller. See [Performance](/self-hosting/performance/).

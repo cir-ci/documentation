@@ -5,8 +5,19 @@ description: The sites domain, custom domains and the cookie rules you must chec
 {/* Source: docs/reference/static-sites.md, deploy/Caddyfile, packages/config/src/sites-host.ts, apps/server/src/http/routes/internal.ts, apps/server/src/cli/commands/doctor.ts */}
 
 import { Aside, Steps } from '@astrojs/starlight/components'
+import SettingCard from '../../../components/SettingCard.astro'
+import Diagram from '../../../components/Diagram.astro'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
 
-Hosted sites (a built Storybook, a test report, coverage) are optional and off until you set `STATIC_SITES_HOST` and switch on **Host static sites** in a project's settings. How people use them is described in [Hosted sites](/using/hosted-sites/). This page is for the operator.
+Hosted sites (a built Storybook, a test report, coverage) are optional and off until you set the sites domain and switch on **Host static sites** in a Project's settings. How people use them is described in [Hosted sites](/using/hosted-sites/). This page is for the operator.
+
+<SettingCard name="STATIC_SITES_HOST" type="domain">
+A separate, dedicated domain for hosted sites, such as `acme-sites.com`. Hosting is off until it is set. Instance settings shows it read-only, or "Not set up" (with the **Check domain rules** link to Health), so you change it there with a restart.
+</SettingCard>
+
+<SettingCard name="STATIC_SITES_MAX_MB" defaultValue="200" type="MB">
+The largest site upload (1 to 5000). Also **Largest hosted site** in Instance settings: the variable, when set, wins and locks it; otherwise the saved value applies.
+</SettingCard>
 
 <Aside type="danger" title="Read this before you set STATIC_SITES_HOST">
 A hosted site runs **arbitrary JavaScript from the build you uploaded**. Two rules keep it from reaching anything else, and CirCI can't enforce them for you.
@@ -26,6 +37,8 @@ curl -sI https://www.acme.io | grep -i 'set-cookie.*domain='
 
 `circi admin doctor` does a best-effort version. It can't see every host, so it repeats this warning.
 
+<ScreenFrame name="host-instance-limits" aspect="16 / 10" alt="Instance settings, Hosted sites section: Not set up, with the note that Projects can't host sites until a separate domain is configured." caption="Without STATIC_SITES_HOST the section says Not set up." width={760} />
+
 ## Addresses
 
 Every upload belongs to a commit and gets two addresses on the sites domain:
@@ -35,7 +48,24 @@ Every upload belongs to a commit and gets two addresses on the sites domain:
 | Commit | `<first 12 hex of the SHA>-<site>.acme-sites.com` | that commit's site, exactly |
 | Branch | `<12 hex of sha256(branch)>-<site>.acme-sites.com` | the newest upload on that branch |
 
-Every request needs sign-in: the dashboard hands the site a one-minute single-use token if you belong to the project's workspace, and the site then sets its own host-only `HttpOnly` cookie, re-checked against your dashboard session at least once a minute.
+Every request needs sign-in. This is how a request reaches a site without its code ever seeing your dashboard cookie:
+
+<Diagram viewBox="0 0 720 150" title="How a hosted site checks who is asking" desc="The browser opens a site address. The site sends it to the dashboard. If you belong to the Project's Workspace, the dashboard hands back a one-minute single-use token. The site then sets its own host-only HttpOnly cookie, and re-checks it against your dashboard session at least once a minute.">
+  <rect x="1" y="20" width="200" height="100" rx="10" class="d-box" />
+  <text x="20" y="52" class="d-title">Site address</text>
+  <text x="20" y="76" class="d-mono">a1b2c3-storybook.sites</text>
+  <rect x="261" y="20" width="200" height="100" rx="10" class="d-box d-box--accent" />
+  <text x="280" y="52" class="d-title">Dashboard</text>
+  <text x="280" y="76" class="d-text">you belong to the Workspace?</text>
+  <rect x="521" y="20" width="198" height="100" rx="10" class="d-box" />
+  <text x="540" y="52" class="d-title">Site cookie</text>
+  <text x="540" y="76" class="d-text">host-only, HttpOnly</text>
+  <path d="M204 70h54m-6 -6l6 6l-6 6" class="d-line" />
+  <path d="M464 70h54m-6 -6l6 6l-6 6" class="d-line" />
+  <text x="468" y="62" class="d-mono">1 min token</text>
+</Diagram>
+
+The cookie is re-checked against your dashboard session at least once a minute.
 
 ## DNS and certificates with Route53
 

@@ -4,32 +4,71 @@ description: Postgres requirements, connections, migrations and what lives in it
 ---
 {/* Source: deploy/docker-compose.yml, packages/config/src/schema.ts, packages/db, apps/server/src/cli/server.ts, apps/worker/src/runner.ts, README.md */}
 
-CirCI needs one Postgres database. The compose file runs `postgres:18-alpine` with data in the `pgdata` volume (Postgres 18 images keep data under `/var/lib/postgresql/<major>/`, so mount the volume at `/var/lib/postgresql`). A managed Postgres works as well: set `DATABASE_URL`.
+import { Aside, Steps } from '@astrojs/starlight/components'
+import SettingCard from '../../../components/SettingCard.astro'
+import Diagram from '../../../components/Diagram.astro'
 
-```sh
-DATABASE_URL=postgres://circi:password@db.internal:5432/circi
-DATABASE_POOL_MAX=10        # connections per process (default 10)
-```
+CirCI needs one Postgres database, and nothing else holds state. The compose file runs `postgres:18-alpine` with its data in the `pgdata` volume (Postgres 18 images keep data under `/var/lib/postgresql/<major>/`, so mount the volume at `/var/lib/postgresql`). A managed Postgres works as well.
 
-## Connection rules
+## Connect
 
-- **Direct or session pooling only.** The worker wakes on `LISTEN/NOTIFY`, which a transaction pooler (PgBouncer in transaction mode) doesn't support. Without a live notification connection the worker falls back to polling every second, so a pooler makes builds slower, not wrong, but don't rely on it.
-- Each process (server, worker) opens up to `DATABASE_POOL_MAX` connections. A dropped connection no longer crashes the process (fixed in the load-test work).
+<SettingCard name="DATABASE_URL" required type="URL">
+Where Postgres is, for example `postgres://circi:password@db.internal:5432/circi`. The server and the worker both read it.
+</SettingCard>
+
+<SettingCard name="DATABASE_POOL_MAX" defaultValue="10" type="number">
+The most connections one process keeps open. A server and a worker each take up to this many, so a managed database needs room for the sum across every process you run.
+</SettingCard>
+
+### Connection rules
+
+<Aside type="caution" title="Use a direct connection or session pooling">
+The worker wakes on Postgres `LISTEN/NOTIFY`, which a transaction pooler (PgBouncer in transaction mode) doesn't support. Without a live notification connection the worker falls back to polling every second, so a pooler makes builds slower, not wrong. Don't rely on it.
+</Aside>
+
+A dropped connection no longer crashes a process: it reconnects (this was fixed after the load tests).
 
 ## What is stored
 
-Accounts, workspaces, projects, builds and screenshot records, reviews and comments, review requests and rules, integration connections (credentials are encrypted at rest), webhooks and their delivery history, the job queue (a transactional outbox, so a webhook delivery or check run exists exactly when the change is committed), and instance settings. Screenshots themselves are in [storage](/self-hosting/storage/), not in the database.
+<Diagram viewBox="0 0 720 210" title="What lives in Postgres and what doesn't" desc="Postgres holds accounts, workspaces, projects, builds and screenshot records, reviews and comments, integration connections with encrypted credentials, webhooks and their deliveries, the job queue and the instance settings. The screenshot, diff and site files are in storage, not in the database.">
+  <rect x="1" y="1" width="470" height="208" rx="10" class="d-box d-box--accent" />
+  <text x="22" y="30" class="d-title">Postgres</text>
+  <text x="22" y="58" class="d-text">Accounts, Workspaces, Projects</text>
+  <text x="22" y="82" class="d-text">Builds and screenshot records</text>
+  <text x="22" y="106" class="d-text">Reviews, comments, review requests and rules</text>
+  <text x="22" y="130" class="d-text">Integration connections (credentials encrypted)</text>
+  <text x="22" y="154" class="d-text">Webhooks and their deliveries</text>
+  <text x="22" y="178" class="d-text">Job queue, instance settings (secrets sealed)</text>
+  <rect x="501" y="1" width="218" height="208" rx="10" class="d-box" />
+  <text x="522" y="30" class="d-title">Storage</text>
+  <text x="522" y="58" class="d-text">Screenshots, diffs,</text>
+  <text x="522" y="82" class="d-text">thumbnails, hosted sites</text>
+  <text x="522" y="118" class="d-mono">fs or s3</text>
+  <path d="M474 105h24m-6 -6l6 6l-6 6" class="d-line" />
+</Diagram>
+
+The job queue is a transactional outbox: a webhook delivery or a check run exists exactly when the change that caused it is committed. Screenshots themselves are in [storage](/self-hosting/storage/).
 
 ## Migrations
 
-SQL migrations live in `packages/db/migrations` (`/app/migrations` in the image). `circi serve`, `circi worker` and `circi all` apply pending migrations on start unless you pass `--no-migrate`. To apply them on their own:
+SQL migrations live in `packages/db/migrations` (`/app/migrations` in the image). `circi serve`, `circi worker` and `circi all` apply pending migrations on start unless you pass `--no-migrate`.
 
-```sh
-docker compose exec circi circi migrate
-```
+<Steps>
 
-See [Upgrades and migrations](/self-hosting/upgrades-and-migrations/) for the order to follow when upgrading.
+1. Back up the database first: [Backups](/self-hosting/backups/).
+
+2. Pull the new image and restart. The first process to start applies the migrations.
+
+3. To apply them on their own, without serving:
+
+   ```sh
+   docker compose exec circi circi migrate
+   ```
+
+</Steps>
+
+See [Upgrades and migrations](/self-hosting/upgrades-and-migrations/) for the order to follow when you run several processes.
 
 ## Health
 
-`circi admin doctor` reports whether the database is reachable and how many migrations are applied. Instance settings, Health shows the queue depth.
+`circi admin doctor` reports whether the database is reachable and how many migrations are applied. **Instance**, **Health** shows the same under Services, and the queue depth under Background jobs. `GET /readyz` fails when the database can't be reached.
