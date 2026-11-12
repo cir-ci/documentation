@@ -1,0 +1,98 @@
+---
+title: Security
+description: How CirCI protects secrets, tokens, files, other people's projects and hosted sites, and what leaves your server.
+---
+{/* Source: packages/core/src/node (secrets.ts, token.ts, file-urls.ts, signed-state.ts, webhook.ts, webhook-url.ts, web-push.ts), packages/auth/src/cookies.ts, apps/server/src/http (app.ts, hooks/*, lib/pages.ts, sites/*, routes/dashboard/builds/files.ts, routes/integration-webhook.ts), packages/services/src (access/policies.ts, jobs/deliver-webhook.ts, uploads/file.ts, workspaces/picture.ts), packages/storage/src/fs.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+This page lists what the code does to keep an instance safe, so you can judge it and know what is left to you. It describes mechanisms, not guarantees: the code is the source, and where a protection depends on how you deploy, the page says so.
+
+## The instance secret
+
+`BETTER_AUTH_SECRET` (at least 32 characters) is the root of every key CirCI makes. Each use derives its own key under a separate label, so a value signed for one purpose is useless for another:
+
+| Use | What it protects |
+|---|---|
+| Sealing credentials | Integration credentials (access tokens, bot tokens), the GitHub App's private key, webhook secret and client secret, instance settings that are secrets (such as the SMTP password and sign-in client secrets) and the web push private key. AES-256-GCM, stored as `v1.<iv>.<tag>.<ciphertext>` |
+| Signed file links | Links to screenshots and diffs |
+| OAuth state | The `state` of an integration's redirect, valid for 10 minutes |
+| Hosted site cookies | The signature of a site's cookie |
+| The setup code | First-run setup |
+| Session cookies | Sessions (through better-auth) |
+
+A sealed value that is malformed, tampered with or sealed under another secret reads as missing. Rotating the secret therefore signs everyone out, makes stored credentials unreadable (connections must be set up again) and invalidates web push subscriptions. Back it up with the database: see [Backups](/self-hosting/backups/).
+
+Secrets in the dashboard are write-only: a saved password or client secret is never shown again.
+
+## Tokens
+
+- **Project CI tokens** are `circi_` followed by 43 characters of base64url (32 random bytes). A token belongs to one project and is shown once, when it is created or rotated. CirCI keeps only its SHA-256 hash and a short hint (`circi_AbC1…`). Rotating a token ends the old one at once. Requests to `/v1` and `/v2` without a valid token get 401 with `WWW-Authenticate: Bearer`.
+- **Webhook signing secrets** (`whsec_…`) are shown once when a webhook is added or regenerated. Each delivery carries `CirCI-Signature: t=<unix seconds>,v1=<hex>`, an HMAC-SHA256 over `<t>.<raw body>`, so a captured request can't be replayed later. Receivers should reject old timestamps; the reference verifier allows 300 seconds. See [Webhooks](/integrations/webhooks/#verify-the-signature).
+- **Git host webhooks** into CirCI are verified against the exact bytes received (a signature or a token, by host) before the body is parsed. The secrets are derived from the instance secret.
+
+## Other people's projects
+
+A person who isn't allowed to see something gets "not found", not "forbidden". A project someone isn't in, or a workspace they don't belong to, looks like one that doesn't exist, so its existence isn't revealed. "Forbidden" appears only to someone who can see the thing but lacks the role. Membership is always decided before the role. The full list of who may do what is in [Members and roles](/using/members-and-roles/#who-can-do-what).
+
+A workspace can also refuse some sign-in methods, and a session made through a workspace's own single sign-on opens that workspace only. See [Authentication](/self-hosting/authentication/).
+
+## Requests and cookies
+
+- **Same origin.** A dashboard request that changes something must carry the dashboard's own `Origin`, or the server answers 403. A page on any other site, such as a hosted Storybook, can't make a signed-in browser do it.
+- **`__Host-` cookies.** Over `https`, dashboard cookies take the `__Host-` prefix: Secure, no Domain, Path `/`, so a subdomain can't overwrite them.
+- **Proxies.** The client address is the socket's, unless `TRUSTED_PROXIES` names the proxies whose `X-Forwarded-For` is believed. A header a client sends to the sign-in endpoints is replaced.
+- **Pages the server writes** (the sites "not found", the "Web app not built" notice) load nothing: their Content-Security-Policy is `default-src 'none'` with one inline stylesheet allowed by hash.
+
+The code sets no other security headers on the dashboard itself. If your policy needs `Strict-Transport-Security` or a Content-Security-Policy for the dashboard, set them in the reverse proxy: see [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/).
+
+## Screenshot files
+
+Screenshots, diffs and thumbnails are stored by the SHA-256 of their content.
+
+- **Upload.** A file is accepted only for a build that asked for that hash, and the storage driver writes it only if the bytes hash to what was announced; a mismatch is refused and nothing is stored.
+- **Reading.** `GET /api/files/<hash>` needs either a session whose user may see that file, or a signed link. A user without access gets "not found".
+- **Signed links.** A reply that includes a file carries a signed, expiring link for it. The signature covers the hash and the expiry, and the expiry is the end of a one-hour window, so a link lives between one and two hours and every link for a file in the same window is the same (so browsers keep their cached copy). A signed link needs no session.
+- **Serving.** Files come with `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox; default-src 'none'`, so a file can't run as a page even if opened directly.
+- **Workspace pictures** are limited to 1 MB, accepted as PNG, JPEG or WebP, and re-encoded to PNG.
+
+## Requests CirCI makes on its own
+
+Webhook receivers and a workspace's single sign-on issuer are addresses a person typed, and the server will call them. To keep that from reaching the server's own network:
+
+- The address must be `http` or `https` with no username or password, and a public one: not an IP in a loopback, private, link-local (cloud metadata), shared, multicast or reserved range (IPv6 forms, including IPv4 inside IPv6, included), and not `localhost` or a name ending in `.localhost`, `.local`, `.internal`, `.lan` or `.home.arpa`, or a name without a dot.
+- A webhook's name is resolved again at delivery, because a name can point somewhere else later. A delivery to a private address is skipped and recorded.
+- Redirects aren't followed, so a signed body can't be sent somewhere that wasn't configured. A delivery times out after 10 seconds.
+- A workspace single sign-on issuer must be `https`, and is checked when saved.
+
+`WEBHOOK_ALLOW_PRIVATE_ADDRESSES=true` lifts the address rules for both, for receivers on your own network. It applies to every project and workspace on the instance.
+
+## Hosted sites
+
+Uploaded sites run code you didn't write, so they are kept apart from the dashboard. The deployment side (the dedicated domain, the cookie rules you must check) is in [Site domains](/self-hosting/site-domains/); the mechanisms:
+
+- Sites are served from the **sites domain**, never from the dashboard's origin, so their scripts can't read the dashboard's cookies or call its API as the visitor.
+- Every request needs sign-in. A site's own cookie is `<session ID>.<signature>`, valid for one site address only, host-only, `HttpOnly`, `SameSite=Lax`, one hour, and Secure with the `__Host-` prefix over `https`. It stands for a server-side row, which is what is revoked when a session ends.
+- Responses are `Cache-Control: private, no-cache`, with `X-Content-Type-Options: nosniff`, `Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Resource-Policy: same-origin` and `frame-ancestors` limited to the site itself and the dashboard.
+- Uploaded code can fill the cookie jar of the sites domain until requests are refused as too large. The server accepts the large headers and expires the cookies it doesn't recognize on the next request.
+- Return addresses in the sign-in hand-off are same-site paths only: never `//host`, a backslash or a scheme.
+
+## What leaves the instance
+
+CirCI makes outbound requests only to services you configure:
+
+| To | When |
+|---|---|
+| Your storage (S3 or compatible) | Always, unless you use the local filesystem |
+| SMTP server | Sign-in codes, invitations, notifications, new sign-in notices |
+| Git hosts (GitHub, GitLab, Bitbucket) | Check runs, statuses, comments, importing repositories |
+| Slack, Linear, Jira, Figma | When an integration is connected, for what it does |
+| Webhook receivers | Build events, signed |
+| Sign-in providers | When a person signs in with one |
+| Browser push services | Notifications; the payload is encrypted for the browser (RFC 8291), so the push service only carries ciphertext |
+
+The code has no analytics or error-reporting client and no update check. Profile pictures fall back to Gravatar when the account you sign in with has none (see [Account settings](/using/account-settings/#details)).
+
+<Aside type="caution">
+What is not covered here: the security of your own host, database, storage and reverse proxy, and your CI's handling of the project token. Treat a CI token like a deploy key: keep it in the CI provider's secret store, and rotate it from **Project settings** if it leaks.
+</Aside>

@@ -1,0 +1,124 @@
+---
+title: Limits
+description: Every size, count, length, time and retry limit of uploads, the CI API, the dashboard and the background jobs.
+---
+{/* Source: packages/core/src (builds/limits.ts, builds/flaky.ts, instance/index.ts, project/project-settings-rules.ts, project/workspace-picture.ts, project/workspace-deletion.ts, project/account-name.ts, node/file-urls.ts), packages/config/src/schema.ts, packages/auth/src (constants.ts, plugins), packages/cli/src (files.ts, upload.ts, git.ts, api.ts), packages/sites/src/ingest.ts, apps/server/src/http/routes (v1/schemas.ts, argos, internal.ts, dashboard), packages/db/src (queue, repositories), packages/services/src */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+Limits are grouped by what they bound. A value that an administrator can change is marked and links to where; everything else is fixed in the code. A request over a limit is refused with the messages in [Errors and exit codes](/reference/errors-and-exit-codes/).
+
+## Uploads from CI
+
+| Limit | Value |
+|---|---|
+| Size of one screenshot | 25 MB (26,214,400 bytes). PNG only. |
+| Screenshots per build | 10,000. Each upload lists distinct files; the same image used under several names counts once as a file. |
+| Screenshot name | 1 to 512 characters, no line breaks or NUL. Unique within a build. From the CLI it is the file's path without `.png`. |
+| Build name | Starts with a letter or digit, then letters, digits, `.`, `_` or `-`; at most 64 characters. Default `default`. |
+| Commit SHA | 7 to 64 hex characters, stored lowercase. A hosted site needs at least 12. |
+| Branch and base branch | 255 characters each. |
+| Ancestor commits sent to find a baseline | 2,000 at most. The CLI collects up to 200 first-parent commits and deepens a shallow checkout up to 2,000 commits. |
+| Shards of one parallel build | 1 to 1,000. A shard's ID is at most 128 characters, and so is the nonce. |
+| Author fields | `login` 255, `email` 320, `provider` 64, `providerId` 128 characters. |
+| JSON body of `POST /v1/builds` and finalize | 16 MB. On `/v2`, 4 MB. |
+| Idempotency key | 1 to 128 characters. |
+| Shard that never completes | The build fails after **Upload timeout**: 60 minutes by default, 0 to 10,080 (`UPLOAD_TIMEOUT_MINUTES`). 0 means never. |
+| Files sent at once by the CLI | 8 |
+| Screenshots of a build kept | Until the project's retention removes the build: 30 days by default, 1 to 3,650 days per project. See [Retention and cleanup](/self-hosting/retention-and-gc/). |
+
+## Retries and timeouts of the CLI
+
+| What | Value |
+|---|---|
+| Tries per API call | 4 |
+| Waits between tries | About 0.5, 1 and 2 seconds, each scaled by 50 to 100 percent at random |
+| What is retried | Network failures, `429` and `5xx` answers |
+| Time per API call | 30 seconds; 2 minutes for a file or site upload |
+| `--wait` polling | Every 0.5 seconds, growing by half each time to 2 seconds |
+| `--wait` timeout | `--timeout`, 600 seconds by default |
+
+## Hosted sites
+
+| Limit | Value |
+|---|---|
+| Unpacked size of one site | **Largest hosted site**: 200 MB by default, 1 to 5,000 (`STATIC_SITES_MAX_MB`). Instance setting: see [Instance settings](/self-hosting/instance-settings/). |
+| Files in one site | 20,000 |
+| Expansion | An archive may not unpack to more than 100 times its compressed size |
+| Site name | The same rule as a build name |
+| Sign-in handoff from the dashboard to a site | A single-use token lasts 60 seconds, and the session it opens one hour |
+
+## Reviewing
+
+| Limit | Value |
+|---|---|
+| Comment | 5,000 characters |
+| Rejection reason | 2,000 characters |
+| Screenshots in one bulk action | 1,000 names per request |
+| Builds in one bulk review, or one bulk review request | 50 |
+| Reviewers named on a review request or rule | 20 |
+| Review rule pattern | 200 characters |
+| People in a triage rotation | 50 |
+| Review target | 1 to 720 hours (30 days), or none |
+| Snooze default | 1 to 30 days. "Tomorrow" and "next week" end at 09:00 UTC. |
+| Time to undo an action from its toast | 30 seconds |
+| Gap between nudges for the same overdue review | 24 hours |
+| Saved views | 100 per person; a name is up to 80 characters |
+| Issue title sent to a tracker | 250 characters |
+
+## Flaky detection
+
+A screenshot is judged on the project's default branch over the **10** most recent commits. The number of times it returns to an earlier image before it counts as flaky is **3** by default and can be set per project from **2** up to **8**. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+
+## Names, text and pictures
+
+| Limit | Value |
+|---|---|
+| Person's name | 1 to 100 characters |
+| Profile picture address | 2,048 characters, an http(s) address or a path on this server |
+| Workspace picture | PNG, JPEG or WebP up to 1 MB; at least 128 pixels on the shorter side; stored at 256 pixels |
+| Workspace or project name | 100 characters |
+| Slug | 100 characters for a project or workspace; 60 when an instance admin creates a workspace |
+| Default branch | 255 characters |
+| Workspace members added to a project at once | 500 |
+| Repositories imported at once | 50 |
+| Domain (workspace or custom site domain) | 253 characters; 260 in the custom domain field |
+| Search | A query of up to 100 characters; at most 50 results |
+| Branch list | 20 by default, up to 100 per request |
+| Password | At least 12 characters. The first-run form takes up to 256. |
+
+## Sign-in and access
+
+| Limit | Value |
+|---|---|
+| Emailed sign-in code | 6 digits, valid for 10 minutes, 5 attempts |
+| Invitation | Valid for 7 days |
+| Email address change | The confirmation link is valid for 1 hour |
+| Signed file links (screenshots, diffs) | Valid for between 1 and 2 hours: a link ends at the end of a fixed one-hour window |
+| Session lookup cache | A signed cookie stands in for the session lookup for 30 seconds |
+| Rate limits | The sign-in endpoints are limited per client address in production. Project CI tokens have none. |
+| Deleted workspace | Restorable for 30 days, then purged |
+
+<Aside type="note">
+The exact request counts of the sign-in rate limit are better-auth's defaults and aren't fixed in CirCI's code, so they aren't listed here.
+</Aside>
+
+## Background jobs, webhooks and the server
+
+| Limit | Value |
+|---|---|
+| Attempts of a job | 5 by default; webhook deliveries 8; the "Send test" delivery 1 |
+| Wait before a retry | 2 seconds, doubling each time, up to 300 seconds (`JOB_RETRY_BASE_SECONDS`, `JOB_RETRY_MAX_SECONDS`) |
+| Finished jobs kept | **Job retention**: 14 days, 0 to 3,650 (`JOB_RETENTION_DAYS`) |
+| Unused files kept before deletion | **Unused file grace period**: 24 hours, 0 to 8,760 (`GC_GRACE_HOURS`) |
+| Webhook receiver's time to answer | **Webhook timeout**: 10 seconds, 1 to 600 (`WEBHOOK_TIMEOUT_SECONDS`) |
+| Webhook deliveries kept | 50 per webhook; the dashboard shows the newest 20 |
+| GitHub API request | 15 seconds, 0.1 to 600 (`GITHUB_API_TIMEOUT_SECONDS`) |
+| S3 connect and request | 10 seconds (1 to 600) and 60 seconds (1 to 3,600) (`S3_CONNECT_TIMEOUT_SECONDS`, `S3_REQUEST_TIMEOUT_SECONDS`) |
+| Database connections per process | 10 (`DATABASE_POOL_MAX`, at least 1) |
+| Diff threads | One less than the cores, 1 to 256 (`CIRCI_DIFF_THREADS`), for the `js-workers` engine only |
+| Readiness check | 2 seconds per dependency |
+| Proxy certificate questions | 300 per minute for the whole instance |
+| Settings changed in Instance settings | Apply within about 30 seconds on every process |
+
+Every environment variable named here is described in [Environment variables](/reference/environment-variables/).

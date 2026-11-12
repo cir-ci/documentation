@@ -74,7 +74,7 @@ The CLI collects the commit history CirCI needs to pick the baseline, from the *
 
 `--wait` names each screenshot the server couldn't read and why. Whether that exits `2` or `0` is explained in [How a build flows](/introduction/how-a-build-flows/#couldnt-read).
 
-Errors print one line (`error: No such directory: ./screenshotz`). API calls are retried with backoff on network errors and 5xx answers, and time out after 30 seconds each.
+Errors print one line (`error: No such directory: ./screenshotz`); every message and what to do about it is in [Errors and exit codes](/reference/errors-and-exit-codes/). API calls are retried with backoff on network errors and 5xx answers, and time out after 30 seconds each.
 
 Who blocks the merge, the git host's check or this job, is explained in [How a build flows](/introduction/how-a-build-flows/#merge-gate). Override it with `--gate`.
 

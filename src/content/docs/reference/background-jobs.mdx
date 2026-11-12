@@ -1,0 +1,82 @@
+---
+title: Background jobs
+description: The queues, what each job does, when it's queued, how it's retried, and the sweeps that run beside them.
+---
+{/* Source: apps/worker/src (handlers/index.ts, run-job.ts, claim-loop.ts, sweeps.ts, runner.ts, limits.ts), packages/db/src/queue/{jobs,git,webhooks}.ts, packages/services/src/jobs, packages/services/src/builds/lifecycle.ts, packages/services/src/retention/retention.ts, packages/core/src/jobs/retry.ts, packages/config/src/schema.ts, packages/db/src/queries/instance-admin.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+Anything slow or outward-facing in CirCI runs as a job in a queue in Postgres, taken by the worker (`circi worker`, or the worker part of `circi all`). How to run more workers is in [Scaling the worker](/self-hosting/scaling-the-worker/). This page is what the jobs are and how they behave.
+
+## Outbox: a job exists exactly when its change does
+
+A service queues a job in the same database transaction as the change that needs it. If the transaction rolls back, there is no job; once it commits, the job can't be lost. The same goes for the wake-up: queuing sends a Postgres `NOTIFY` that is delivered when the transaction commits, so a worker learns about the job at the moment it becomes visible. A worker without that listener finds it at its next poll.
+
+## The queues
+
+| Queue | Job | Queued when | Attempts |
+|---|---|---|---|
+| `process-build` | Compare a build against its baseline, write diffs and thumbnails, set the conclusion | The last shard of a build finishes uploading; a re-run of a build | 5 |
+| `git-notify` | Create or update the check run, commit status and pull request comment on the git host | A build is finalized, finishes processing, is reviewed, fails or is re-run; a commit's sites change | 5 |
+| `webhook` | Deliver one event to one webhook | An event a webhook subscribes to happens | 8 (a **Send test** is tried once) |
+| `notification-email` | Email, then web push, for one [notification](/reference/notifications/) | A notification that has an email or push to send | 5 |
+| `integration-event` | Hand one event to one integration, such as a Slack message | An event happens that an integration's mapping handles | 5 |
+
+Details per queue:
+
+- **`process-build`** is deduplicated per build, so finalizing twice queues one job. If every attempt fails, or the job's worker keeps dying, the build is marked as failed (<code>error</code>, shown as **Failed**) with the error as its message. See [Build statuses](/reference/build-statuses/).
+- **`git-notify`** is deduplicated on the build's status, conclusion and review status together, so a state that was already reported isn't reported twice. It does nothing for a project that isn't linked to a repository.
+- **`webhook`** keeps the same delivery ID across retries. The delivery history and signing are in [Webhooks](/integrations/webhooks/#delivery-and-retries).
+- **`notification-email`** keeps its name from when it only sent email. The email is sent first and throws when it fails, so the job is retried and the push hasn't gone out yet. A push never throws for a push service's refusal, so a failed push isn't retried.
+- **`integration-event`** re-reads the integration's mapping and event toggles when it runs, since they may have changed after queuing. If the integration needs a person to act (a revoked token), the integration is flagged and the job ends without retrying. Any other failure is retried. See [Integrations](/integrations/overview/).
+
+A job for a deleted workspace is completed without doing anything, for every queue except `process-build`: nothing is sent for a deleted workspace, and a build already being processed finishes so a restore finds it complete.
+
+A queue the running version doesn't know (a job from a newer deploy) fails with "no handler for queue" and is retried like any failure, so it waits for a worker that understands it.
+
+## Lanes
+
+A worker runs three lanes in parallel. Two take `process-build` first and other queues when there are no builds. The third never takes a build, so a webhook or a git check doesn't wait behind image work. The order a lane claims in is `process-build`, `git-notify`, `webhook`, `notification-email`, `integration-event`, and within a queue the job due first. These counts are built in; there is no setting.
+
+A lane claims one job at a time with `FOR UPDATE SKIP LOCKED`, so several lanes and several worker processes never take the same job.
+
+## Leases and retries
+
+- **Lease.** Claiming a job locks it for 10 minutes, and the worker extends the lock every third of that while the job runs (a heartbeat). If the worker dies or stalls, the lock expires and another worker claims the job again.
+- **Fencing.** Each claim counts as an attempt and increments the job's attempt number. A worker that kept running past its lease holds an old number, so its completion or failure is ignored and the newer claim decides.
+- **Retry.** A job that throws is retried after a doubling wait: 2 seconds, 4, 8, and so on, up to 5 minutes (`JOB_RETRY_BASE_SECONDS`, `JOB_RETRY_MAX_SECONDS`), until it has used its attempts. Then it is marked failed and stays in the table.
+- **Lost workers.** A job whose lease expired with all its attempts used is never claimed again. A sweep marks it failed ("lease expired too many times") and runs the same give-up step as a normal last failure.
+- **Idle workers.** An idle lane sleeps until a job is queued, a retry falls due, or the poll interval passes (5 seconds with the `NOTIFY` listener, 1 second without). A delayed or retried job wakes an idle worker at the time it is due.
+
+## Sweeps
+
+Beside the queue, every worker process runs interval sweeps. Each sweep takes a Postgres advisory lock named `sweep:<name>`: only one process runs a given sweep at a time, a pass that starts while the previous one is still running is skipped, and none is queued.
+
+| Sweep | Every | Does |
+|---|---|---|
+| `stalled-builds` | 5 minutes | Fails builds that were still uploading after `UPLOAD_TIMEOUT_MINUTES` (default 60; 0 turns it off) |
+| `retention` | 6 hours | One [retention and garbage-collection](/self-hosting/retention-and-gc/) pass: deleted workspaces past 30 days, expired builds and sites, expired undo records, unreferenced files |
+| `review` | 5 minutes | Notifies reviewers of review requests that passed their due time, once each |
+| `triage-assign` | 5 minutes | Gives triage items nobody has to the person on triage, for projects that turned it on |
+| `expired-leases` | 30 seconds | Fails jobs whose lease expired with no attempts left |
+| `prune-jobs` | 1 hour | Deletes done and failed jobs older than `JOB_RETENTION_DAYS` (default 14; 0 keeps them) |
+| `triage-backfill` | Once at start | Fills in the triage counts of projects that existed before they were kept |
+
+The upload timeout, garbage-collection grace period, job retention and webhook timeout are [instance settings](/self-hosting/instance-settings/) as well as environment variables, so they change without a restart. The sweep intervals, the lock time and the lane counts have no setting.
+
+## Seeing what's stuck
+
+**Instance** › **Health** shows each queue under Background jobs, with the number of jobs waiting, running and failed, how long the oldest has waited, and how many are retrying and at which attempt ("1 retrying (attempt 3 of 8)"). See [Instance administration](/using/instance-administration/#health).
+
+| You see | Usually means |
+|---|---|
+| Waiting grows and nothing runs | No worker is running, or it can't reach the database |
+| Oldest waiting is minutes old, running is at the lane count | The lanes are busy: run more workers |
+| Retrying, with an attempt count | The job is failing and backing off: look at the worker log, whose line says which job and why |
+| Failed is above 0 | A job used all its attempts. It stays until pruned, and no command retries it |
+
+Failed jobs aren't re-run from the dashboard or the admin CLI. A failed `process-build` has already marked its build as **Failed**: upload the build again, or use **Re-run comparison** in [Triage](/using/triage-and-flaky-screenshots/) or `/circi rerun` on a pull request to queue a new job. Webhook and notification failures are lost for that event; the webhook delivery history shows them.
+
+<Aside type="note">
+The worker logs every job as it ends ("build processed", "build processing failed, will retry", "build processing failed for good"), with the job ID and the error. The log is where to look first.
+</Aside>

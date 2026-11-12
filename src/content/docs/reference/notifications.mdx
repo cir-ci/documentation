@@ -1,0 +1,87 @@
+---
+title: Notifications
+description: Every kind of notification CirCI creates, who receives it, and when it also goes out by email or push.
+---
+{/* Source: packages/services/src/notifications/notifications.ts, packages/services/src/jobs/{deliver-notification,send-notification-email}.ts, packages/services/src/push/{deliver,message,subscriptions,vapid}.ts, packages/db/src/repositories/notifications.ts, packages/db/src/schema/enums.ts, packages/services/src/{reviews/reviews,comments/comments,triage/auto-assign}.ts, packages/core/src/push, apps/server/src/http/routes/dashboard/push/push.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+A notification is a row in a person's [Inbox](/using/inbox-and-reviews/). It is created in the same transaction as the change it reports, so it exists exactly when the change does. Some kinds are also sent as an email or as a push to the person's devices. This page lists each kind and the rules that decide what goes out. The switches themselves are in [Account settings](/using/account-settings/#notifications).
+
+## The kinds
+
+| Kind | Who gets it | Created when | Email | Push |
+|---|---|---|---|---|
+| Review requested | The reviewer | Someone, a review rule or the triage rotation asks them to review a build | Yes | Yes |
+| Review requested again | The reviewer | They had a request on this build that closed, or the same reviewer is asked about a newer build of the branch, or the person who asked nudges | Yes | Yes |
+| Review overdue | The reviewer. The person the project names for missed targets gets a copy | A request passes its due time (checked every 5 minutes, once per request) | Yes | Yes |
+| Mentioned | Each workspace member @mentioned in a comment or reply | The comment is saved | No | Yes |
+| Build approved | The person who pushed the build | A person approves it | No | Yes |
+| Build rejected | The person who pushed the build | A person rejects it. The reason travels with it | No | Yes |
+| Assigned to you as the person on triage | The person on triage | Triage items are assigned to them automatically | No | No |
+
+The Inbox page also lists "Connection needs attention" and "Flaky screenshot found". They are kinds the Inbox knows how to show. This reference covers the kinds the server creates today.
+
+A person is never notified about their own action: asking yourself for a review, mentioning yourself or approving your own build creates nothing. Approving by a rule (a default-branch build approved automatically, or a re-run that keeps an earlier decision) doesn't create a notification either, since no person decided.
+
+### Reading it ends the request
+
+Deciding a build marks the deciding reviewer's notifications for that build read. The "please review" notifications of other people who were asked (review requested, again, overdue) are marked read too, because their requests close. Dismissing a request does the same for its reviewer. If you undo an approval or rejection, the notifications it made for others are deleted and the closed requests reopen. See [Undo](/using/undo/).
+
+### Nudging
+
+Whoever asked can nudge a reviewer who hasn't answered. It sends "Review requested again". A second nudge within 24 hours of the last notification about that request is refused ("Already nudged in the last 24 hours").
+
+## Channels
+
+Everything that reaches the Inbox stays there, and none of it can be switched off. Email and push are extra, per kind, and both are decided twice: when the notification is created and again when the job sends it, so a switch turned off in between is respected. Neither is sent for a notification you've already read or deleted in the Inbox.
+
+| Preference | Controls |
+|---|---|
+| Email: Review requested | Email for review requested and review requested again |
+| Email: Review overdue | Email for review overdue |
+| Push: Review requested | Push for review requested, again and overdue |
+| Push: Mentioned | Push for mentions |
+| Push: Rejected or approved | Push for build approved and build rejected |
+
+If neither a matching email nor a push applies, no delivery job is queued at all. One job, named `notification-email` for historical reasons, sends the email first and then the push. See [Background jobs](/reference/background-jobs/#the-queues).
+
+## Email
+
+Email needs SMTP, set in [Instance settings](/self-hosting/instance-settings/) or the environment. Without it the job completes and nothing is mailed. If sending fails, the job fails and is retried with the usual backoff.
+
+Each email is plain text, to the address on the account, and has the same shape:
+
+- A subject such as "Ann asked you to review: build #148 (feat/login) in Web app", "Ann asked you to review again: …" or "Review overdue: …". If the system asked (a rule), "CirCI" stands in for the name.
+- A greeting with the recipient's name, one sentence saying what happened, and a link to the build page on `PUBLIC_URL`.
+- A closing line saying it was sent because of the recipient's notification settings.
+
+For an overdue copy sent to the person the project names, the sentence names the reviewer whose review is overdue instead of saying "Your review".
+
+There are no digests and no batching: one notification is one email. Nothing in the code delays or groups sends by time of day.
+
+## Web push
+
+Push is sent from your own server, signed with a VAPID key pair, straight to the push service of each browser vendor (the vendor only carries the encrypted payload). There is no relay and nothing is sent to CirCI's makers.
+
+- **Keys.** If `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` are set, they're used as they are. Otherwise the server makes a pair the first time it needs one and stores it in the database, the private half sealed under `BETTER_AUTH_SECRET`. If that secret changes later, the stored keys can't be opened: the server makes new ones and every device has to turn push on again. `VAPID_SUBJECT` is the contact the push services may use (`mailto:` or `https://`; it defaults to `PUBLIC_URL`). See [Environment variables](/reference/environment-variables/#webhooks-and-web-push).
+- **Devices.** Each browser that turns push on is one device of one person, named from its browser, for example "Chrome on Android". Turning it on again from the same browser keeps one device. Turning it off, or **Remove** on another device, deletes it. The address a device registers must be a public `https` address; the server also checks that its host doesn't resolve to a private network when it sends, unless `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` is on.
+- **Sending.** Each push is a request with a one-day time to live. A `404` or `410` answer means the device is gone, and it's deleted. Any other failure is counted and doesn't make the job retry, so the email before it is never repeated. A failed push is lost.
+- **What it says.** A title that says what happened ("Review requested", "Rejected"), a body that names the person, the build number, branch and project, and for a rejection the reason, and a link to the build page. A repeat for the same notification replaces the earlier one instead of stacking, and pushes from one project group together.
+- **Where it works.** In a browser that supports web push, installed or not, and on an iPhone only from the Home Screen. See [Account settings](/using/account-settings/#install-as-an-app).
+
+<Aside type="note">
+During a rolling deploy, an older worker can complete a push-only job without sending it. A push can be lost then; an email is never sent twice.
+</Aside>
+
+## Snoozing and removing
+
+Snoozing hides a notification until a time: tomorrow, next week or a date you choose. Deleting removes it from your Inbox. Marking read or unread, snoozing and deleting each carry an Undo for 30 seconds. See [Inbox and reviews](/using/inbox-and-reviews/) for the times, and [Undo](/using/undo/).
+
+Notifications aren't expired by retention: nothing in the code deletes them over time other than you deleting them, or the build, project or account they belong to being deleted.
+
+## See also
+
+- [Inbox and reviews](/using/inbox-and-reviews/)
+- [Review requests and rules](/using/review-requests-and-rules/)
+- [Slack](/integrations/slack/) and [webhooks](/integrations/webhooks/), which carry the same events to a channel or your own service

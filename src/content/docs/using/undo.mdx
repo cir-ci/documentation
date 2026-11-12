@@ -1,0 +1,60 @@
+---
+title: Undo
+description: Which actions can be taken back, how long Undo lasts, and when it's refused.
+---
+{/* Source: packages/services/src/undo/{record,undo}.ts, packages/services/src/{reviews,triage,notifications}/undo.ts, apps/server/src/http/routes/dashboard/undo.ts, apps/web/src/lib/undo.ts, apps/web/src/lib/toast.ts, apps/web/src/lib/stores/{toast-store,tab-store}.ts, apps/web/src/features/builds/list/BuildsBrowser.tsx, packages/services/src/retention/retention.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+import Kbd from '../../../components/Kbd.astro'
+
+An action in the dashboard takes effect at once and says what happened in a toast. When the action can be taken back, the toast carries **Undo**. Only what can't be taken back and is risky, such as removing a member or deleting a project, asks for a confirmation first.
+
+## Which actions have Undo
+
+Most undoable actions are recorded by the server, which hands the dashboard a one-time token with the answer. These are:
+
+| Action | Where | Undo does |
+|---|---|---|
+| Approve or reject screenshots, or a whole build | Build page, Reviews, Inbox | Restores the earlier decisions and the build's review status. Review requests the decision closed reopen, and the notifications it sent to others are deleted. The check run and webhooks follow the undo as they followed the decision |
+| Ask for a review | Build page | Dismisses the requests it opened and deletes the notifications it sent |
+| Snooze a review request | Reviews | Restores the earlier snooze |
+| Assign a triage item, snooze it, or dismiss it | Triage | Restores the item's earlier assignee, snooze or dismissal |
+| Mark a notification read or unread, snooze it, delete it | Inbox | Restores the earlier state |
+
+The same actions from the command menu (<Kbd keys="Mod+K" />) carry the same Undo.
+
+A few actions undo themselves in the browser, by running the exact opposite call: reordering review rules, pinning and unpinning a project, dismissing the move checklist on Health, and tabs closed by you or to stay within the tab limit. These have no server record, so they can fail only if the thing they restore is gone.
+
+## How long it lasts
+
+The toast with Undo stays for about 6 seconds. The server keeps the token for 30 seconds, then the record is cleaned up by the next [retention](/self-hosting/retention-and-gc/) pass. After the toast is gone, the Undo button is too: there's no other place to take an action back. To change a decision later, decide again.
+
+## When Undo is refused
+
+Undo restores exactly what the action changed, so it refuses when that is no longer true. The toast shows the reason ("Couldn't undo: …").
+
+| Message | Why |
+|---|---|
+| Someone changed this review since, so it can't be undone | Someone decided one of the screenshots again after you |
+| The request changed since, so it can't be undone | The review request's snooze changed, or it closed |
+| A reviewer already answered, so it can't be undone | You tried to take back asking for a review, and a reviewer has decided |
+| The notice changed since, so it can't be undone | The notification was changed again after your action |
+| Already undone | The token was used |
+| It's too late to undo that | The 30 seconds passed |
+| Only the person who did it can undo | The token belongs to someone else, even in the same project |
+| Nothing to undo | The token doesn't exist, or belongs to another project |
+
+The change, what follows from it (check runs, webhooks, notifications) and the mark that the token is used are one transaction: either all of it is taken back, or none.
+
+An undone review decision stays in the build's activity as history: the undone decisions are superseded and the ones they had superseded are current again.
+
+## What can't be undone
+
+- **Unsnooze** and **Dismiss** on a review request.
+- **Re-run comparison** in Triage.
+- Approving or rejecting several builds at once from the builds list. The server keeps no single token for a decision on many builds, so the toast has no Undo.
+- Anything that asks for a confirmation first: removing a member, a domain or a provider, and deleting anything.
+
+<Aside type="note">
+Undo is per person. You can only take back what you did, and what someone else did after you stops yours from being undone.
+</Aside>
