@@ -1,0 +1,126 @@
+---
+// A folder structure drawn with Mermaid's tree view (`treeView-beta`), rendered in the browser. Mermaid is a dynamic import, so only
+// pages that use this component load it. Colors and fonts are the --circi-* variables written into the SVG's own style as `var(…)`,
+// so the light/dark toggle recolors the tree with no re-render.
+//
+// `tree` is the diagram body (without the `treeView-beta` line): one node per line, indented by four spaces per level, a trailing
+// `/` marks a folder, and ` ## text` after a name is that file's description (shown in a column to the right).
+//   <FolderTree title="…" desc="…" tree={`deploy/\n    Dockerfile ## the app image`} />
+// Until Mermaid has drawn it, the source stays hidden and the figure keeps its final height (no flash, no jump); without
+// JavaScript, or if drawing fails, the source is shown as plain text.
+interface Props {
+  tree: string
+  /** The accessible name: what the tree shows. */
+  title: string
+  /** The accessible description. */
+  desc: string
+  caption?: string
+}
+const { tree, title, desc, caption } = Astro.props
+const lines = tree.trim().split('\n')
+// Mermaid draws a root row too; a row is 25.5px (13px text, 4px padding twice), plus 14px padding and a 1px border on each side.
+const reserve = Math.round((lines.length + 1) * 25.5) + 30
+---
+
+<figure class="foldertree" data-title={title} data-desc={desc} style={`--ft-reserve:${reserve}px`}>
+  <div class="scroll" tabindex="0" role="region" aria-label={title}>
+    <div class="drawing" data-tree={tree.trim()}></div>
+    <pre class="source"><code>{lines.map((l) => l.replace(/^( {4})+/, (m) => '  '.repeat(m.length / 4))).join('\n')}</code></pre>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+<noscript><style>.foldertree .source{display:block!important}</style></noscript>
+
+<style>
+  .foldertree {
+    margin-block: 1.5rem;
+    margin-inline: 0;
+  }
+  .scroll {
+    overflow-x: auto;
+    min-height: var(--ft-reserve);
+    padding: 0.875rem 1rem;
+    background: var(--circi-surface-raised);
+    border: 1px solid var(--circi-line-strong);
+    border-radius: var(--circi-radius-popup);
+  }
+  .drawing :global(svg) {
+    display: block;
+    max-width: none;
+  }
+  .source {
+    display: none;
+    margin: 0;
+    font-family: var(--circi-font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--circi-text-secondary);
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+  /* Shown instead of the drawing when it failed. */
+  .foldertree[data-state='failed'] .source {
+    display: block;
+  }
+  figcaption {
+    margin-block-start: 0.5rem;
+    font-size: var(--sl-text-sm);
+    color: var(--circi-text-secondary);
+  }
+</style>
+
+<script>
+  // Runs on every page, including those the client router swaps in: a swap brings new markup, so each figure is drawn once.
+  let mermaidReady: Promise<(typeof import('mermaid'))['default']> | undefined
+  const loadMermaid = () =>
+    (mermaidReady ??= import('mermaid').then(({ default: mermaid }) => {
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'strict',
+        theme: 'base',
+        fontFamily: 'var(--circi-font-mono)',
+        // `var(…)` strings end up inside the SVG's <style>, where the page's custom properties resolve (and change with the theme).
+        themeVariables: {
+          fontFamily: 'var(--circi-font-mono)',
+          treeView: {
+            labelFontSize: '0.8125rem',
+            labelColor: 'var(--circi-text-primary)',
+            lineColor: 'var(--circi-text-tertiary)',
+            iconColor: 'var(--circi-text-tertiary)',
+            descriptionColor: 'var(--circi-text-secondary)',
+          },
+        },
+        themeCSS:
+          '.treeView-node-description{font-family:var(--circi-font-sans);font-style:normal;font-size:0.8125rem}',
+        treeView: { useMaxWidth: false, showIcons: true, rowIndent: 14, paddingX: 6, paddingY: 4, lineThickness: 1.25 },
+      })
+      return mermaid
+    }))
+
+  let counter = 0
+  const draw = async () => {
+    const figures = document.querySelectorAll<HTMLElement>('.foldertree:not([data-state])')
+    if (!figures.length) return
+    const mermaid = await loadMermaid()
+    for (const figure of figures) {
+      const target = figure.querySelector<HTMLElement>('.drawing')
+      const body = target?.dataset.tree
+      if (!target || !body) continue
+      figure.dataset.state = 'drawing'
+      try {
+        const source = `treeView-beta\n    accTitle: ${figure.dataset.title}\n    accDescr: ${figure.dataset.desc}\n${body}`
+        const { svg } = await mermaid.render(`foldertree-${++counter}`, source)
+        // The page may have been swapped while Mermaid was drawing.
+        if (!target.isConnected) continue
+        target.innerHTML = svg
+        target.querySelector('svg')?.setAttribute('role', 'img')
+        figure.dataset.state = 'done'
+      } catch (error) {
+        console.error('Folder tree failed to draw', error)
+        figure.dataset.state = 'failed'
+      }
+    }
+  }
+  document.addEventListener('astro:page-load', draw)
+</script>

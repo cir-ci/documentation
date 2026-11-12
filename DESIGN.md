@@ -101,6 +101,11 @@ In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a
   `d-box`, `d-box--accent`, `d-line`, `d-title`, `d-mono`, `d-text`, `d-fill` classes so both themes work; no inline colors. The title and
   description are the accessible name, so say what the picture shows, not "diagram of". `BuildFlow` stays its own component (two layouts).
   Example: the layers in `contributing/repo-layout`.
+- `FolderTree.astro`: a folder structure as Mermaid's tree view (`treeView-beta`, Mermaid 12.3.0, pinned), drawn in the browser by a
+  dynamic import, so only pages with a tree load Mermaid. `<FolderTree title="…" desc="…" tree={`deploy/\n    Dockerfile ## the app image`} />`: four spaces
+  per level, a trailing `/` marks a folder, ` ## text` is that entry's description (a column to the right). Mermaid adds a `/` root row (the repository
+  root). Colors and fonts are `var(--circi-…)` written into the SVG's style, so the theme toggle recolors it without a redraw; it draws again on
+  `astro:page-load`. Use it for every folder structure; never a `text` block with `├──`.
 - Steps and Asides: an Aside indented under a step stays in the step (one short warning about that action). Anything longer ends the list:
   close `</Steps>`, write the text, open a new `<Steps>` and carry on with the `start` attribute of the list.
 - `SettingCard.astro`: one variable or setting. `<SettingCard name="PUBLIC_URL" defaultValue="http://localhost:3000" type="URL">`

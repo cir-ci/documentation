@@ -5,6 +5,7 @@ description: The folders of the CirCI repository, the five layers and the rules 
 {/* Source: CLAUDE.md (Layers, Types, Style), README.md (Layout), docs/architecture-review/layering.md, packages/services/test/layers.test.ts, .oxlintrc.json */}
 
 import Diagram from '../../../components/Diagram.astro'
+import FolderTree from '../../../components/FolderTree.astro'
 
 CirCI is a pnpm and Turborepo monorepo. Code is split into five layers, and the dependencies between them are checked by a test (`packages/services/test/layers.test.ts`) and by lint overrides in `.oxlintrc.json`, so a wrong import fails before review.
 
@@ -65,26 +66,34 @@ Read the diagram from the top: a request enters at the transport layer and each 
 
 ## Folders
 
-```text
-apps/server      the circi command: HTTP routes (CI API, dashboard, sign-in), admin CLI, composition
-apps/worker      background jobs: claim loop and thin job adapters (inlined in the server bundle)
-apps/web         the dashboard (React, TanStack Router and Query, Base UI), organized by feature
-packages/api     the wire types of the dashboard API (types only)
-packages/auth    better-auth composition, admin operations
-packages/cli     circi upload for CI
-packages/config  environment parsing and validation
-packages/core    rules with no I/O: baselines, pairing, outcomes, limits, slugs, review rules
-packages/db      Drizzle schema, migrations, repositories, queries (dashboard read models), queue
-packages/diff    PNG validation, pixel diffs (JS, worker threads, native Rust), thumbnails
-packages/integrations  the integration SDK and one folder per kind (GitHub, GitLab, ...)
-packages/services      use cases: transactions, repositories, queued jobs and notices
-packages/sites         hosted-site handling
-packages/storage       local-disk and S3 drivers, checksum-verified writes
-packages/testing       db-free test support
-packages/ui            the design system: Base UI parts, CSS modules, --circi-* tokens
-packages/vitest        @circi/vitest
-deploy/ dev/ e2e/ perf/ docs/
-```
+<FolderTree
+  title="The repository's folders"
+  desc="The apps, the packages and the other top-level folders of the repository, each with what it holds."
+  tree={`apps/
+    server/ ## the circi command: HTTP routes (CI API, dashboard, sign-in), admin CLI, composition
+    worker/ ## background jobs: claim loop and thin job adapters (inlined in the server bundle)
+    web/ ## the dashboard (React, TanStack Router and Query, Base UI), organized by feature
+packages/
+    api/ ## the wire types of the dashboard API (types only)
+    auth/ ## better-auth composition, admin operations
+    cli/ ## circi upload for CI
+    config/ ## environment parsing and validation
+    core/ ## rules with no I/O: baselines, pairing, outcomes, limits, slugs, review rules
+    db/ ## Drizzle schema, migrations, repositories, queries (dashboard read models), queue
+    diff/ ## PNG validation, pixel diffs (JS, worker threads, native Rust), thumbnails
+    integrations/ ## the integration SDK and one folder per kind (GitHub, GitLab, ...)
+    services/ ## use cases: transactions, repositories, queued jobs and notices
+    sites/ ## hosted-site handling
+    storage/ ## local-disk and S3 drivers, checksum-verified writes
+    testing/ ## db-free test support
+    ui/ ## the design system: Base UI parts, CSS modules, --circi-* tokens
+    vitest/ ## @circi/vitest
+deploy/ ## the reference install
+dev/ ## the local QA environment behind pnpm dev
+e2e/ ## end-to-end tests against the Docker stack
+perf/ ## the k6 performance suite
+docs/ ## architecture notes`}
+/>
 
 ## The rules
 
