@@ -10,7 +10,7 @@ interface Props {
   caption?: string
   /** Max width in px of the framed image (default: the full column). */
   width?: number
-  /** Crop to a fixed aspect ratio, `"16 / 10"`, so captures of different pages line up. Keeps the top of the page. */
+  /** The box's aspect ratio (default `"16 / 10"`), so captures of different pages line up. The image fills the width and keeps the top of the page; a taller one is cut off at the bottom (click it to see all). */
   aspect?: string
   /** `lazy` (default) for anything below the first screen; `eager` for the first image of a page. */
   loading?: 'lazy' | 'eager'
@@ -26,16 +26,16 @@ const find = (scheme: string) => {
 }
 const dark = find('dark')
 const light = find('light')
-// The placeholder: the captures are the same size in both themes, so the box is reserved before they load.
-const ratio = aspect ?? `${dark.width} / ${dark.height}`
+// The box is reserved before the captures load, and is the same for every page.
+const ratio = aspect ?? '16 / 10'
 ---
 
 <figure class="screen-frame" style={width ? `max-width:${width}px` : undefined}>
   <screen-zoom>
     <div class="window">
-      <div class="strip" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span class="strip-title">{title}</span></div>
+      <div class="strip" aria-hidden="true"><span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="strip-title">{title}</span></div>
       <button type="button" class="shot-button" aria-label={`Enlarge: ${alt}`}>
-        <div class="shot" class:list={{ cropped: Boolean(aspect) }} style={`aspect-ratio:${ratio}`}>
+        <div class="shot" style={`aspect-ratio:${ratio}`}>
           <Image src={dark} alt={alt} class="shot-dark" widths={[720, 1080, 1440, 2160]} sizes="(min-width: 50rem) 46rem, 100vw" loading={loading} decoding="async" />
           <Image src={light} alt={alt} class="shot-light" widths={[720, 1080, 1440, 2160]} sizes="(min-width: 50rem) 46rem, 100vw" aria-hidden="true" loading={loading} decoding="async" />
         </div>
@@ -92,11 +92,15 @@ const ratio = aspect ?? `${dark.width} / ${dark.height}`
   }
   .dots {
     display: inline-flex;
+    align-items: center;
     gap: 5px;
   }
-  .dots i {
+  /* Spans, not <i>: Starlight spaces `i + i` in prose by 1rem. */
+  .dots .dot {
+    display: block;
     width: 8px;
     height: 8px;
+    margin: 0;
     border-radius: 999px;
     background: var(--circi-surface-highest);
   }
@@ -116,18 +120,15 @@ const ratio = aspect ?? `${dark.width} / ${dark.height}`
   .shot-button:focus-visible {
     outline-offset: -2px;
   }
+  /* hidden, not clip: only a scroll container lets the aspect-ratio box be shorter than the image. */
   .shot {
-    overflow: clip;
+    overflow: hidden;
+    background: var(--circi-surface-chrome);
   }
   .shot :global(img) {
     display: block;
     width: 100%;
     height: auto;
-  }
-  .cropped :global(img) {
-    height: 100%;
-    object-fit: cover;
-    object-position: top;
   }
   .shot-light,
   .zoom-light {

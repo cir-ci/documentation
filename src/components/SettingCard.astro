@@ -70,15 +70,17 @@ const { name, defaultValue, required = false, type } = Astro.props
     color: var(--circi-state-review-text);
     font-weight: 600;
   }
+  /* margin-top 0: Starlight spaces every sibling in prose by 1rem, which would open a gap under the head. */
   .body {
+    margin-block-start: 0;
     padding: 0.5rem 0.75rem;
     font-size: var(--sl-text-sm);
     line-height: 1.5;
   }
-  .body :global(> :first-child) {
-    margin-top: 0;
+  .body > :global(:first-child) {
+    margin-block-start: 0;
   }
-  .body :global(> :last-child) {
-    margin-bottom: 0;
+  .body > :global(:last-child) {
+    margin-block-end: 0;
   }
 </style>

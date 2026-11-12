@@ -65,7 +65,7 @@ The storage driver is read-only in Instance settings: it names `STORAGE_DRIVER` 
 
 ### How an upload travels
 
-<Diagram viewBox="0 0 720 250" title="How an upload reaches storage with each driver" desc="With local disk the CLI sends each file to the CirCI API, which verifies the SHA-256 and writes it to the disk. With S3 the CLI asks CirCI for presigned URLs, uploads straight to the bucket with the checksum bound to the request, and finalize confirms each object.">
+<Diagram viewBox="0 0 720 240" title="How an upload reaches storage with each driver" desc="With local disk the CLI sends each file to the CirCI API, which verifies the SHA-256 and writes it to the disk. With S3 the CLI asks CirCI for presigned URLs, uploads straight to the bucket with the checksum bound to the request, and finalize confirms each object.">
   <rect x="1" y="1" width="150" height="100" rx="10" class="d-box" />
   <text x="20" y="34" class="d-title">circi upload</text>
   <text x="20" y="58" class="d-text">in CI</text>
@@ -78,14 +78,14 @@ The storage driver is read-only in Instance settings: it names `STORAGE_DRIVER` 
   <path d="M154 51h128m-6 -6l6 6l-6 6" class="d-line" />
   <path d="M438 51h128m-6 -6l6 6l-6 6" class="d-line" />
   <text x="160" y="40" class="d-mono">PUT /v1/files</text>
-  <rect x="1" y="149" width="150" height="100" rx="10" class="d-box" />
-  <text x="20" y="182" class="d-title">circi upload</text>
-  <text x="20" y="206" class="d-text">in CI</text>
-  <rect x="569" y="149" width="150" height="100" rx="10" class="d-box d-box--accent" />
-  <text x="588" y="182" class="d-title">Bucket</text>
-  <text x="588" y="206" class="d-mono">s3 driver</text>
-  <path d="M154 199h412m-6 -6l6 6l-6 6" class="d-line" />
-  <text x="200" y="188" class="d-mono">presigned PUT, bound to the SHA-256</text>
+  <rect x="1" y="139" width="150" height="100" rx="10" class="d-box" />
+  <text x="20" y="172" class="d-title">circi upload</text>
+  <text x="20" y="196" class="d-text">in CI</text>
+  <rect x="569" y="139" width="150" height="100" rx="10" class="d-box d-box--accent" />
+  <text x="588" y="172" class="d-title">Bucket</text>
+  <text x="588" y="196" class="d-mono">s3 driver</text>
+  <path d="M154 189h412m-6 -6l6 6l-6 6" class="d-line" />
+  <text x="200" y="178" class="d-mono">presigned PUT, bound to the SHA-256</text>
 </Diagram>
 
 With S3 the CLI uploads **directly to the bucket** through presigned URLs bound to the file's SHA-256 checksum (the `x-amz-checksum-sha256` header, supported by AWS S3, R2 and MinIO), so storage rejects bytes that don't match, and finalize then confirms each object. The bucket must be reachable from where CI runs.

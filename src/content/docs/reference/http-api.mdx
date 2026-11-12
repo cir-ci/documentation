@@ -55,34 +55,34 @@ Errors are JSON, `{ "error": "…" }`, with the usual status: `401` for a missin
 
 </Steps>
 
-<Diagram viewBox="0 0 720 150" title="The upload sequence" desc="Four calls in order: create the build, upload the missing files, finalize each shard, then poll the status until processing ends.">
+<Diagram viewBox="0 0 800 150" title="The upload sequence" desc="Four calls in order: create the build, upload the missing files, finalize each shard, then poll the status until processing ends.">
   <g>
-    <rect x="1" y="20" width="160" height="100" rx="10" class="d-box" />
-    <text x="16" y="50" class="d-title">Create</text>
-    <text x="16" y="74" class="d-mono">POST /v1/builds</text>
-    <text x="16" y="98" class="d-text">201 and uploads</text>
+    <rect x="1" y="20" width="176" height="100" rx="10" class="d-box" />
+    <text x="17" y="50" class="d-title">Create</text>
+    <text x="17" y="74" class="d-mono">POST /v1/builds</text>
+    <text x="17" y="98" class="d-text">201 and uploads</text>
   </g>
   <g>
-    <rect x="187" y="20" width="160" height="100" rx="10" class="d-box" />
-    <text x="202" y="50" class="d-title">Upload</text>
-    <text x="202" y="74" class="d-mono">PUT /v1/files/:sha</text>
-    <text x="202" y="98" class="d-text">only missing files</text>
+    <rect x="207" y="20" width="176" height="100" rx="10" class="d-box" />
+    <text x="223" y="50" class="d-title">Upload</text>
+    <text x="223" y="74" class="d-mono">PUT /v1/files/:sha</text>
+    <text x="223" y="98" class="d-text">only missing files</text>
   </g>
   <g>
-    <rect x="373" y="20" width="160" height="100" rx="10" class="d-box" />
-    <text x="388" y="50" class="d-title">Finalize</text>
-    <text x="388" y="74" class="d-mono">POST .../finalize</text>
-    <text x="388" y="98" class="d-text">per shard</text>
+    <rect x="413" y="20" width="176" height="100" rx="10" class="d-box" />
+    <text x="429" y="50" class="d-title">Finalize</text>
+    <text x="429" y="74" class="d-mono">POST .../finalize</text>
+    <text x="429" y="98" class="d-text">per shard</text>
   </g>
   <g>
-    <rect x="559" y="20" width="160" height="100" rx="10" class="d-box d-box--accent" />
-    <text x="574" y="50" class="d-title">Poll</text>
-    <text x="574" y="74" class="d-mono">GET .../status</text>
-    <text x="574" y="98" class="d-text">until it's done</text>
+    <rect x="619" y="20" width="176" height="100" rx="10" class="d-box d-box--accent" />
+    <text x="635" y="50" class="d-title">Poll</text>
+    <text x="635" y="74" class="d-mono">GET .../status</text>
+    <text x="635" y="98" class="d-text">until it's done</text>
   </g>
-  <path d="M164 70h20m-6 -6l6 6l-6 6" class="d-line" />
-  <path d="M350 70h20m-6 -6l6 6l-6 6" class="d-line" />
-  <path d="M536 70h20m-6 -6l6 6l-6 6" class="d-line" />
+  <path d="M180 70h22m-6 -6l6 6l-6 6" class="d-line" />
+  <path d="M386 70h22m-6 -6l6 6l-6 6" class="d-line" />
+  <path d="M592 70h22m-6 -6l6 6l-6 6" class="d-line" />
 </Diagram>
 
 This is an implementation detail of the CLI; prefer `circi upload` over writing your own client.

@@ -15,20 +15,31 @@ interface Props {
 }
 const { viewBox, title, desc, caption, width } = Astro.props
 const uid = Math.random().toString(36).slice(2, 8)
+// A 2px margin all round, so strokes of shapes drawn at the edge are not clipped. Below 82% of its drawn size the text would
+// fall under 11px, so the figure scrolls sideways instead of shrinking further.
+const [vx = 0, vy = 0, vw = 720, vh = 200] = viewBox.trim().split(/\s+/).map(Number)
+const padded = `${vx - 2} ${vy - 2} ${vw + 4} ${vh + 4}`
+const minWidth = Math.round(vw * 0.82)
 ---
 
 <figure class="diagram" style={width ? `max-width:${width}px` : undefined}>
-  <svg viewBox={viewBox} role="img" aria-labelledby={`dg-t-${uid} dg-d-${uid}`}>
-    <title id={`dg-t-${uid}`}>{title}</title>
-    <desc id={`dg-d-${uid}`}>{desc}</desc>
-    <slot />
-  </svg>
+  <div class="scroll" tabindex="0" role="region" aria-label={title}>
+    <svg viewBox={padded} style={`min-width:${minWidth}px`} role="img" aria-labelledby={`dg-t-${uid} dg-d-${uid}`}>
+      <title id={`dg-t-${uid}`}>{title}</title>
+      <desc id={`dg-d-${uid}`}>{desc}</desc>
+      <slot />
+    </svg>
+  </div>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
 
 <style>
   .diagram {
     margin-block: 1.5rem;
+    margin-inline: auto;
+  }
+  .scroll {
+    overflow-x: auto;
   }
   svg {
     display: block;

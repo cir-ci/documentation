@@ -32,3 +32,17 @@ import mono from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin
   })()
 </script>
 <ClientRouter />
+<script>
+  // Wraps every Markdown table in `div.table-wrap`: the wrapper has the border, radius and sideways scroll, so the table
+  // inside can fill it (Starlight's own `display: block` table leaves the border far from the last column).
+  const wrapTables = () => {
+    document.querySelectorAll('.sl-markdown-content table').forEach((table) => {
+      if (table.parentElement?.classList.contains('table-wrap')) return
+      const wrap = document.createElement('div')
+      wrap.className = 'table-wrap'
+      table.replaceWith(wrap)
+      wrap.append(table)
+    })
+  }
+  document.addEventListener('astro:page-load', wrapTables)
+</script>

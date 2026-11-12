@@ -12,7 +12,10 @@ const [b, a, d] = await Promise.all([before, after, diff].map((src) => getImage(
 <ReviewCompare client:load before={b.src} after={a.src} diff={d.src} width={before.width} height={before.height} />
 
 <style is:global>
+  /* The captures are 760px wide: the card stops at their natural size instead of upscaling them. */
   .review-compare {
+    max-width: 800px;
+    margin-inline: auto;
     border: 1px solid var(--circi-line-strong);
     border-radius: var(--circi-radius-command);
     background: var(--circi-surface-chrome);
@@ -37,13 +40,18 @@ const [b, a, d] = await Promise.all([before, after, diff].map((src) => getImage(
   .rc-state svg {
     color: var(--circi-state-review);
   }
+  .rc-head > * {
+    min-width: 0;
+  }
   .rc-name {
     font-weight: 600;
+    overflow-wrap: anywhere;
   }
   .rc-meta {
     font-family: var(--circi-font-mono);
     font-size: 0.75rem;
     color: var(--circi-text-secondary);
+    overflow-wrap: anywhere;
   }
   .rc-modes {
     display: inline-flex;

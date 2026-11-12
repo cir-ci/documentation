@@ -5,6 +5,23 @@
 body {
   -webkit-font-smoothing: antialiased;
 }
+/* The panel ends 2rem under the last line of the page (Starlight adds 3vh and a 3rem pagination gap on top). */
+.main-pane main {
+  padding-block-end: 0;
+}
+/* 40px between the last line of the page and the pagination; Starlight's empty .meta row (3rem of margin) is hidden. */
+.sl-container > footer {
+  margin-block-start: 2.5rem;
+}
+footer .meta:not(:has(*)) {
+  display: none;
+}
+.content-panel:last-child {
+  padding-block-end: 2.5rem;
+}
+.pagination-links {
+  margin-block-start: 0;
+}
 
 /* The app's content sits on a panel with a hairline; the docs page follows. */
 /* Type scale: restrained, as the app's; body is 15px because docs are read, not scanned. */
@@ -20,7 +37,7 @@ body {
   font-size: var(--sl-text-base);
   line-height: 1.6;
 }
-.sl-markdown-content :is(p, ul, ol, dl, blockquote) {
+.sl-markdown-content :is(p, ul, ol, dl, blockquote):not(.sl-steps, [role='tablist']) {
   max-width: 62ch;
 }
 .sl-markdown-content :is(.starlight-aside, .sl-steps) :is(p, ul, ol) {
@@ -40,6 +57,10 @@ body {
 }
 .sl-markdown-content h3 {
   font-size: var(--sl-text-h3);
+}
+/* An h3 right under an h2 gets the same space as one under a paragraph (Starlight gives it 1rem). */
+.sl-markdown-content .sl-heading-wrapper:has(> h3) {
+  margin-block-start: 1.5em;
 }
 .sl-markdown-content h3,
 .sl-markdown-content h4 {
@@ -72,6 +93,14 @@ header.header {
   border-inline-end: 0;
 }
 @media (min-width: 50rem) {
+  /* 8px of chrome between the sidebar and the panel, as the app's AppFrame. */
+  :root[data-has-sidebar] {
+    --sl-content-inline-start: calc(var(--sl-sidebar-width) + 8px);
+  }
+  /* The search sits at the panel's left edge on every page, with or without a sidebar. */
+  div.header {
+    grid-template-columns: calc(var(--sl-sidebar-width) - 2.5rem) minmax(0, 1fr) auto;
+  }
   .main-frame {
     padding-inline-end: 8px;
     padding-bottom: 8px;
@@ -81,6 +110,27 @@ header.header {
     border: 1px solid var(--circi-line-subtle);
     border-radius: var(--circi-radius-panel);
     background: var(--circi-surface-panel);
+  }
+}
+/* Wide screens: a fixed table-of-contents column, the panel takes the rest and its text column is centered in it. */
+@media (min-width: 72rem) {
+  :root {
+    --sl-content-width: 56rem;
+  }
+  .right-sidebar-container {
+    width: 16rem;
+  }
+  /* The TOC is position: fixed, so its percentages are the viewport's: give it the column's width by hand. */
+  .right-sidebar {
+    width: 16rem;
+  }
+  .right-sidebar-panel .sl-container {
+    width: calc(16rem - 2 * var(--sl-sidebar-pad-x));
+    max-width: none;
+  }
+  [data-has-sidebar][data-has-toc] .main-pane {
+    --sl-content-margin-inline: auto;
+    width: calc(100% - 16rem);
   }
 }
 @media (max-width: 49.99rem) {
@@ -124,12 +174,12 @@ header.header {
   background-color: var(--circi-scrollbar-thumb);
 }
 .sidebar-content details > summary .large {
-  font-size: 0.6875rem;
+  font-size: 0.78125rem;
   font-weight: 600;
-  color: var(--circi-text-tertiary);
+  color: var(--circi-text-secondary);
 }
 .sidebar-content details[open] > summary .large {
-  color: var(--circi-text-secondary);
+  color: var(--circi-text-primary);
 }
 .sidebar-content details > summary {
   border-radius: var(--circi-radius-control);
@@ -185,6 +235,12 @@ starlight-toc nav > .sl-container > h2,
   margin-inline-start: -1px;
   border-inline-start: 2px solid transparent;
   padding-inline-start: 0.75rem;
+}
+.right-sidebar-panel ul ul {
+  border-inline-start: 0;
+}
+.right-sidebar-panel ul ul a {
+  padding-inline-start: 1.5rem;
 }
 .right-sidebar-panel a:hover {
   color: var(--circi-text-primary);
@@ -243,13 +299,20 @@ starlight-toc nav > .sl-container > h2,
   letter-spacing: -0.01em;
 }
 
-/* Tables */
-.sl-markdown-content table {
+/* Tables: the wrapper (div.table-wrap, added by astro.config.mjs) has the border and scrolls sideways when a
+   table is wider than the column; the table fills it, so the last column reaches the border. */
+.sl-markdown-content .table-wrap {
+  overflow-x: auto;
   border: 1px solid var(--circi-line-subtle);
   border-radius: var(--circi-radius-popup);
+}
+.sl-markdown-content table {
+  display: table;
+  width: 100%;
+  overflow: visible;
+  border: 0;
   border-collapse: separate;
   border-spacing: 0;
-  overflow: hidden;
   font-size: var(--sl-text-sm);
 }
 .sl-markdown-content th {
@@ -276,6 +339,14 @@ kbd {
   --ec-brdRad: var(--circi-radius-popup);
   --ec-codeFontFml: var(--circi-font-mono);
   --ec-codeFontSize: 0.8125rem;
+}
+
+/* A shell block without a title has no title bar (its 34px strip would be a third of a two-line block); the copy button stays. */
+.expressive-code .frame.is-terminal:not(.has-title) > .header {
+  display: none;
+}
+.expressive-code .frame.is-terminal:not(.has-title) > pre {
+  border-radius: var(--ec-brdRad);
 }
 
 /* Callouts as the app's Banner: a 1px border at 40% of the status color over an 8% tint. */

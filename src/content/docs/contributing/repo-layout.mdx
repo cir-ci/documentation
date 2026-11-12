@@ -5,7 +5,6 @@ description: The folders of the CirCI repository, the five layers and the rules 
 {/* Source: CLAUDE.md (Layers, Types, Style), README.md (Layout), docs/architecture-review/layering.md, packages/services/test/layers.test.ts, .oxlintrc.json */}
 
 import Diagram from '../../../components/Diagram.astro'
-import { Aside } from '@astrojs/starlight/components'
 
 CirCI is a pnpm and Turborepo monorepo. Code is split into five layers, and the dependencies between them are checked by a test (`packages/services/test/layers.test.ts`) and by lint overrides in `.oxlintrc.json`, so a wrong import fails before review.
 
@@ -13,40 +12,44 @@ CirCI is a pnpm and Turborepo monorepo. Code is split into five layers, and the 
 
 Read the diagram from the top: a request enters at the transport layer and each layer calls the one below it. `core` and `api` depend on nothing.
 
-<Diagram viewBox="0 0 720 520" title="The five layers of the CirCI code base" desc="From top to bottom: transport (apps/server, apps/worker, apps/web), services, core, db and adapters. Each layer calls the one below it.">
-  <g transform="translate(0 4)">
-    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box" />
-    <text x="22" y="28" class="d-title">Transport</text>
-    <text x="22" y="49" class="d-mono">apps/server · apps/worker · apps/web</text>
-    <text x="22" y="68" class="d-text">Parse the request, check who is asking, call a service or a read model, shape the reply</text>
+<Diagram viewBox="0 0 420 612" width={480} title="The five layers of the CirCI code base" desc="From top to bottom: transport (apps/server, apps/worker, apps/web), services, core, db and adapters. Each layer calls the one below it.">
+  <g transform="translate(0 0)">
+    <rect x="1" y="0" width="418" height="100" rx="10" class="d-box" />
+    <text x="210" y="25" text-anchor="middle" class="d-title">Transport</text>
+    <text x="210" y="48" text-anchor="middle" class="d-mono">apps/server · apps/worker · apps/web</text>
+    <text x="210" y="69" text-anchor="middle" class="d-text">Parse the request, check who is asking,</text>
+    <text x="210" y="89" text-anchor="middle" class="d-text">call a service or a read model, shape the reply</text>
   </g>
-  <path d="M360 88v16m-5 -6l5 6l5 -6" class="d-line" />
-  <g transform="translate(0 112)">
-    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box" />
-    <text x="22" y="28" class="d-title">Services</text>
-    <text x="22" y="49" class="d-mono">packages/services</text>
-    <text x="22" y="68" class="d-text">Use cases: open the transaction, call repositories, queue the jobs and notices</text>
+  <path d="M210 105v18m-5 -6l5 6l5 -6" class="d-line" />
+  <g transform="translate(0 128)">
+    <rect x="1" y="0" width="418" height="100" rx="10" class="d-box" />
+    <text x="210" y="25" text-anchor="middle" class="d-title">Services</text>
+    <text x="210" y="48" text-anchor="middle" class="d-mono">packages/services</text>
+    <text x="210" y="69" text-anchor="middle" class="d-text">Use cases: open the transaction, call</text>
+    <text x="210" y="89" text-anchor="middle" class="d-text">repositories, queue the jobs and notices</text>
   </g>
-  <path d="M360 196v16m-5 -6l5 6l5 -6" class="d-line" />
-  <g transform="translate(0 220)">
-    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box" />
-    <text x="22" y="28" class="d-title">Core</text>
-    <text x="22" y="49" class="d-mono">packages/core</text>
-    <text x="22" y="68" class="d-text">Rules with no I/O: baselines, outcomes, limits, review rules</text>
+  <path d="M210 233v18m-5 -6l5 6l5 -6" class="d-line" />
+  <g transform="translate(0 256)">
+    <rect x="1" y="0" width="418" height="100" rx="10" class="d-box" />
+    <text x="210" y="25" text-anchor="middle" class="d-title">Core</text>
+    <text x="210" y="48" text-anchor="middle" class="d-mono">packages/core</text>
+    <text x="210" y="69" text-anchor="middle" class="d-text">Rules with no I/O: baselines, outcomes,</text>
+    <text x="210" y="89" text-anchor="middle" class="d-text">limits, review rules</text>
   </g>
-  <path d="M360 304v16m-5 -6l5 6l5 -6" class="d-line" />
-  <g transform="translate(0 328)">
-    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box" />
-    <text x="22" y="28" class="d-title">Db</text>
-    <text x="22" y="49" class="d-mono">packages/db</text>
-    <text x="22" y="68" class="d-text">queries (read models) · repositories (stores) · queue · schema</text>
+  <path d="M210 361v18m-5 -6l5 6l5 -6" class="d-line" />
+  <g transform="translate(0 384)">
+    <rect x="1" y="0" width="418" height="100" rx="10" class="d-box" />
+    <text x="210" y="25" text-anchor="middle" class="d-title">Db</text>
+    <text x="210" y="48" text-anchor="middle" class="d-mono">packages/db</text>
+    <text x="210" y="69" text-anchor="middle" class="d-text">queries (read models) · repositories (stores)</text>
+    <text x="210" y="89" text-anchor="middle" class="d-text">queue · schema</text>
   </g>
-  <path d="M360 412v16m-5 -6l5 6l5 -6" class="d-line" />
-  <g transform="translate(0 436)">
-    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box" />
-    <text x="22" y="28" class="d-title">Adapters</text>
-    <text x="22" y="49" class="d-mono">packages/integrations · storage · diff · sites</text>
-    <text x="22" y="68" class="d-text">Talk to GitHub, Slack, S3 and images</text>
+  <path d="M210 489v18m-5 -6l5 6l5 -6" class="d-line" />
+  <g transform="translate(0 512)">
+    <rect x="1" y="0" width="418" height="100" rx="10" class="d-box" />
+    <text x="210" y="35" text-anchor="middle" class="d-title">Adapters</text>
+    <text x="210" y="58" text-anchor="middle" class="d-mono">packages/integrations · storage · diff · sites</text>
+    <text x="210" y="79" text-anchor="middle" class="d-text">Talk to GitHub, Slack, S3 and images</text>
   </g>
 </Diagram>
 
@@ -112,10 +115,6 @@ Services tests mirror the folders under `packages/services/test/`.
 - Imports use the `#folder/*` aliases from each package's `package.json`, not `../../..` climbs.
 - CSS modules: `styles.root`. Colors and sizes come from `--circi-*` tokens, never copied hex values.
 - Copy: contractions with the straight apostrophe, "ID", "Delete" for something gone for good and "Remove" for taking it out of a list, "screenshot" never "snapshot".
-
-<Aside type="note">
-The full text is `CLAUDE.md` at the repository root.
-</Aside>
 
 ## The integration SDK
 

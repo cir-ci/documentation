@@ -63,6 +63,7 @@
 }
 .landing {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 4.5rem;
   padding-block: 1.5rem 3rem;
 }
@@ -73,6 +74,9 @@
   letter-spacing: -0.015em;
 }
 
+.l-hero > * {
+  min-width: 0;
+}
 .l-hero {
   display: grid;
   gap: 2.5rem;
@@ -136,6 +140,7 @@
 /* Paths */
 .l-paths {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 @media (min-width: 48rem) {
@@ -147,7 +152,10 @@
   position: relative;
   display: grid;
   gap: 0.625rem;
-  align-content: start;
+  /* Title, text, then the command or hint pinned to the bottom, so the four cards line up. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  align-content: stretch;
   padding: 1.125rem 1.25rem;
   border: 1px solid var(--circi-line-strong);
   border-radius: var(--circi-radius-panel);
@@ -202,6 +210,9 @@
   margin-block: 0;
 }
 .l-path .hint {
+  display: flex;
+  align-items: center;
+  min-height: 2.875rem;
   font-size: var(--sl-text-sm);
   color: var(--circi-text-secondary);
 }
@@ -209,6 +220,7 @@
 /* Flow and screenshot sections */
 .l-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 .l-section > p {

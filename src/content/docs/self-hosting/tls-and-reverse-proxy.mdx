@@ -10,7 +10,7 @@ import Diagram from '../../../components/Diagram.astro'
 
 CirCI speaks plain HTTP on port 3000. Put a TLS proxy in front of it: sign-in needs https, and over https the session cookie is locked to the exact host (its name starts with `__Host-`).
 
-<Diagram viewBox="0 0 720 200" title="The proxy in front of CirCI" desc="Browsers and CI reach the proxy over https. The proxy forwards to CirCI on port 3000 with the Host header unchanged and X-Forwarded-For set. CirCI talks to Postgres and storage. The proxy asks CirCI's internal tls-ask endpoint before it issues a certificate for a custom domain, and never exposes it.">
+<Diagram viewBox="0 0 720 224" title="The proxy in front of CirCI" desc="Browsers and CI reach the proxy over https. The proxy forwards to CirCI on port 3000 with the Host header unchanged and X-Forwarded-For set. CirCI talks to Postgres and storage. The proxy asks CirCI's internal tls-ask endpoint before it issues a certificate for a custom domain, and never exposes it.">
   <rect x="1" y="30" width="140" height="100" rx="10" class="d-box" />
   <text x="18" y="62" class="d-title">Browsers, CI</text>
   <text x="18" y="86" class="d-mono">https</text>
@@ -23,8 +23,9 @@ CirCI speaks plain HTTP on port 3000. Put a TLS proxy in front of it: sign-in ne
   <path d="M144 80h110m-6 -6l6 6l-6 6" class="d-line" />
   <path d="M430 80h110m-6 -6l6 6l-6 6" class="d-line" />
   <text x="440" y="68" class="d-mono">Host kept</text>
-  <path d="M342 133v38h143v-26m-6 6l6 -6l6 6" class="d-line" />
-  <text x="150" y="192" class="d-mono">/internal/tls-ask: the proxy asks, nobody else reaches it</text>
+  <path d="M342 133v38h289v-35m-6 6l6 -6l6 6" class="d-line" />
+  <text x="486" y="196" text-anchor="middle" class="d-mono">/internal/tls-ask</text>
+  <text x="486" y="217" text-anchor="middle" class="d-text">the proxy asks, nobody else reaches it</text>
 </Diagram>
 
 <Tabs>
