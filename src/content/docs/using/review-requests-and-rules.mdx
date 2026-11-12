@@ -1,10 +1,9 @@
 ---
 title: Review requests and rules
-description: "How people get asked to review a build, by hand or by rules, and how targets, overdue reminders and automation work."
+description: How people get asked to review a build, by hand or by rules, and how targets, overdue reminders and automation work.
 ---
 {/* Source: apps/web/src/features/reviews/settings (RulesSection.tsx, ReviewsForm.tsx, ReviewTargetSection.tsx, AutomationSection.tsx, NotifySection.tsx), apps/web/src/features/builds/RequestReviewPicker.tsx, packages/core/src/reviews (rules.ts, review-target.ts, rotation.ts), packages/services/src/builds/lifecycle.ts, packages/services/src/reviews/reviews.ts, packages/services/src/rules/review-rules.ts */}
 
-import { Aside } from '@astrojs/starlight/components'
 import ScreenFrame from '../../../components/ScreenFrame.astro'
 import Kbd from '../../../components/Kbd.astro'
 import StatusChip from '../../../components/StatusChip.astro'
@@ -26,11 +25,12 @@ Requests close on their own:
 
 ## Review rules
 
-Rules ask people automatically, like CODEOWNERS for screenshots. Owners and admins manage them in **Project settings** › **Reviews and triage**. See [Project settings](/using/project-settings/) for how to get there.
+Rules ask people automatically, like code owners, for screenshots. Owners and admins manage them in **Project settings** › **Reviews and triage**. See [Project settings](/using/project-settings/) for how to get there.
 
 <ScreenFrame name="use-review-rules" alt="The Reviews and triage page of a project in settings. Two numbered rules, each with a pattern and the people it asks, then an Otherwise row that rotates through three members, then the Review target field set to 48 hours." caption="Two rules and the rotation that catches everything else, then the review target below." />
 
 The list reads top to bottom: each rule says what it matches and whom it asks, and the last row, **Otherwise**, is the triage rotation that takes builds no rule matches (when the project has one).
+
 Each rule has:
 
 - **Matches**: **Screenshot name** or **Build name**.
@@ -39,9 +39,7 @@ Each rule has:
 
 When a build finishes with changes, every rule that matches asks its reviewers. A **Screenshot name** rule matches when any screenshot of the build matches; a **Build name** rule matches the build's own name. A person named by several rules is asked once. If no rule matches, the build goes to whoever is on the triage rotation that week, when the project has a rotation (see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)); with neither, nobody is asked automatically.
 
-<Aside type="note">
-The description above the rules list in the dashboard says "the first matching rule's people". The server asks every matching rule's reviewers, once each, which is what this page describes. The order of the rules (set with **Move up** and **Move down** in a rule's menu) is the order reviewers are listed in, not a priority.
-</Aside>
+The order of the rules (set with **Move up** and **Move down** in a rule's menu) is only the order they're listed in, not a priority.
 
 Automatic requests are made by nobody in particular: the reviewer sees "Assigned automatically".
 
@@ -49,7 +47,7 @@ Rules apply as soon as they are confirmed, each in its own dialog: **Add rule** 
 
 ## Review target and overdue reminders
 
-**Review target** (the field reads **Overdue after (hours)**) is how long a request may wait, in whole hours from 1 to 720, counting working days only: Saturday and Sunday (UTC) don't count. A request made on Friday 16:00 with a 24-hour target is due on Monday 16:00. The page shows this example as you type (with 48 hours: "a request made Friday 16:00 becomes overdue Tuesday 16:00"). Leave the field empty for no target; requests then never become overdue.
+The **Review target** section's **Overdue after (hours)** field sets how long a request may wait, in whole hours from 1 to 720, counting working days only: Saturday and Sunday (UTC) don't count. A request made on Friday 16:00 with a 24-hour target is due on Monday 16:00. The page shows this example as you type (with 48 hours: "a request made Friday 16:00 becomes overdue Tuesday 16:00"). Leave the field empty for no target; requests then never become overdue.
 
 A request that waits past its target (strictly after the due time) gets:
 
@@ -72,4 +70,4 @@ These are four checkboxes on the same page, saved together with **Save changes**
 
 ## Where review news goes
 
-Review requests, overdue reviews and rejections can post to chat channels. Channels, issue trackers and Figma are connected per project in the workspace's integrations, and anything else can use [webhooks](/integrations/webhooks/). See [Slack](/integrations/slack/).
+Review requests, overdue reviews and rejections can post to chat channels. Integrations are added per workspace and mapped per project, and anything else can use [webhooks](/integrations/webhooks/). See [Slack](/integrations/slack/).

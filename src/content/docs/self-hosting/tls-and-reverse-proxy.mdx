@@ -8,7 +8,7 @@ import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components'
 import SettingCard from '../../../components/SettingCard.astro'
 import Diagram from '../../../components/Diagram.astro'
 
-CirCI speaks plain HTTP on port 3000. Put a TLS proxy in front of it: logins need https, and the session cookie is `__Host-`prefixed over https.
+CirCI speaks plain HTTP on port 3000. Put a TLS proxy in front of it: sign-in needs https, and over https the session cookie is locked to the exact host (its name starts with `__Host-`).
 
 <Diagram viewBox="0 0 720 200" title="The proxy in front of CirCI" desc="Browsers and CI reach the proxy over https. The proxy forwards to CirCI on port 3000 with the Host header unchanged and X-Forwarded-For set. CirCI talks to Postgres and storage. The proxy asks CirCI's internal tls-ask endpoint before it issues a certificate for a custom domain, and never exposes it.">
   <rect x="1" y="30" width="140" height="100" rx="10" class="d-box" />
@@ -32,14 +32,14 @@ CirCI speaks plain HTTP on port 3000. Put a TLS proxy in front of it: logins nee
 
 <Steps>
 
-1. Set the hosts in `.env`:
+1. **Set the hosts.** Edit `.env`:
 
    ```sh
    DASHBOARD_HOST=ci.acme.io
    SITES_HOST=acme-sites.com      # only if you host sites
    ```
 
-2. Give Caddy AWS credentials for Route53 (see below), then start the overlay:
+2. **Start the overlay.** Give Caddy AWS credentials for Route53 (see below) first:
 
    ```sh
    docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
@@ -47,17 +47,17 @@ CirCI speaks plain HTTP on port 3000. Put a TLS proxy in front of it: logins nee
 
 </Steps>
 
-The overlay adds a `caddy` service (ports 80, 443 and 443/udp, a `caddy-data` volume for certificates), and sets `PUBLIC_URL=https://$DASHBOARD_HOST`, `STATIC_SITES_HOST=$SITES_HOST` and `TRUSTED_PROXIES=172.16.0.0/12,192.168.0.0/16` on the app (Caddy reaches it over the compose network).
+The overlay adds a `caddy` service (ports 80, 443 and 443/udp, a `caddy-data` volume for certificates), and sets `PUBLIC_URL=https://$DASHBOARD_HOST`, `STATIC_SITES_HOST=$SITES_HOST` and `TRUSTED_PROXIES=172.16.0.0/12,192.168.0.0/16` on the app (Caddy reaches it over the Compose network).
 
 Caddy needs **AWS credentials for Route53** to get the wildcard certificate of the sites domain (DNS-01): an instance role works without variables, otherwise set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (and `AWS_REGION`, default `us-east-1`).
 
 </TabItem>
 <TabItem label="Your own proxy">
 
-Proxy to `circi:3000` (or the published port) and keep the `Host` header. Then tell CirCI to believe the proxy's `X-Forwarded-For`:
+Proxy to `circi:3000` (or the published port) and keep the `Host` header. Then tell CirCI to trust the client address the proxy passes in `X-Forwarded-For`:
 
 <SettingCard name="TRUSTED_PROXIES" defaultValue="none" type="IPs or CIDR ranges">
-The proxy's address, or a range such as `172.16.0.0/12`. By default nobody is trusted and the client address is the socket's, so behind a proxy without this setting every user shares the proxy's address and one rate limit. `true` trusts any hop and is only safe when the app can't be reached except through the proxy.
+The proxy's address, or a range such as `172.16.0.0/12`. By default no proxy is trusted and CirCI uses the address the connection came from, so behind a proxy without this setting every user appears to come from the proxy's address and shares one rate limit. `true` trusts every proxy in the chain and is only safe when the app can't be reached except through the proxy.
 </SettingCard>
 
 If you host sites, the proxy must pass every host on the sites domain, and any verified custom domain, to CirCI with the `Host` header unchanged, and must **never** expose `/internal/*`.
@@ -67,8 +67,8 @@ If you host sites, the proxy must pass every host on the sites domain, and any v
 
 ## What the Caddyfile does
 
-- `DASHBOARD_HOST`: reverse proxy to `circi:3000`, certificate by HTTP-01.
-- `*.SITES_HOST`: one wildcard certificate by DNS-01 with Route53, reverse proxy to CirCI (Caddy keeps the `Host` header, which is how CirCI tells a site from the dashboard). Sites can set many cookies, so requests are given a 60 second response header timeout.
+- `DASHBOARD_HOST`: reverse proxy to `circi:3000`, with a certificate by HTTP-01.
+- `*.SITES_HOST`: one wildcard certificate by DNS-01 with Route53, reverse proxy to CirCI (Caddy keeps the `Host` header, which is how CirCI tells a site from the dashboard). Sites can set many cookies, so Caddy waits up to 60 seconds for a site's response headers.
 - The bare `SITES_HOST` answers 404.
 - A catch-all `https://` site with **on-demand TLS** serves custom domains: before issuing a certificate Caddy asks CirCI at `http://circi:3000/internal/tls-ask`, which answers `200` only for a domain a project has verified.
 - `/internal/*` answers 404 from outside on every site.
@@ -79,11 +79,11 @@ To use another DNS provider than Route53, swap the `caddy-dns/route53` module in
 
 <Steps>
 
-1. Set the new `PUBLIC_URL`, and put the old one in `PREVIOUS_PUBLIC_URLS` so old links redirect. Both are read-only in Instance settings: they name their variables, and you change them there and restart.
+1. **Set the new address.** Set `PUBLIC_URL`, and put the old one in `PREVIOUS_PUBLIC_URLS` so old links redirect. Both are read-only in Instance settings: they name their variables, and you change them there and restart.
 
-2. Keep DNS and TLS for the old address pointing at CirCI.
+2. **Keep the old address working.** Keep DNS and TLS for the old address pointing at CirCI.
 
-3. Open **Instance** › **Health**. The admin sees a "Moving to …" checklist: people sign in again once (cookies belong to one host), OIDC redirect URIs must be changed to the new address, and a GitHub App's OAuth callback URL has to be updated by hand (its webhook URL is updated automatically).
+3. **Follow the checklist.** Open **Instance** › **Health**. The admin sees a "Moving to …" checklist: people sign in again once (cookies belong to one host), OpenID Connect (OIDC) redirect URIs must be changed to the new address, and a GitHub App's OAuth callback URL has to be updated by hand (its webhook URL is updated automatically).
 
 </Steps>
 

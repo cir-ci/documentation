@@ -62,26 +62,26 @@ Open `PUBLIC_URL` and follow the setup page, or script it. The server commands r
 
 <Steps>
 
-1. Print the code the setup page asks for.
+1. **Print the setup code.** The setup page asks for it.
 
    ```sh
    docker compose exec circi circi admin setup-code
    ```
 
-2. Create the first account, as an instance admin.
+2. **Create the first account.** Make it an instance admin.
 
    ```sh
    docker compose exec circi circi admin user create --email you@acme.io --name "You" --instance-admin
    ```
 
-3. Create a workspace and a project. The project command prints its CI token once.
+3. **Create a workspace and a project.** The project command prints its CI token once.
 
    ```sh
    docker compose exec circi circi admin workspace create --name "Acme" --owner you@acme.io
    docker compose exec circi circi admin project create --org acme --name "Web app"
    ```
 
-4. Check the install.
+4. **Check the install.**
 
    ```sh
    docker compose exec circi circi admin doctor

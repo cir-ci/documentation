@@ -10,9 +10,9 @@ CirCI is one image plus Postgres. Upgrading is: back up, build the new image, st
 
 <Steps>
 
-1. **Back up** the database (and the storage if it's local disk). See [Backups](/self-hosting/backups/).
-2. **Read the changes** in the repository's history since your commit, especially new migrations in `packages/db/migrations` and new environment variables.
-3. **Pull and rebuild.**
+1. **Back up.** Save the database (and the storage if it's local disk). See [Backups](/self-hosting/backups/).
+2. **Read the changes.** Look through the repository's history since your commit, especially new migrations in `packages/db/migrations` and new environment variables.
+3. **Pull and rebuild.** Start the new image.
 
    ```sh
    git pull
@@ -20,7 +20,7 @@ CirCI is one image plus Postgres. Upgrading is: back up, build the new image, st
    docker compose up -d --build
    ```
 
-4. **Migrations run on start.** `serve`, `worker` and `all` apply pending migrations before they start serving, unless started with `--no-migrate`. Look at the log for the migration messages, and run `docker compose exec circi circi admin doctor`.
+4. **Let it migrate.** `serve`, `worker` and `all` apply pending migrations before they start serving, unless started with `--no-migrate`. Look at the log for the migration messages, and run `docker compose exec circi circi admin doctor`.
 
 </Steps>
 

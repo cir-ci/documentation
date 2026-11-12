@@ -15,15 +15,15 @@ You need Node 26 (`nvm install && nvm use` reads `.nvmrc`), pnpm 12 and, for `pn
 
 <Steps>
 
-1. Install the dependencies.
+1. **Install the dependencies.**
 
    <CopyCommand client:visible command="pnpm install" />
 
-2. Install Chromium once. Component tests run in headless Chromium.
+2. **Install Chromium once.** Component tests run in headless Chromium.
 
    <CopyCommand client:visible command="pnpm exec playwright install chromium" />
 
-3. Start the QA environment.
+3. **Start the QA environment.**
 
    <CopyCommand client:visible command="pnpm dev" />
 
@@ -71,7 +71,7 @@ pnpm gate         # Turborepo: format check, lint, typecheck, tests and build
 | Tests | The Node, UI and web browser projects (see [Tests](/contributing/tests/)) |
 | Build | tsdown for `@circi/ui`, `@circi/cli`, `@circi/vitest` and the server bundle, then Vite for the dashboard |
 
-`pnpm gate:full` adds the two end-to-end groups, which need Docker and Chromium. The older chain `pnpm lint && pnpm typecheck && pnpm test && pnpm build` still works.
+`pnpm gate:full` adds the two end-to-end groups, which need Docker and Chromium.
 
 `tsc` only type-checks. Packages other than the four above have no build: their `exports` point at `src/*.ts`, which Node, Vitest, Vite, tsc and tsdown all read directly.
 
@@ -84,5 +84,5 @@ Edit the table files in `packages/db/src/schema/`, then run `pnpm db:generate`, 
 `pnpm perf` runs the k6 suite against a fresh stack. `pnpm perf:down` tears it down and `pnpm perf:bench` runs the diff microbenchmark. Results are in the repository's `docs/perf` folder.
 
 <Aside type="tip">
-`pnpm test:visual` screenshots every `@circi/ui` component in light and dark with `@circi/vitest`, and uploads to a CirCI when `CIRCI_API_URL` and `CIRCI_TOKEN` are set. CirCI tests its own design system with itself.
+`pnpm test:visual` screenshots every `@circi/ui` component in light and dark with `@circi/vitest`, and uploads to a CirCI instance when `CIRCI_API_URL` and `CIRCI_TOKEN` are set. CirCI tests its own design system this way.
 </Aside>

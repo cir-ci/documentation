@@ -8,7 +8,7 @@ import { Aside, Steps } from '@astrojs/starlight/components'
 import SettingCard from '../../../components/SettingCard.astro'
 import Diagram from '../../../components/Diagram.astro'
 
-CirCI needs one Postgres database, and nothing else holds state. The compose file runs `postgres:18-alpine` with its data in the `pgdata` volume (Postgres 18 images keep data under `/var/lib/postgresql/<major>/`, so mount the volume at `/var/lib/postgresql`). A managed Postgres works as well.
+CirCI needs one Postgres database. Postgres holds all of its data except the files, which live in [storage](/self-hosting/storage/). The compose file runs `postgres:18-alpine` with its data in the `pgdata` volume (Postgres 18 images keep data under `/var/lib/postgresql/<major>/`, so mount the volume at `/var/lib/postgresql`). A managed Postgres works as well.
 
 ## Connect
 
@@ -47,7 +47,7 @@ If a connection drops, the process reconnects by itself.
   <path d="M474 105h24m-6 -6l6 6l-6 6" class="d-line" />
 </Diagram>
 
-The job queue is a transactional outbox: a webhook delivery or a check run exists exactly when the change that caused it's committed. Screenshots themselves are in [storage](/self-hosting/storage/).
+The job queue lives in the same database as the data, so a webhook delivery or a check run is queued in the same step as the change that caused it: both happen or neither does.
 
 ## Migrations
 
@@ -55,11 +55,11 @@ SQL migrations live in `packages/db/migrations` (`/app/migrations` in the image)
 
 <Steps>
 
-1. Back up the database first: [Backups](/self-hosting/backups/).
+1. **Back up first.** See [Backups](/self-hosting/backups/).
 
-2. Pull the new image and restart. The first process to start applies the migrations.
+2. **Pull the new image and restart.** The first process to start applies the migrations.
 
-3. To apply them on their own, without serving:
+3. **Migrate separately.** To apply migrations without serving:
 
    ```sh
    docker compose exec circi circi migrate

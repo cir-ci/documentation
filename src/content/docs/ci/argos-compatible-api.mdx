@@ -6,11 +6,11 @@ description: Point the Argos SDKs at CirCI by changing two variables, designed t
 
 import { Aside } from '@astrojs/starlight/components'
 
-CirCI speaks the upload protocol of the Argos SDKs under `/v2`, so a project that uploads with `@argos-ci/playwright`, `@argos-ci/cypress`, `@argos-ci/storybook` or `@argos-ci/cli` can switch by changing two values:
+CirCI accepts uploads from the Argos SDKs under `/v2`, so a project that uploads with `@argos-ci/playwright`, `@argos-ci/cypress`, `@argos-ci/storybook` or `@argos-ci/cli` can switch by changing two values:
 
 ```sh
 ARGOS_API_BASE_URL=https://ci.acme.io/v2
-ARGOS_TOKEN=circi_…          # a CirCI CI token
+ARGOS_TOKEN=circi_…          # the project's CI token
 ```
 
 `circi argos-env` prints exactly these two lines from `CIRCI_API_URL` and `CIRCI_TOKEN`.
@@ -22,7 +22,7 @@ Designed to work with the SDKs, from the source of `@argos-ci/core` `upload()`; 
 ## What works
 
 - Project lookup, baseline lookup from the commit history the SDK collected, build creation, the file upload target, updates in chunks, parallel builds (`parallel`, `parallelNonce`, `parallelIndex`, `parallelTotal`) and build names.
-- The SDK's history is used to find the baseline (`baseline_source: sdk` on the build page).
+- The history the SDK collected finds the baseline. The build's **Details** tab shows it as "where this branch started".
 - Pull request number, branch, and reference branch and commit.
 
 ## What doesn't
@@ -38,4 +38,4 @@ Existing Argos builds aren't imported. The first build on your default branch af
 
 ## Endpoints
 
-Under `/v2`, with `Authorization: Bearer circi_…`: `GET /project`, `POST /baseline`, `POST /builds`, `PUT /builds/:id`. The upload target `POST /uploads/:buildId/:sha256` (multipart) takes no token: the file hash is the credential. See the [HTTP API overview](/reference/http-api/).
+Under `/v2`, with `Authorization: Bearer circi_…`: `GET /project`, `POST /baseline`, `POST /builds`, `PUT /builds/:id`. The upload target `POST /uploads/:buildId/:sha256` (multipart) takes no token: it accepts a file only under its own SHA-256 hash. See the [HTTP API overview](/reference/http-api/).

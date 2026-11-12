@@ -80,7 +80,7 @@ The permissions are the smallest set that works: Checks for the check run and it
 An instance admin adds the GitHub sign-in provider in Instance settings, or sets `AUTH_GITHUB_CLIENT_ID` and `AUTH_GITHUB_CLIENT_SECRET`, which then win and lock it. Register `PUBLIC_URL/api/auth/callback/github` as the callback address on GitHub. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
 </InstanceSettingNote>
 
-### Connect an installation to a Workspace
+### Connect an installation to a workspace
 
 - If the instance has an App, **Add integration** sends you to GitHub to install it, and the return connects that installation to this workspace.
 - If the App was installed from GitHub itself, the return lands on a **Connect GitHub** page where you choose the workspace.
@@ -88,7 +88,7 @@ An instance admin adds the GitHub sign-in provider in Instance settings, or sets
 
 CirCI verifies the installation with GitHub (it requests a token and lists the repositories), so the App must really be installed there. An installation belongs to one workspace of the instance.
 
-### Link a Project to a repository
+### Link a project to a repository
 
 Each project reports to one repository. There are four ways to link:
 

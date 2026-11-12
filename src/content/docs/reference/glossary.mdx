@@ -1,10 +1,8 @@
 ---
 title: Glossary
-description: Terms used across CirCI and these docs.
+description: The terms used across CirCI and these docs, in alphabetical order.
 ---
 {/* Source: CLAUDE.md (vocabulary), PLAN.md section 6-7, packages/core/src, README.md */}
-
-Terms are in alphabetical order.
 
 | Term | Meaning |
 |---|---|
@@ -21,8 +19,8 @@ Terms are in alphabetical order.
 | **Comment** | A message on a build, optionally anchored to a region of a screenshot. Mentions notify people. |
 | **Custom domain** | A project site's own domain (for example `storybook.acme.com`) serving the default branch. |
 | **Default branch** | The project's branch (`main` unless changed) whose builds become baselines. |
-| **Diff** | The comparison of a screenshot with its baseline, drawn as an image, with a score. See `CIRCI_DIFF_ENGINE` for how it's computed. |
-| **Diff threshold** | The percentage of changed pixels at or below which a same-size screenshot counts as unchanged. Default 0%. |
+| **Diff** | The image that shows where a screenshot differs from its baseline. |
+| **Diff threshold** | How much of a screenshot may differ before it counts as changed, as a share of its pixels. A change of size always counts. Default 0%. |
 | **Flaky** | A screenshot whose image keeps coming back to one it already had on the default branch, or that rendered differently on two runs of the same commit. |
 | **Gate** | What blocks a merge while changes are unreviewed: the git host check (`--gate status`) or the CI job (`--gate exit-code`). |
 | **Ignore region** | A rectangle ignored when comparing screenshots with a given name. |
@@ -39,7 +37,7 @@ Terms are in alphabetical order.
 | **Review request** | A request that a person review a build, created by hand or by a review rule. |
 | **Review rule** | A pattern over screenshot names or the build name that decides who is asked to review. |
 | **Review target** | How long a project expects a review to take, for example 24 hours. A request past it is overdue. |
-| **Saved view** | A saved filter of builds. |
+| **Saved view** | A named set of filters for the builds list. |
 | **Shard** | One of several parallel uploads (`--shard 2/4`) that form one build. |
 | **Site** | A built static site (Storybook, report) hosted per commit and branch on the sites domain. |
 | **Sites domain** | `STATIC_SITES_HOST`: the separate domain hosted sites are served from. |

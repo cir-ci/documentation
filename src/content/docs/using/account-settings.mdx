@@ -1,6 +1,6 @@
 ---
 title: Account settings
-description: "Your profile, password, linked accounts, sessions, notifications, theme and keyboard shortcuts."
+description: Your profile, password, linked accounts, sessions, notifications, theme and keyboard shortcuts.
 ---
 {/* Source: apps/web/src/features/account (ProfilePage.tsx, YouSection.tsx, PasswordSection.tsx, LinkedAccounts.tsx, SessionsSection.tsx, NotificationsPage.tsx, PushSection.tsx, AppearancePage.tsx, ShortcutsPage.tsx, api.ts), apps/web/src/features/auth/UserMenu.tsx, apps/web/src/features/pwa, packages/auth/src/constants.ts */}
 
@@ -30,11 +30,11 @@ The **account menu** at the bottom of the sidebar (your name) has:
 
 - **Display name** saves when you confirm it with its check mark ("Name saved").
 - **Email**. With mail set up on the server, changing it sends a confirmation to the new address ("Check … to confirm the change"), and the line "Waiting for confirmation of …" shows until you click the link. Without mail, the field is read-only: only an instance admin can change your email.
-- The picture isn't uploaded. CirCI uses the picture of the account you sign in with, then Gravatar for your email, then a generated avatar.
+- **Change picture** doesn't upload one. CirCI uses the picture of the account you sign in with, then Gravatar for your email, then a generated avatar. To change it, change the picture on that account or on Gravatar.
 
 ### Password
 
-Shown only when your account has a password. A single sign-on-only account has none. **Change password** asks for the current password, a new one and a confirmation. A password is at least 12 characters, and changing it keeps this device signed in.
+Shown only when your account has a password. An account that only uses single sign-on has no password. **Change password** asks for the current password, a new one and a confirmation. A password is at least 12 characters, and changing it keeps this device signed in.
 
 ### Signed in with
 
@@ -46,7 +46,7 @@ Every browser signed in as you, with a description such as "Firefox on macOS", i
 
 ## Notifications
 
-Everything that needs you lands in the [Inbox](/using/inbox-and-reviews/), and none of it can be switched off; you snooze or delete single items instead. This page chooses what also reaches you outside the dashboard. Switches save as soon as you flip them, with a toast ("Review requested on, saved").
+Everything that needs you lands in the [Inbox](/using/inbox-and-reviews/), and none of it can be switched off. This page chooses what also reaches you outside the dashboard. Switches save as soon as you flip them, with a toast ("Review requested on, saved").
 
 ### Email
 
@@ -69,9 +69,9 @@ Browser or phone notifications for this device, a switch per device. **This devi
 
 Where the browser can't push, the device row says why and what to do. The browser's own permission box only appears after you turn notifications on; if you decline, the browser won't ask again and you change it in its site settings. On an iPhone, notifications work only from the Home Screen, and the page walks you through adding CirCI there. The Reviews page and the Inbox also offer to turn notifications on after a review lands or after your first approval; "Not now" asks again after 14 days, at most three times.
 
-### What lands in the Inbox
+### In your Inbox
 
-The page lists the kinds, so you know what to expect: review requested, mentioned, your build was approved or rejected, overdue review, connection needs attention (owners and admins only), and flaky screenshot detected (to the week's triage owner). Slack channels for a project are set by an admin in workspace integrations, not here. See [Slack](/integrations/slack/).
+The page lists the kinds that are always on; [Inbox and reviews](/using/inbox-and-reviews/) explains each one. Slack channels for a project are set by an admin in workspace integrations, not here. See [Slack](/integrations/slack/).
 
 ## Appearance
 

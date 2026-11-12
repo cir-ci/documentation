@@ -17,20 +17,20 @@ The Bitbucket integration supports Bitbucket Cloud. Each build of a linked proje
 
 ## Set up
 
-An owner or admin of the workspace opens **Workspace settings** › **Integrations** › **Add integration** › **Bitbucket**.
+An owner or admin of the CirCI workspace opens **Workspace settings** › **Integrations** › **Add integration** › **Bitbucket**.
 
 <Steps>
 
-1. In Bitbucket, create a workspace or repository access token that can read and write pull requests. An app password also works.
+1. In Bitbucket, create a Bitbucket workspace or repository access token that can read and write pull requests. An app password also works.
 2. In CirCI, enter the **Bitbucket workspace** ID (`acme` in `bitbucket.org/acme`; lower case letters, digits, dashes and underscores) and the **Access token**. For an app password, also enter the **Username** it belongs to.
-3. Connect. CirCI lists the workspace's repositories with the token, so a rejected token, a token that can't read the workspace, or an unknown workspace fails here with a message.
+3. Connect. CirCI lists the Bitbucket workspace's repositories with the token, so a rejected token, a token that can't read the workspace, or an unknown workspace fails here with a message.
 4. Add the webhook on Bitbucket (below).
-5. On the integration's page, choose the repository each CirCI Project reports to, written `workspace/repository` (for example `acme/web`).
+5. On the integration's page, choose the repository each CirCI project reports to, written `workspace/repository` (for example `acme/web`).
 6. To block merging, add a merge check in Bitbucket that requires the build status to pass.
 
 </Steps>
 
-A connection is one Bitbucket workspace, and that workspace can be connected in one CirCI Workspace only. Connecting again with a new token replaces the credentials and clears a "needs attention" flag.
+A connection is one Bitbucket workspace, and a Bitbucket workspace can be connected to one CirCI workspace only. Connecting again with a new token replaces the credentials and clears a "needs attention" flag.
 
 ### Add the webhook on Bitbucket
 
@@ -46,7 +46,7 @@ CirCI checks the `X-Hub-Signature` header on every delivery.
 
 ### The commit status
 
-One per build name. The key is `circi-` plus a short hash of the build name, so each build name keeps its own status, and it links to the build. The description is the same title the GitHub check uses.
+One per build name, so each build name keeps its own status. It links to the build, and its description is the same title the GitHub check uses.
 
 | Situation | Status |
 | --- | --- |
@@ -68,12 +68,12 @@ Comment `/circi approve`, `/circi reject` or `/circi rerun` on a line of its own
 - When it can't match you to an account: "I couldn't tell who you are in CirCI. Link your Bitbucket account to a CirCI account that belongs to this project's workspace (`PUBLIC_URL`), then try again."
 
 <Aside type="caution">
-CirCI has no Bitbucket sign-in provider (the sign-in providers are GitHub, GitLab, Google and OpenID Connect), so there is currently no way for a person to link a Bitbucket account to their CirCI account in the dashboard. Until that exists, `/circi` commands on Bitbucket get the "couldn't tell who you are" answer. Review in the dashboard instead. A person could use commands once CirCI can match their Bitbucket account ID to a CirCI account in the project's workspace.
+A Bitbucket account can't be linked to a CirCI account yet, because there's no Bitbucket sign-in provider. `/circi` commands on Bitbucket get the "couldn't tell who you are" answer, so review in the dashboard instead.
 </Aside>
 
 ## Settings
 
-The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read follows **Unreviewed changes block merging** too: it fails when that is on and passes, with the count in the description, when it's off.
+The **Merge gate** settings on the CirCI project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read follows **Unreviewed changes block merging** too: it fails when that is on and passes, with the count in the description, when it's off.
 
 ### The merge gate in CI
 
@@ -83,7 +83,7 @@ Who blocks the merge, Bitbucket's status or the CI job, is explained in [How a b
 
 | What you see | Why, and what to do |
 | --- | --- |
-| Connect fails with a message | The token was rejected, can't read the workspace, or the workspace ID is wrong. For an app password, check the **Username** too |
+| Connect fails with a message | The token was rejected, can't read the Bitbucket workspace, or the workspace ID is wrong. For an app password, check the **Username** too |
 | Statuses appear but no comment | The webhook isn't added, or its secret doesn't match. Check the webhook's request log in Bitbucket |
 | Every command gets the "couldn't tell who you are" answer | Expected today: see the caution above. Review in the dashboard |
 | The integration shows **needs attention** | Bitbucket rejected the token. Connect again with a new token |
@@ -99,6 +99,5 @@ Nothing happens when a pull request is merged or declined.
 
 - Approve and Reject buttons (Bitbucket statuses have none).
 - Bitbucket Server and Data Center. Only Bitbucket Cloud is supported.
-- Linking a Bitbucket account for commands, as described above.
 
 Not yet verified against bitbucket.org.

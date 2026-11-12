@@ -1,6 +1,6 @@
 ---
 title: Hosted sites
-description: "Host a built Storybook, test report or docs next to the screenshots, behind sign-in, with addresses per commit and per branch."
+description: Host a built Storybook, test report or docs next to the screenshots, behind sign-in, with addresses per commit and per branch.
 ---
 {/* Source: apps/web/src/features/sites (ProjectSitesPage.tsx, CustomDomainSection.tsx, SiteHandoffPage.tsx), apps/web/src/features/project-settings/SettingsForm.tsx, docs/reference/static-sites.md, apps/server/src/http/sites/serve.ts, packages/cli/src/main.ts, apps/server/src/http/routes/dashboard/projects/site-domains.ts */}
 
@@ -19,7 +19,7 @@ Owners and admins switch hosting on per project: **Project settings** › **Gene
 
 ## Upload a site from CI
 
-Use the project's CI token (see [CI examples](/ci/ci-examples/)) with the CLI:
+Use the project's CI token (shown once when you [create the project](/getting-started/create-a-project/); see [CI examples](/ci/ci-examples/) for wiring it into CI) with the CLI:
 
 ```sh
 circi storybook upload ./storybook-static
@@ -41,12 +41,14 @@ Each upload belongs to a commit. A CI re-run of a commit replaces that commit's 
 
 Every upload gets two addresses on the sites domain:
 
-| | Address | Serves |
+| Kind | Address | Serves |
 |---|---|---|
-| Commit | the first 12 hex characters of the commit's SHA, then the site name | That commit's site, exactly |
-| Branch | a 12 hex-character hash of the branch name, then the site name | The newest upload on that branch |
+| Commit | the first 12 hex characters of the commit's SHA, a dash, the site name | That commit's site, exactly |
+| Branch | the first 12 hex characters of a hash of the branch name, a dash, the site name | The newest upload on that branch |
 
-A branch address only moves when the upload is the branch's tip, and never for a pull request from a fork. When a project's pull requests have hosted sites, the summary comment on the pull request lists them under **Hosted sites for this commit**, each linked to its commit address.
+For commit `a1b2c3d4e5f6789…` and a site named `storybook` on `acme-sites.com`, the commit address is `a1b2c3d4e5f6-storybook.acme-sites.com`.
+
+A branch address moves only when the uploaded commit is the branch's current tip (its latest commit), and never for a pull request from a fork. When a project's pull requests have hosted sites, the summary comment on the pull request lists them under **Hosted sites for this commit**, each linked to its commit address.
 
 ## The Sites page
 
@@ -60,11 +62,9 @@ Until the first upload, the page says "No sites yet" and shows the upload comman
 
 ## Sign-in and access
 
-Opening a site sends you to the dashboard, which hands the site a one-minute, single-use token if you belong to the project's workspace. The site then sets its own host-only cookie and checks it against your dashboard session at least once a minute. Signing out, or leaving the workspace, ends access within a minute. A session you end under Sessions in [Account settings](/using/account-settings/) cuts off hosted sites too.
+Opening a site sends you to the dashboard, which lets you in if you belong to the project's workspace. Signing out, or leaving the workspace, ends access within a minute. A session you end under Sessions in [Account settings](/using/account-settings/) cuts off hosted sites too. How the sign-in handoff and the site's cookie work is in [Site domains](/self-hosting/site-domains/).
 
 An address that doesn't exist, isn't yours or has never been used gets the same answer, so nobody can probe for addresses. An address whose site was removed by retention answers **Site expired** (HTTP 410) to people who may open it, and the same "not found" answer to everyone else.
-
-Because a site runs the JavaScript you uploaded, the sites domain must not share cookies with the dashboard. See [Site domains](/self-hosting/site-domains/).
 
 ## Custom domain for the default branch
 
@@ -72,11 +72,11 @@ A site can have **one custom domain**, such as `storybook.acme.com`, that always
 
 <Steps>
 
-1. In **Custom domain**, type the domain and choose **Save domain**.
+1. **Save the domain.** In **Custom domain**, type it and choose **Save domain**.
 
-2. Add the DNS record shown: a **CNAME** with the domain as its name, pointing to the target the page shows (`custom.` followed by the sites domain).
+2. **Add the DNS record.** Use a **CNAME** with the domain as its name, pointing to the target the page shows (`custom.` followed by the sites domain).
 
-3. Choose **Check DNS**. The badge changes from **Not verified** to **Verified**, the domain is served and its certificate is issued once DNS points at the server. If the check fails, a warning says why.
+3. **Choose Check DNS.** The badge changes from **Not verified** to **Verified**, the domain is served and its certificate is issued once DNS points at the server. If the check fails, a warning says why.
 
 </Steps>
 

@@ -12,7 +12,7 @@ CirCI's tests run in four kinds of project, each with its own command. This page
 |---|---|---|
 | Node logic and server tests | `apps/{server,worker}/test`, `packages/*/test`, `apps/web/test` (`*.test.ts`) | Node, with real migrations on PGlite (no Docker) |
 | Component tests | `*.browser.test.tsx` | Headless Chromium through Vitest browser mode |
-| Design system visual tests | `packages/ui/visual` | `pnpm test:visual`, uploaded to a CirCI if configured |
+| Design system visual tests | `packages/ui/visual` | `pnpm test:visual`, uploaded to a CirCI instance if configured |
 | End to end | `e2e/` | The real Docker stack: Postgres, LocalStack S3, Mailpit, the built image |
 
 ## Which test do I write?

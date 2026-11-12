@@ -1,6 +1,6 @@
 ---
 title: Members and roles
-description: "The three workspace roles, who can see which project, and how to invite, change and remove people."
+description: The three workspace roles, who can see which project, and how to invite, change and remove people.
 ---
 {/* Source: apps/web/src/features/members (MembersPage.tsx, InviteForm.tsx, model.ts), apps/web/src/features/project-settings/ProjectMembersPage.tsx, packages/core/src/project/roles.ts, packages/services/src/access/policies.ts, packages/auth/src/constants.ts, apps/server/src/http/routes/dashboard/builds/comments.ts */}
 
@@ -18,7 +18,7 @@ People belong to a workspace with one of three roles, and are added to the proje
 | See every project | Yes | Yes | Only projects they belong to |
 | Approve, reject, comment and ask for reviews on a project they can see | Yes | Yes | Yes |
 | Change a project's settings, rules, webhooks and token; create projects | Yes | Yes | No |
-| Add anyone to a project, remove anyone from it | Yes | Yes | Leave a project themselves |
+| Add anyone to a project, remove anyone from it | Yes | Yes | No, except leaving a project themselves |
 | Change workspace settings, integrations, sign-in and storage | Yes | Yes | No |
 | Invite and remove people, change roles | Yes | Yes | No |
 | Delete anyone's comment | Yes | Yes | Own comments only |
@@ -62,7 +62,7 @@ Choose Admin or Member in the person's role control. A dialog confirms first ("M
 - **To admin**: they can invite and remove people, change roles and change every project's settings.
 - **To member**: they can no longer invite or remove people, or change settings.
 
-The owner's role isn't changed here, and nobody changes their own.
+The owner's role isn't changed here, and nobody changes their own. The dashboard can't make someone an owner. With access to the server, `circi admin member add --role owner` adds an existing account to a workspace as an owner. See [Admin CLI](/reference/admin-cli/).
 
 ### Remove someone
 

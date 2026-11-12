@@ -32,9 +32,9 @@ If a few files were lost, builds that reference them fail to load images, and a 
 
 <Steps>
 
-1. Start a scratch stack with the same `BETTER_AUTH_SECRET`.
-2. Restore the dump with `pg_restore` and the files into its storage.
-3. Point `PUBLIC_URL` at the scratch stack, then run `circi admin doctor`.
+1. **Start a scratch stack.** Give it the same `BETTER_AUTH_SECRET`.
+2. **Restore the data.** Load the dump with `pg_restore` and copy the files into its storage.
+3. **Check it.** Point `PUBLIC_URL` at the scratch stack, then run `circi admin doctor`.
 
 </Steps>
 

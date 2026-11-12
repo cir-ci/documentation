@@ -21,16 +21,16 @@ Open **Workspace settings** › **Integrations** › **Add integration** › **L
 
 <Steps>
 
-1. In Linear, create a personal API key: **Settings** › **Account** › **Security and access**.
-2. In CirCI, paste it into **API key** (`lin_api_…`) and connect. CirCI asks Linear who the key belongs to; a key Linear rejects fails with a message.
+1. **Create an API key in Linear.** Use a personal key: **Settings** › **Account** › **Security and access**.
+2. **Paste it into CirCI.** Use the **API key** field (`lin_api_…`) and connect. CirCI asks Linear who the key belongs to; a key Linear rejects fails with a message.
 
 </Steps>
 
 The key is stored encrypted and never shown again. Issues are created as the person who owns the key. If Linear later rejects the key, the integration is flagged as needing attention with the reason.
 
-### Choose a team for each Project
+### Choose a team for each project
 
-On the Linear integration's page, choose a Linear **Team** for each project. A Project without a team has no Create issue button. A Project maps to one Linear connection at a time.
+On the Linear integration's page, choose a Linear **Team** for each project. A project without a team has no Create issue button. A project maps to one Linear connection at a time.
 
 ## What appears where
 
@@ -42,7 +42,7 @@ The **Create issue** dialog has:
 - a **Title**, pre-filled as `Visual regression: <screenshot> in build #<number>` (or `Visual regression in build #<number>` for a whole build), up to 250 characters,
 - a read-only **Description** preview.
 
-The description CirCI sends says what changed, then lists the branch, pull request number, short commit, author, who rejected the build and their reason when there is one, a link to the build (to the screenshot when one is selected) and the diff image address. In Linear the diff is shown inline in the description and also attached to the issue. The attachment is best effort: if it fails, the issue still exists with the image in its description.
+The description CirCI sends says what changed, then lists the branch, pull request number, short commit, author, who rejected the build and their reason when there is one, a link to the build (to the screenshot when one is selected) and the diff image address. In Linear the diff image appears in the description and is also attached to the issue. If the attachment fails, the issue is still created with the image in its description.
 
 When Linear answers, CirCI records the link (for example `ENG-123`) on the build and shows a **Created ENG-123** toast. If Linear fails, the dialog shows the error and nothing is recorded. The issue links back to the build.
 

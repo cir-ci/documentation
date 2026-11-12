@@ -8,14 +8,14 @@ import { Aside, Tabs, TabItem } from '@astrojs/starlight/components'
 import SettingCard from '../../../components/SettingCard.astro'
 import Diagram from '../../../components/Diagram.astro'
 
-CirCI stores screenshots, diff images, thumbnails and hosted sites as files. They are **content-addressed** by SHA-256 and verified when written, so an unchanged screenshot is uploaded and stored once, however many builds contain it. Storage grows with *changes*, not builds.
+CirCI stores screenshots, diff images, thumbnails and hosted sites as files. Each file is named by its SHA-256 hash and checked when it's written, so an unchanged screenshot is uploaded and stored once, however many builds contain it. Storage grows with *changes*, not builds.
 
 ## Choose a driver
 
 <Tabs>
 <TabItem label="Local disk">
 
-The default and the cheapest. Uploads stream through the API, which hashes while writing a temp file and renames it into place only if the hash matches. Back up the volume together with the database: [Backups](/self-hosting/backups/).
+The default and the cheapest. Uploads go through the API, which writes each file to a temporary location while hashing it and moves it into place only if the hash matches. Back up the volume together with the database: [Backups](/self-hosting/backups/).
 
 <SettingCard name="STORAGE_DRIVER" defaultValue="fs">
 `fs` for local disk.
@@ -55,7 +55,7 @@ Set both, or neither to use the AWS credential chain (an IAM role is best on AWS
 </SettingCard>
 
 <SettingCard name="S3_CONNECT_TIMEOUT_SECONDS, S3_REQUEST_TIMEOUT_SECONDS" defaultValue="10 and 60">
-Give up connecting after the first. The second is idle time rather than total time, so large files keep flowing.
+Seconds. The first is how long to wait for a connection before giving up. The second is how long a request may sit idle with no data moving, not how long it may take in total, so large files keep flowing.
 </SettingCard>
 
 </TabItem>
@@ -88,7 +88,7 @@ The storage driver is read-only in Instance settings: it names `STORAGE_DRIVER` 
   <text x="200" y="188" class="d-mono">presigned PUT, bound to the SHA-256</text>
 </Diagram>
 
-With S3 the CLI uploads **directly to the bucket** through presigned URLs bound to the file's SHA-256 checksum (`x-amz-checksum-sha256`, supported by AWS S3, R2 and MinIO), so storage rejects bytes that don't match, and finalize then confirms each object. The bucket must be reachable from where CI runs.
+With S3 the CLI uploads **directly to the bucket** through presigned URLs bound to the file's SHA-256 checksum (the `x-amz-checksum-sha256` header, supported by AWS S3, R2 and MinIO), so storage rejects bytes that don't match, and finalize then confirms each object. The bucket must be reachable from where CI runs.
 
 <Aside type="tip" title="Keeping the bill down">
 Egress and storage are the main costs. Object storage with free egress (Cloudflare R2, Backblaze B2 behind Cloudflare, or MinIO on the same disk) cuts the most. Shorter [retention](/self-hosting/retention-and-gc/) for projects that don't need history helps next.

@@ -9,7 +9,7 @@ import { Aside } from '@astrojs/starlight/components'
 `@circi/vitest` takes screenshots from Vitest browser mode that stay the same between runs, and uploads them to CirCI when the run ends.
 
 <Aside type="note" title="Status">
-The reporter, collection, shard mapping and screenshot naming are unit-tested, and `circiScreenshot` has been run for real: CirCI's own design system is screenshotted with it in Vitest browser mode on Playwright's Chromium and uploaded to a CirCI stack. The WebDriver provider isn't supported yet, and `toMatchScreenshot` collection is not yet verified in a real project.
+The reporter, collection, shard mapping and screenshot naming are unit-tested, and `circiScreenshot` has been run for real: CirCI's own design system is screenshotted with it in Vitest browser mode on Playwright's Chromium and uploaded to a CirCI stack. The WebDriver provider isn't supported yet, and `toMatchScreenshot` collection isn't verified yet in a real project.
 </Aside>
 
 ## Setup

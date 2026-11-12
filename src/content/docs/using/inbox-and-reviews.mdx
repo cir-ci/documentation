@@ -1,6 +1,6 @@
 ---
 title: Inbox and reviews
-description: "Work through what needs you: notifications in the Inbox, and review requests in a workspace's Reviews page."
+description: Work through what needs you, with notifications in the Inbox and review requests in a workspace's Reviews page.
 ---
 {/* Source: apps/web/src/features/inbox (InboxPage.tsx, InboxPane.tsx, api.ts), apps/web/src/features/reviews (ReviewsPage.tsx, ReviewList.tsx, ReviewDetail.tsx, api.ts), apps/web/src/lib/snooze.ts, apps/web/src/lib/shortcuts.ts, packages/core/src/reviews/snooze.ts */}
 
@@ -28,29 +28,29 @@ What lands here, and why:
 - **Your build was approved or rejected**: a build you pushed was reviewed. A rejection shows the reviewer's reason.
 - **Review overdue**: a request to you has waited past the project's review target. Sent once. Someone else's overdue review can also reach you if you are the person the project tells when it's missed.
 - **Connection needs attention**: an integration stopped working, for example the GitHub App was uninstalled. Owners and admins only.
-- **Flaky screenshots found**, and **Assigned to you as the person on triage**: see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+- **Flaky screenshot found**, and **Assigned to you as the person on triage**: see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
 
-Which of these also arrive by email or push is set in [Account settings](/using/account-settings/). Everything in the Inbox is always on; you handle a single item instead of switching a kind off.
-
-A row shows an unread dot, who did it, what happened, the project, and the age. Select a row to read it in the pane on the right. The pane's buttons are:
+Which of these also arrive by email or push is set in [Account settings](/using/account-settings/). You can't turn off Inbox notifications; snooze or delete single items instead.
 
 <ScreenFrame name="use-inbox" alt="The Inbox with the For you tab open: a list of notifications such as a triage assignment and overdue reviews, each with an unread dot, and the selected one open on the right with Mark read, Delete, Snooze and Open build." caption="The For you tab. The selected notification is open on the right, with its actions at the bottom." />
+
+A row shows an unread dot, who did it, what happened, the project, and the age. Select a row to read it in the pane on the right. The pane's buttons are:
 
 | Button | Key | Does |
 |---|---|---|
 | Mark read / Mark unread | <Kbd keys="u" /> | Toggles |
 | Delete | <Kbd keys="Backspace" /> | Removes the notification (with Undo) |
-| Snooze | <Kbd keys="h" /> | Tomorrow, Next week or a Custom date |
+| Snooze, or Unsnooze on the Snoozed tab | <Kbd keys="h" /> | Tomorrow, Next week or a Custom date; Unsnooze brings it back |
 | Open review, Open build, Open thread, Open project | <Kbd keys="Enter" /> | Goes to where it happened |
 | Approve all | <Kbd keys="Shift+A" /> | Only when the notification is a request on a build that still waits: approves the whole build |
 
 **Mark all read** in the header clears the unread count. Opening or selecting a notification marks it read.
 
 <Aside type="note">
-An inbox snooze is a time, not an event: it has no "Until next push". Tomorrow and Next week wake at 09:00 UTC, a custom date at 09:00 your local time. A snoozed notification comes back to For you when it wakes.
+Inbox snoozes end at a time, so there's no "Until next push". Tomorrow wakes at 09:00 UTC the next day, Next week at 09:00 UTC next Monday, and a Custom date at 09:00 your local time. The notification then returns to For you.
 </Aside>
 
-On a phone the selected notification opens as a sheet over the list. If your browser can install the dashboard as an app, an install banner shows after your second visit or first approval; see [Account settings](/using/account-settings/).
+On a phone the selected notification opens over the list. To install the dashboard as an app, see [Account settings](/using/account-settings/#install-as-an-app).
 
 ## Reviews
 
@@ -66,7 +66,7 @@ Open it from the sidebar, or with <Kbd keys="g then r" />. It lists the review r
 
 A build that is still being compared is under "Still processing" because there is nothing to review yet.
 
-The selection is kept in the address, so a link points at one review. <Kbd keys="j" /> and <Kbd keys="k" /> move through the list and <Kbd keys="Enter" /> opens the build. The find field filters the list.
+The selected review is in the page's address, so copying the link shares that review. <Kbd keys="j" /> and <Kbd keys="k" /> move through the list and <Kbd keys="Enter" /> opens the build. The find field filters the list.
 
 <ScreenFrame name="use-reviews" alt="The Reviews page. Five tabs above a list of review requests, each with a build number, project, branch and an Overdue badge. The selected build is open on the right with its details and a thumbnail of the changed screenshot." caption="Requested from you. The selected request shows who asked, the review target and the changed screenshots." />
 
@@ -80,9 +80,9 @@ Other actions:
 - **Request review** (<Kbd keys="Shift+R" />) asks another member about the same build.
 - Approve is in the row's right-click menu, for requests addressed to you on a build that has finished processing.
 
-Snoozing and approving can be undone from the toast. Bringing a request back and dismissing it can't.
+Snoozing and approving can be undone from the toast. **Unsnooze** and **Dismiss** can't.
 
-When you aren't looking at the page, a push notification can tell you a review landed. The page offers to turn it on after a review arrives or after your first approval ("Not now" asks again after 14 days, at most three times). See [Account settings](/using/account-settings/).
+A push notification can tell you a review landed when the page isn't open. Turn it on in [Account settings](/using/account-settings/#push).
 
 ## Keyboard shortcuts
 

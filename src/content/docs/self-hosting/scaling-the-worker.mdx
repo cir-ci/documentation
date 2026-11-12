@@ -52,13 +52,13 @@ Run any number of each from the same image, against the same Postgres and storag
   <path d="M524 115h54m-6 -6l6 6l-6 6" class="d-line" />
 </Diagram>
 
-Workers claim jobs with `FOR UPDATE SKIP LOCKED`, so several never take the same job, and the sweeps take an exclusive lock, so running them in every worker is safe. Run extra workers when the queue stays above zero: **Instance** › **Health** shows it under Background jobs, with each queue's waiting, running and failed counts.
+Each job is claimed by one worker only, so several workers never run the same job, and a sweep takes a lock, so it's safe to run workers side by side. Run extra workers when the queue stays above zero: **Instance** › **Health** shows it under Background jobs, with each queue's waiting, running and failed counts.
 
 Several servers can run behind one proxy: they share everything through Postgres and storage. A saved Instance setting reaches each process within about 30 seconds. See [Instance settings](/self-hosting/instance-settings/).
 
 ## How a worker spends its time
 
-- Two lanes take builds first and one extra "light" lane never takes a build, so a webhook or an email doesn't wait behind image work. These counts are built in; there is no environment variable for them.
+- A worker runs jobs in three parallel lanes. Two take builds first. The third, the light lane, never takes a build, so a webhook or an email doesn't wait behind image work. These counts are built in; there is no environment variable for them.
 - A queued job wakes the worker through Postgres `LISTEN/NOTIFY`. When the notification connection is down, or for a missed one, polling finds jobs (every 5 seconds with a listener, 1 second without).
 - A failed job is retried with a doubling wait.
 
@@ -75,7 +75,7 @@ The longest wait between retries.
 | Goal | Setting |
 |---|---|
 | Use all cores for comparisons | `CIRCI_DIFF_ENGINE=native` (the default) |
-| No native module, still off the event loop | `CIRCI_DIFF_ENGINE=js-workers`, and `CIRCI_DIFF_THREADS` to cap threads and memory |
+| No native module, still off the main thread | `CIRCI_DIFF_ENGINE=js-workers`, and `CIRCI_DIFF_THREADS` to cap threads and memory |
 | Fewer retries piling up | `WEBHOOK_TIMEOUT_SECONDS`, `GITHUB_API_TIMEOUT_SECONDS`, `S3_*_TIMEOUT_SECONDS` |
 | Keep the job table small | `JOB_RETENTION_DAYS` |
 

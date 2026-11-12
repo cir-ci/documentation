@@ -1,6 +1,6 @@
 ---
 title: Reviewing a build
-description: "Read a build's screenshot changes, approve or reject them, and see what the decisions mean for the merge."
+description: Read a build's screenshot changes, approve or reject them, and see what the decisions mean for the merge.
 ---
 {/* Source: apps/web/src/features/builds (BuildReview.tsx, ReviewActions.tsx, review-model.ts, build-state.ts, DiffViewer.tsx, ReviewSidebar.tsx, list/), apps/web/src/lib/shortcuts.ts, packages/core/src/reviews/review-status.ts, packages/core/src/builds (approvable.ts, outcome.ts), packages/services/src/reviews/reviews.ts, apps/server/src/http/routes/dashboard/builds/reviews.ts */}
 
@@ -11,7 +11,7 @@ import StatusChip from '../../../components/StatusChip.astro'
 
 A build is one upload of screenshots from CI. When it has changes against the baseline, someone looks at each changed screenshot and approves or rejects it. The build's status follows from those decisions. This page covers the build page; [Comments and regions](/using/comments-and-regions/) covers the discussion beside it.
 
-<ScreenFrame name="use-build-review" alt="Build 93 with one changed screenshot, pricing, shown side by side with its baseline. The header has the Needs review status, the overdue time and the watchers, with Request review, Reject, Approve and Approve all on the right. The Details tab lists the build and the people asked." caption="A build with one changed screenshot. The list is on the left, the viewer in the middle and the Details tab on the right." />
+<ScreenFrame name="use-build-review" alt="Build #93 with one changed screenshot, pricing, shown side by side with its baseline. The header has the Needs review status, the overdue time and the watchers, with Request review, Reject, Approve and Approve all on the right. The Details tab lists the build and the people asked." caption="A build with one changed screenshot. The list is on the left, the viewer in the middle and the Details tab on the right." />
 
 Anyone who can see the project can approve, reject, comment and ask for reviews: project members, and owners and admins of the workspace. See [Members and roles](/using/members-and-roles/).
 
@@ -33,9 +33,9 @@ The header shows the build's state:
 | <StatusChip status="failed" /> | The build errored. The message is shown under the header. |
 | Expired | Its screenshots were deleted under the project's retention. See [Project settings](/using/project-settings/). |
 
-Next to the status the header can show the review target (for example "22h left" or "Overdue 22h"), and an eye with the number of people watching the build: its author and whoever was asked to review, with "you're watching" when you are one of them. Nothing else sits under the header: the screenshot list and the viewer start right below it.
+Next to the status the header can show the review target (for example "22h left" or "Overdue 22h"), and an eye with the number of people watching the build: its author and whoever was asked to review, with "you're watching" when you are one of them.
 
-## The screenshot list
+## Use the screenshot list
 
 The list on the left groups the screenshots in review order. A group is only shown when it has screenshots.
 
@@ -50,7 +50,7 @@ The list on the left groups the screenshots in review order. A group is only sho
 
 A screenshot that couldn't be read has nothing to compare and nothing to decide: the build page shows the file's name and the reason instead of images, and the rest of the build stays reviewable. The build can't pass until it's uploaded again with a valid PNG. What that means for the merge follows the project's **Unreviewed changes block merging** setting; see [How a build flows](/introduction/how-a-build-flows/#couldnt-read).
 
-Each row shows a status icon, the name, the number of comment threads, and a short figure: the percentage of pixels that changed, or "resized" when the dimensions differ. Above the list, "2 of 5 reviewed" counts the screenshots that need a decision and have one. Press <Kbd keys="j" /> and <Kbd keys="k" /> to move through the list; a collapsed group counts as one stop, opened with <Kbd keys="Enter" />.
+Each row shows a status icon, the name, the number of comment threads, and a short figure: the percentage of pixels that changed, or "resized" when the dimensions differ. Above the list, a counter such as "2 of 5 reviewed" shows how many of the screenshots that need a decision have one. Press <Kbd keys="j" /> and <Kbd keys="k" /> to move through the list; a collapsed group counts as one stop, opened with <Kbd keys="Enter" />.
 
 Right-click a row for Open, Open in new tab, Copy link, Copy name, Approve, Reject and View baseline. Approve and Reject only appear when the decision isn't already in force.
 
@@ -61,7 +61,7 @@ The build page has four compare modes, chosen with the buttons above the image o
 | Key | Mode | Shows |
 |---|---|---|
 | <Kbd keys="1" /> | Side by side | Baseline and new screenshot next to each other |
-| <Kbd keys="2" /> | Overlay | The new screenshot with the changed pixels in red on top; the Diff layer slider sets how strong |
+| <Kbd keys="2" /> | Overlay | The new screenshot with the changed pixels in red on top; the Diff layer slider sets how visible the red is |
 | <Kbd keys="3" /> | Diff | Only the changed pixels |
 | <Kbd keys="4" /> | Slider | A divider you drag between baseline and new screenshot |
 
@@ -77,8 +77,6 @@ Zoom is Fit or 100%, with buttons to step in and out. The **View options** menu 
 
 3. Repeat until the counter above the list reads "2 of 2 reviewed", or use **Approve all** when every change is fine.
 
-4. The build's status follows and the pull request check updates by itself.
-
 </Steps>
 
 Decisions are made per screenshot. Each acts at once and shows a toast with **Undo**.
@@ -87,9 +85,9 @@ Decisions are made per screenshot. Each acts at once and shows a toast with **Un
 - **Reject** (<Kbd keys="r" />) asks for a reason first. The screenshot is marked rejected, which holds back the merge, and it never becomes a baseline. The reason goes to the build's author in their Inbox and to the pull request. A project can make the reason optional; see [Project settings](/using/project-settings/).
 - **Approve all** (<Kbd keys="Shift+A" />) approves every changed screenshot that has no decision yet.
 
-<Kbd keys="Mod+Enter" /> sends the reason from its text field. Approve and Reject only appear on a finished build with changes. A decision can be changed later: the latest one counts.
+In the reason field, <Kbd keys="Mod+Enter" /> sends it. Approve and Reject only appear on a finished build with changes. A decision can be changed later: the latest one counts.
 
-### What the decisions add up to
+### How decisions set the build's status
 
 The build's review status is derived from its screenshots: all changed screenshots approved means the build is **Approved**; one rejected means **Rejected**; anything else is still **Needs review**. Unchanged screenshots need no decision. When the status moves, the author is notified, webhooks fire (see [Webhooks](/integrations/webhooks/)), and the check on the pull request is updated. People who were asked to review stop being asked once the build is decided.
 
@@ -99,7 +97,7 @@ On the project's default branch, an approved screenshot becomes the baseline lat
 
 With a repository linked, the pull request check follows the build. By default unreviewed changes keep it pending until someone approves; rejected changes fail it. Whether it blocks merging depends on the project's merge gate settings, and whether the repository marks the check as required. See [Project settings](/using/project-settings/) and [GitHub](/integrations/github/).
 
-## The sidebar
+## Use the sidebar
 
 Three tabs sit beside the image.
 
@@ -117,9 +115,9 @@ If the project has Linear or Jira mapped, **Create issue** also appears in the h
 
 ## Approve many builds at once
 
-On a project's builds list, press <Kbd keys="x" /> to select builds (or select rows with the checkboxes). A bar at the bottom offers **Approve**, **Reject** (with a reason), **Request review** and **Clear selection**. This works inside one project; a workspace-wide list only browses. The list has filters, grouping and ordering; see [Saved views](/using/saved-views/).
+On a project's builds list, press <Kbd keys="x" /> to select builds (or select rows with the checkboxes). A bar at the bottom offers **Approve**, **Reject** (with a reason), **Request review** and **Clear selection**. This works inside one project; a workspace-wide list can't select builds. The list has filters, grouping and ordering; see [Saved views](/using/saved-views/).
 
-## Keyboard shortcuts
+## Use keyboard shortcuts
 
 | Key | Does |
 |---|---|
@@ -132,4 +130,4 @@ On a project's builds list, press <Kbd keys="x" /> to select builds (or select r
 | <Kbd keys="Mod+Enter" /> | Send a comment or confirm the dialog you are typing in |
 | <Kbd keys="?" /> | Show every shortcut |
 
-Plain keys are switched off while you are typing in a comment field. On a phone the list and the discussion open as sheets from a bar at the bottom, and Approve all, Request review and Copy link sit in its More sheet.
+Plain keys are switched off while you are typing in a comment field. On a phone the list and the discussion open as sheets from a bar at the bottom, and Approve all, Request review and Copy link sit in its More actions menu.

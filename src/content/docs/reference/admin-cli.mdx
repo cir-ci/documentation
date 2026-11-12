@@ -29,7 +29,7 @@ It's not the upload CLI (see [CLI reference](/ci/cli/)). Commands that act insid
 
 Every command starts with `circi admin`. Add `--help` to any of them.
 
-### Accounts and Workspaces
+### Accounts and workspaces
 
 | Command | What it does |
 |---|---|
@@ -38,7 +38,7 @@ Every command starts with `circi admin`. Add `--help` to any of them.
 | `workspace create --name --owner <email> [--slug] [--json]` | Create a workspace owned by an existing account. |
 | `workspace list [--json]` | List workspaces. |
 | `member add --org --email [--role owner\|admin\|member]` | Add an existing account to a workspace (default role `member`). |
-| `auth enable\|disable <email\|password> --org` | Change a workspace's allowed sign-in methods. Skips the lockout guard: break-glass if a setting locked everyone out. |
+| `auth enable\|disable <email\|password> --org` | Change a workspace's allowed sign-in methods. Skips the check that refuses a change leaving nobody able to sign in, so it's the way back in when a setting locked everyone out. |
 
 ### Projects
 
@@ -78,5 +78,5 @@ Every command starts with `circi admin`. Add `--help` to any of them.
 | `mail test --to <email>` | Send a test mail through the configured SMTP server. |
 
 <Aside type="tip">
-Everything the setup page and the dashboard do also works from here, which is the way to automate a fresh install or to recover from a lockout.
+Accounts, workspaces, projects, webhooks and storage can all be managed from here, which is the way to script a fresh install or to recover from a lockout.
 </Aside>

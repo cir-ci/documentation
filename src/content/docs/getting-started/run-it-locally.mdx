@@ -13,20 +13,20 @@ You need Docker with Compose v2, and a clone of the CirCI repository (the image 
 
 <Steps>
 
-1. Go to the `deploy` folder and create your settings file.
+1. **Create your settings file.** Copy the example in the `deploy` folder.
 
    ```sh
    cd deploy
    cp .env.example .env
    ```
 
-2. Edit `.env`. Two values are required: `POSTGRES_PASSWORD`, and `BETTER_AUTH_SECRET`, which signs sessions and must be 32 characters or more.
+2. **Edit `.env`.** Two values are required: `POSTGRES_PASSWORD`, and `BETTER_AUTH_SECRET`, which signs sessions and must be 32 characters or more.
 
    <CopyCommand client:visible command="openssl rand -base64 32" />
 
    `PUBLIC_URL` defaults to `http://localhost:3000`, which is right for a local try-out.
 
-3. Build and start.
+3. **Build and start.**
 
    ```sh
    docker compose up -d --build
@@ -34,7 +34,7 @@ You need Docker with Compose v2, and a clone of the CirCI repository (the image 
 
    The first build compiles the server, the dashboard and the native diff engine, and takes a few minutes. Later builds use the layer cache.
 
-4. Open `http://localhost:3000`. A fresh install shows a **Set up CirCI** page. It asks for a setup code. Find it in the server log, or print it:
+4. **Open `http://localhost:3000`.** A fresh install shows a **Set up CirCI** page. It asks for a setup code. Find it in the server log, or print it:
 
    ```sh
    docker compose logs circi

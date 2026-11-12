@@ -1,6 +1,6 @@
 ---
 title: Design kit
-description: The components section pages use. Not in the sidebar or the search index.
+description: The components that section pages use, kept out of the sidebar and the search index.
 pagefind: false
 sidebar:
   hidden: true
@@ -35,17 +35,17 @@ Highlighting a stage:
 
 <Steps>
 
-1. Create a project in the dashboard.
+1. **Create a project.** Use the dashboard.
 
-2. Copy its token into your CI secrets as <code>CIRCI_TOKEN</code>.
+2. **Copy its token.** Store it in your CI secrets as <code>CIRCI_TOKEN</code>.
 
-3. Run the upload.
+3. **Run the upload.**
 
    <CopyCommand client:visible command="npx circi upload ./screenshots --wait" />
 
    <Aside type="note">An Aside indented under its step stays inside the step: use it for a warning that belongs to that one action. Anything longer than a short paragraph ends the list: close <code>&lt;/Steps&gt;</code>, write the text, and open a new <code>&lt;Steps&gt;</code> that continues the numbering with the <code>start</code> attribute of the list.</Aside>
 
-4. Open the build page.
+4. **Open the build.**
 
 </Steps>
 
@@ -61,7 +61,7 @@ Highlighting a stage:
 Press <Kbd keys="Shift+A" /> to approve everything, or <Kbd keys="Mod+K" /> for the command menu. A sequence uses "then": <Kbd keys="g then i" /> opens the Inbox.
 
 <SettingCard name="PUBLIC_URL" defaultValue="http://localhost:3000" type="URL">
-The address people open in the browser. It is also the base of every link CirCI sends.
+The address people open in the browser. It's also the base of every link CirCI sends.
 </SettingCard>
 
 <SettingCard name="BETTER_AUTH_SECRET" required>

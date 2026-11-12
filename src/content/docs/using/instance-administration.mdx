@@ -1,6 +1,6 @@
 ---
 title: Instance administration
-description: "What instance admins manage: accounts, all workspaces, instance settings, the GitHub App and health checks."
+description: Instance admins manage accounts, all workspaces, instance settings, the GitHub App and health checks.
 ---
 {/* Source: apps/web/src/features/instance (InstanceHubPage.tsx, hub-model.ts, AccountsPage.tsx, WorkspacesPage.tsx, InstanceSettingsPage.tsx, HealthPage.tsx, GithubAppSection.tsx, CreateWorkspaceDialog.tsx, ChangeEmailDialog.tsx, AddressChangeBanner.tsx), apps/web/src/features/setup, packages/config/src/schema.ts */}
 
@@ -24,7 +24,7 @@ The first account created during first-run setup becomes the first instance admi
 
 ## Accounts
 
-A searchable, paged list (up to a page of accounts at a time). **Create account** takes a **Name**, an **Email**, how they first sign in (**Show a generated password** or **Email a sign-in code**), an optional password, and **Make them an instance admin**. A generated password is shown once, in a dialog: pass it on yourself, because CirCI doesn't keep it readable.
+A searchable, paged list. **Create account** takes a **Name**, an **Email**, how they first sign in (**Show a generated password** or **Email a sign-in code**), an optional password, and **Make them an instance admin**. A generated password is shown once, in a dialog: pass it on yourself, because CirCI doesn't keep it readable.
 
 Each account's actions menu offers:
 
@@ -38,34 +38,23 @@ The same actions exist in `circi admin user` on the server. See [Admin CLI](/ref
 
 ## Workspaces
 
-Every workspace with its size, each opening its settings hub. **New workspace** asks for a **Name** and the **Owner's email**, which must already have an account; the owner invites the rest. Deleted workspaces are in a group of their own with the days left. A workspace's owner deletes it, it's deleted for good after 30 days, and an instance admin can **Restore** it or **Delete permanently** from its hub. See [Workspace settings](/using/workspace-settings/).
+Every workspace with its size, each opening its settings hub. **New workspace** asks for a **Name** and the **Owner's email**, which must already have an account; the owner invites the rest. Deleted workspaces are in a group of their own with the days left. When a workspace's owner deletes it, it's gone for everyone at once and deleted for good after 30 days. Until then an instance admin can **Restore** it or **Delete permanently** from its hub. See [Workspace settings](/using/workspace-settings/).
 
 ## Instance settings
 
 <ScreenFrame name="host-instance-settings" aspect="16 / 10" alt="The top of Instance settings: the dashboard address with its variable, the three sign-in methods checked, an empty list of single sign-on providers and the workspace creation checkbox." caption="The top of Instance settings in a development instance. Edits wait for Save changes at the bottom of each section." width={760} />
 
 <InstanceSettingNote title="An environment variable wins">
-A setting fixed by an environment variable shows **Set by VARIABLE** and can't be edited here: a save is refused, so change the variable and restart. Otherwise what you save applies within about 30 seconds on every server process, with no restart, and secrets are write-only and sealed at rest. See [Instance settings](/self-hosting/instance-settings/) for every setting, its variable and its default.
+A setting fixed by an environment variable shows **Set by VARIABLE** and can't be edited here: a save is refused, so change the variable and restart. Otherwise what you save applies within about 30 seconds on every server process, with no restart, and a saved secret is never shown again and is stored encrypted. See [Instance settings](/self-hosting/instance-settings/) for every setting, its variable and its default.
 </InstanceSettingNote>
 
 Most of the page waits for **Save changes**, with **Discard** to revert. The single sign-on providers and the GitHub App apply from their own dialogs.
 
-| Section | What you set | Variable that locks it |
-|---|---|---|
-| Dashboard address | Read-only: the address every outgoing link uses, and old addresses that redirect to it | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` |
-| Sign-in methods allowed | Password, email code and single sign-on: the outer limit, which each workspace can only narrow. Saving refuses a change that leaves nobody able to sign in | `AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED` |
-| Single sign-on providers | GitHub, Google, GitLab and OpenID Connect providers for every workspace, added, changed and removed in a dialog. Providers set by `AUTH_*` variables are listed read-only | `AUTH_*` |
-| Who can create workspaces | Instance admins only, or every signed-in account | `WORKSPACE_CREATION` |
-| Mail server | The SMTP server and sender, and **Send a test mail to your own address** | `SMTP_HOST` and the other `SMTP_*` |
-| Slack app | The client ID and secret of the instance's Slack app | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET` |
-| Storage and limits | The storage driver (read-only), then the retention new projects start with (30 days, no variable), the grace period for unused files, the upload timeout, job retention and webhook timeout | `STORAGE_DRIVER`, `GC_GRACE_HOURS`, `UPLOAD_TIMEOUT_MINUTES`, `JOB_RETENTION_DAYS`, `WEBHOOK_TIMEOUT_SECONDS` |
-| Hosted sites | The sites domain (read-only) or "Not set up", and the largest site | `STATIC_SITES_HOST`, `STATIC_SITES_MAX_MB` |
-
-Without mail, nobody gets sign-in codes or invitations by email. See [Configuration](/self-hosting/configuration/) and [Environment variables](/reference/environment-variables/).
+The page has sections for the dashboard address, sign-in methods, single sign-on providers, who can create workspaces, the mail server, the Slack app, storage and limits, and hosted sites. [Instance settings](/self-hosting/instance-settings/) lists each setting with its variable and default. Without mail, nobody gets sign-in codes or invitations by email.
 
 ### GitHub App
 
-One click on **Create GitHub App** sends you to GitHub with the App's name, address, permissions and events filled in. You confirm it there and install it on your account or organization. Checks and pull request comments are all it asks for. CirCI stores what GitHub returns, encrypted, on this instance. The **App name** must be unique across GitHub, and the organization field can stay empty to use your account. The badge says whether the App is **Not set up**, from the **Environment** (`GITHUB_APP_*`, edited there) or **Created here**. See [GitHub](/integrations/github/).
+**Create GitHub App**, at the bottom of the page, sends you to GitHub with the App's name, address, permissions and events filled in; you confirm it there and install it. See [GitHub](/integrations/github/) and [Instance settings](/self-hosting/instance-settings/).
 
 ### Address changes
 
@@ -73,4 +62,4 @@ When the dashboard's address changes, instance admins see a banner and a **Movin
 
 ## Health
 
-**Run checks again** reruns the same findings as `circi admin doctor`, grouped as **Services**, **Domains and cookies** (best effort: it can only check hosts it knows) and a summary of Passing, Need a look and Failing. It also shows **Background jobs** (waiting, running, oldest waiting, retrying, failed) per queue, and the **Setup code** state: only needed on a fresh install, where the code is in the server log or from `circi admin setup-code`. See [Scaling the worker](/self-hosting/scaling-the-worker/).
+**Run checks again** runs the same checks as `circi admin doctor`, grouped as **Services**, **Domains and cookies** (best effort: it can only check hosts it knows) and a summary of Passing, Need a look and Failing. It also shows **Background jobs** (waiting, running, oldest waiting, retrying, failed) per queue, and the **Setup code** state: only needed on a fresh install, where the code is in the server log or from `circi admin setup-code`. See [Scaling the worker](/self-hosting/scaling-the-worker/).

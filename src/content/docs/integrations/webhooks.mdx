@@ -113,7 +113,7 @@ The fields:
 
 A `webhook.test` body has `"test": true` and no `build` or `url`.
 
-The body is built when the job runs, so `url` reflects the instance's address at that moment.
+The body is built when CirCI sends the delivery, so `url` uses the instance's address at that moment.
 
 ## Verify the signature
 
@@ -152,13 +152,13 @@ Each webhook's page lists its recent deliveries: time, event, attempt, and the s
 
 ## Address rules
 
-An address must be an `http` or `https` URL with no username or password in it. By default it must be public: `localhost`, private networks (such as `10.x` and `192.168.x`), link-local and cloud metadata addresses, and names that stay inside a network (`.local`, `.internal`, `.lan`, `.home.arpa`, or no dot at all) are refused. A name is checked again at delivery time, because it can start pointing somewhere else later; a delivery to a name that now resolves to a private address is skipped and recorded as "The address is on a private network".
+An address must be an `http` or `https` URL with no username or password in it. By default it must be public: `localhost`, private networks (such as `10.x` and `192.168.x`), addresses that only work on the local link (`169.254.x.x`, which includes cloud metadata services), and names that stay inside a network (`.local`, `.internal`, `.lan`, `.home.arpa`, or no dot at all) are refused. A name is checked again at delivery time, because it can start pointing somewhere else later; a delivery to a name that now resolves to a private address is skipped and recorded as "The address is on a private network".
 
 If your receivers live on your own network, set `WEBHOOK_ALLOW_PRIVATE_ADDRESSES=true` on the server (see [Environment variables](/reference/environment-variables/)). That lifts the rule for every webhook on the instance.
 
 ## Regenerate a signing secret
 
-If a secret leaks, or you lost it, open the webhook and press **Regenerate secret**. A confirmation dialog asks first, because the old secret **stops signing right away**: the receiver rejects every delivery until you give it the new one. Confirm, and a **New signing secret** dialog shows the new `whsec_…` value once. Copy it into the receiver, then press **Done**.
+If a secret is exposed or you've lost it, open the webhook and press **Regenerate secret**. A confirmation dialog asks first, because the old secret **stops signing right away**: the receiver rejects every delivery until you give it the new one. Confirm, and a **New signing secret** dialog shows the new `whsec_…` value once. Copy it into the receiver, then press **Done**.
 
 To rotate without a gap, update the receiver to accept either secret first, regenerate, then drop the old one.
 

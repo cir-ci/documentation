@@ -1,6 +1,6 @@
 ---
 title: Saved views
-description: "Filter a project's builds list, save the filters as a view, and keep views and pinned projects in your sidebar."
+description: Filter a project's builds list, save the filters as a view, and keep views and pinned projects in your sidebar.
 ---
 {/* Source: apps/web/src/features/views (ViewPage.tsx, SaveViewDialog.tsx, api.ts), apps/web/src/features/builds/list (BuildsBrowser.tsx, BuildFilterBar.tsx, builds-filters.ts, display-options.ts), apps/web/src/app/Sidebar.tsx, apps/web/src/app/shell-model.ts, apps/server/src/http/routes/dashboard/inbox/views.ts, packages/services/src/views/views.ts */}
 
@@ -42,15 +42,15 @@ These are remembered in your browser. <Kbd keys="j" /> and <Kbd keys="k" /> move
 
 <Steps>
 
-1. Set at least one filter. The **Save view** button appears next to **Clear filters**.
+1. **Set at least one filter.** The **Save view** button appears next to **Clear filters**.
 
-2. Click it. The dialog lists the filters it will save and asks for a **Name** (up to 80 characters).
+2. **Click it.** The dialog lists the filters it will save and asks for a **Name** (up to 80 characters).
 
-3. Click **Save view**. A toast says "Saved view" with the name.
+3. **Click Save view.** A toast says "Saved view" with the name.
 
 </Steps>
 
-The view is tied to the project whose list you filtered (a view saved without a project covers the whole workspace, and its list shows the project of each build), and it appears in the sidebar under **Your views**. When the current filters already match a saved view, the button gives way to "Saved as" and its name.
+The view belongs to the project whose list you filtered and appears in the sidebar under **Your views**. A view saved from the workspace-wide builds list has no project: it covers every project and shows each build's project. When the current filters already match a saved view, the button gives way to "Saved as" and its name.
 
 ## Open and use a view
 
@@ -59,12 +59,12 @@ Choose it under **Your views** in the sidebar, or search for it with <Kbd keys="
 If a view is deleted, or belongs to someone else, its address shows "This view doesn't exist".
 
 <Aside type="note">
-The dashboard can save a view, and lists the pinned ones in your sidebar in the order you keep them, but it has no screen yet to rename, reorder or delete one. The server supports all three (`PATCH` and `DELETE` on a workspace's `views`, and `PUT` on `views/order`).
+You can't rename, reorder or delete a view yet.
 </Aside>
 
-## Pinned projects
+## Pin a project in the sidebar
 
-The sidebar also keeps **Pinned** projects above the rest. Right-click a project in the sidebar and choose **Pin project** or **Unpin project**. Pinned projects are per person and per workspace, like views. The same menu has Builds, Triage, Baselines, Sites (when the project has some), **Project settings** (owners and admins) and **Leave project**.
+This is separate from views. The sidebar keeps **Pinned** projects above the rest. Right-click a project in the sidebar and choose **Pin project** or **Unpin project**. Pinned projects are per person and per workspace, like views. The same menu has Builds, Triage, Baselines, Sites (when the project has some), **Project settings** (owners and admins) and **Leave project**.
 
 ## Where this lives
 

@@ -26,23 +26,23 @@ An instance admin sets the Slack app's client ID and client secret in Instance s
 
 <Steps>
 
-1. Create a Slack app at api.slack.com (from scratch, in the Slack workspace you want to start with).
+1. Create a Slack app at api.slack.com, from scratch, in the Slack workspace you want to start with. See Slack's documentation on creating apps.
 2. Under **OAuth and Permissions**, add the redirect URL `PUBLIC_URL/api/integrations/slack/callback`.
 3. Add these bot token scopes: `chat:write`, `chat:write.public`, `channels:read`, `groups:read`. CirCI requests them when someone installs the app.
 4. Copy the app's client ID and client secret into the instance, as described above.
-5. If other Slack workspaces should install the app, activate public distribution for it in Slack.
+5. If other Slack workspaces should install the app, turn on public distribution for it in the app's settings in Slack (see Slack's documentation on distributing apps).
 
 </Steps>
 
 ### Connect a Slack workspace
 
-An owner or admin of the CirCI Workspace opens **Workspace settings** › **Integrations** › **Add integration** › **Slack**. Slack asks you to allow the app in your Slack workspace, and the return connects it. CirCI stores the bot token it receives, encrypted, and names the integration after the Slack workspace.
+An owner or admin of the CirCI workspace opens **Workspace settings** › **Integrations** › **Add integration** › **Slack**. Slack asks you to allow the app in your Slack workspace, and the return connects it. CirCI stores the bot token it receives, encrypted, and names the integration after the Slack workspace.
 
 If Slack later rejects the token (the app was uninstalled or the token revoked), CirCI flags the integration as needing attention and shows a **Reinstall** button. No notices go out until you reinstall.
 
-### Choose a channel and events for each Project
+### Choose a channel and events for each project
 
-On the Slack integration's page, each project has a **Channel** and a list of **Events**. A Project without a channel sends nothing.
+On the Slack integration's page, each project has a **Channel** and a list of **Events**. A project without a channel sends nothing.
 
 The channel list comes from Slack: public channels as `#name` and private channels as `name (private)`. The bot can post to public channels without joining (the `chat:write.public` scope). For a private channel, invite the CirCI app to the channel in Slack first.
 
@@ -57,12 +57,16 @@ Approvals are opt-in because they're the notices that don't need anyone to act. 
 
 ## What appears where
 
-Every message is a short Slack block message with an **Open build** button that links to the build page. The plain text of each message is also set, so Slack notifications and screen readers have something readable.
+Every message is a short Slack message with an **Open build** button that links to the build. The plain text of each message is also set, so Slack notifications and screen readers have something readable.
 
-- **Review requested** (an eyes emoji): "Asked **Reviewer** to review project #12 on `branch`", prefixed with who asked when a person did, and with "Due" and a date shown in each reader's own time zone. A repeat request says "Review requested again".
-- **Review overdue** (an hourglass): "**Reviewer**'s review of project #12 on `branch` is overdue", with when it was due.
-- **Changes rejected** (a red cross): who rejected the changes, and the reason as a quote, cut at 500 characters. The full reason stays in CirCI.
-- **Changes approved** (a green check): who approved the changes.
+Each message has a title that starts with an emoji, and a build is named by its project and number (for example `Web app #12`):
+
+| Event | Message title | Contents |
+| --- | --- | --- |
+| Review requested | **Review requested** (**Review requested again** for a repeat request) | "Asked **Reviewer** to review Web app #12 on `branch`", prefixed with who asked when a person did, and "Due" with a date shown in each reader's own time zone |
+| Review overdue | **Review overdue** | "**Reviewer**'s review of Web app #12 on `branch` is overdue", with when it was due |
+| Build rejected | **Changes rejected** | Who rejected the changes, and the reason as a quote, cut at 500 characters. The full reason stays in CirCI |
+| Build approved | **Changes approved** | Who approved the changes |
 
 Names, branches and reasons that come from people are escaped so they can't create Slack mentions or links of their own.
 

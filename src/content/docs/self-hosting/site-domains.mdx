@@ -12,7 +12,7 @@ import ScreenFrame from '../../../components/ScreenFrame.astro'
 Hosted sites (a built Storybook, a test report, coverage) are optional and off until you set the sites domain and switch on **Host static sites** in a project's settings. How people use them is described in [Hosted sites](/using/hosted-sites/). This page is for the operator.
 
 <SettingCard name="STATIC_SITES_HOST" type="domain">
-A separate, dedicated domain for hosted sites, such as `acme-sites.com`. Hosting is off until it's set. Instance settings shows it read-only, or "Not set up" (with the **Check domain rules** link to Health), so you change it there with a restart.
+A separate, dedicated domain for hosted sites, such as `acme-sites.com`. Hosting is off until it's set. Instance settings shows it read-only, or "Not set up" with a **Check domain rules** link to Health. To change it, edit the variable and restart.
 </SettingCard>
 
 <SettingCard name="STATIC_SITES_MAX_MB" defaultValue="200" type="MB">
@@ -48,7 +48,7 @@ Every upload belongs to a commit and gets two addresses on the sites domain:
 | Commit | `<first 12 hex of the SHA>-<site>.acme-sites.com` | that commit's site, exactly |
 | Branch | `<12 hex of sha256(branch)>-<site>.acme-sites.com` | the newest upload on that branch |
 
-Every request needs sign-in. This is how a request reaches a site without its code ever seeing your dashboard cookie:
+Every request to a site needs sign-in. Opening a site address sends you to the dashboard, which hands the site a one-minute, single-use token if you belong to the project's workspace. The site then sets its own host-only `HttpOnly` cookie (`__Host-` over https), so the site's code never sees your dashboard cookie. An address that doesn't exist, has expired or isn't yours gets the same answer:
 
 <Diagram viewBox="0 0 720 150" title="How a hosted site checks who is asking" desc="The browser opens a site address. The site sends it to the dashboard. If you belong to the project's workspace, the dashboard hands back a one-minute single-use token. The site then sets its own host-only HttpOnly cookie, and re-checks it against your dashboard session at least once a minute.">
   <rect x="1" y="20" width="200" height="100" rx="10" class="d-box" />
@@ -65,7 +65,7 @@ Every request needs sign-in. This is how a request reaches a site without its co
   <text x="468" y="62" class="d-mono">1 min token</text>
 </Diagram>
 
-The cookie is re-checked against your dashboard session at least once a minute.
+The site re-checks its cookie against your dashboard session at least once a minute, so signing out or leaving the workspace ends access within a minute. A custom domain signs in the same way, with the domain itself as the address.
 
 ## DNS and certificates with Route53
 
@@ -107,13 +107,13 @@ A site can have **one custom domain**, such as `storybook.acme.com`, that always
 
 <Steps>
 
-1. Enter the domain. It must be a plain host name. CirCI refuses the dashboard host, anything related to it by the cookie rules (so with the dashboard on `ci.acme.io`, `storybook.acme.io` is refused; use another registrable domain such as `storybook.acme.com`), the sites domain and everything under or above it, and a domain another site already holds.
-2. Add the DNS record it shows: a **CNAME** to `custom.<sites domain>`. A domain that can't be a CNAME (an apex) can use `A` and `AAAA` records with the server's addresses.
-3. Press **Check DNS**. The domain is served, and gets a certificate, only once a check has seen it point at this server. A later failing check un-verifies it.
+1. **Enter the domain.** It must be a plain host name. CirCI refuses the dashboard host, anything related to it by the cookie rules (so with the dashboard on `ci.acme.io`, `storybook.acme.io` is refused; use another registrable domain such as `storybook.acme.com`), the sites domain and everything under or above it, and a domain another site already holds.
+2. **Add the DNS record it shows.** Use a **CNAME** to `custom.<sites domain>`. A domain that can't be a CNAME (an apex) can use `A` and `AAAA` records with the server's addresses.
+3. **Press Check DNS.** The domain is served, and gets a certificate, only once a check has seen it point at this server. A later failing check un-verifies it.
 
 </Steps>
 
-Certificates for custom domains come from Caddy's on-demand TLS. On the first request Caddy asks `GET /internal/tls-ask?domain=<host>`, which answers `200` for a verified custom domain and `404` for everything else. The endpoint refuses requests that came through a proxy (`X-Forwarded-For`) and answers at most 300 questions a minute: keep it on the internal network and never publish it.
+Certificates for custom domains come from Caddy's on-demand TLS. The first time a domain is requested, Caddy asks `GET /internal/tls-ask?domain=<host>`, which answers `200` for a verified custom domain and `404` for everything else. The endpoint refuses questions that came through a proxy (they carry `X-Forwarded-For`) and answers at most 300 a minute: keep it on the internal network and never publish it.
 
 ## Limits
 

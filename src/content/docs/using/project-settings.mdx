@@ -1,6 +1,6 @@
 ---
 title: Project settings
-description: "Every project setting, what it changes, who can change it, and which ones save on their own."
+description: Every project setting, what it changes, who can change it, and which ones save on their own.
 ---
 {/* Source: apps/web/src/features/project-settings (ProjectSettingsHubPage.tsx, hub-model.ts, ProjectSettingsPage.tsx, SettingsForm.tsx, settings-patch.ts, ProjectMembersPage.tsx, CiTokenPage.tsx, WebhooksPage.tsx), apps/web/src/features/projects (ProjectIdentity.tsx, DeleteProjectSection.tsx, NewProjectDialog.tsx), packages/core/src/project/project-settings-rules.ts, packages/services/src/access/policies.ts */}
 
@@ -34,17 +34,15 @@ Owners and admins create projects from the **Projects** page with **New project*
 
 ## General
 
-The first section, **Details**, saves as soon as you change a field, with a toast:
+The first section, **Details**, saves each field on its own, with a toast. Text fields save when you confirm them with the check mark that appears; the icon and color save at once:
 
-<ScreenFrame name="use-project-settings" alt="The General page of project settings for Web app. The Details section has the icon and color tile, Display name, URL slug and Default Branch fields. Below it are Repository with no repository linked, and Comparison with a diff threshold of 0.5 percent and keep builds for 365 days." caption="General: Details at the top save by themselves, everything below waits for Save changes." />
+<ScreenFrame name="use-project-settings" alt="The General page of project settings for Web app. The Details section has the icon and color tile, Display name, URL slug and Default branch fields. Below it are Repository with no repository linked, and Comparison with a diff threshold of 0.5 percent and keep builds for 365 days." caption="General: Details at the top save by themselves, everything below waits for Save changes." />
 
 - **Display name**, with the icon and color tile beside it. Picking a color or an icon saves at once ("Icon and color saved").
 - **URL slug**, used in addresses and in `circi admin` commands. Changing it breaks existing links, including bookmarks and the links in existing pull request comments; new builds post the new address. The CI token keeps working.
-- **Default Branch**: its approved builds are the baselines. It must be a valid git branch name.
+- **Default branch**: its approved builds are the baselines. It must be a valid git branch name.
 
-Each of these shows a check mark when it differs from what is saved, and you confirm it there.
-
-Everything below saves together with one **Save changes**, and **Discard** reverts. The buttons stay disabled until something changes.
+Everything below Details saves together with one **Save changes**, and **Discard** reverts. The buttons stay disabled until something changes.
 
 ### Repository
 
@@ -54,7 +52,7 @@ Shows the linked repository, or "No repository linked". **Link a repository** (o
 
 | Setting | Meaning | Limits |
 |---|---|---|
-| Diff threshold | A screenshot counts as changed when more than this share of its pixels differ. A change of size is always a change | 0% to 100% |
+| Diff threshold | How much of a screenshot may differ before it counts as changed, as a share of its pixels. A change of size always counts. Default 0% | 0% to 100% |
 | Keep builds for | Older builds and their hosted sites expire. The newest approved baseline on the default branch never does | 1 to 3650 days. New projects start at 30 |
 
 See [Retention and garbage collection](/self-hosting/retention-and-gc/).
@@ -85,7 +83,7 @@ The page shows the token as a hint (never the full secret), when it was created 
 
 ## Reviews and triage
 
-Review rules, the review target, automation, the triage rotation, the flaky threshold and the snooze default. Rules apply as soon as you confirm them; the rest saves with **Save changes**. See [Review requests and rules](/using/review-requests-and-rules/) and [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+The **Reviews** group's page: review rules, the review target, automation, the triage rotation, the flaky threshold and the snooze default. Rules apply as soon as you confirm them; the rest saves with **Save changes**. See [Review requests and rules](/using/review-requests-and-rules/) and [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
 
 ## Ignore regions
 
@@ -99,7 +97,7 @@ Each webhook offers **Send test**, **Regenerate secret** (the old secret stops s
 
 ## Sites
 
-The same page as the project's Sites: branches, uploads and the custom domain. See [Hosted sites](/using/hosted-sites/).
+Each hosted site's branch addresses, uploads and custom domain, in the same page the sidebar's **Sites** opens. See [Hosted sites](/using/hosted-sites/).
 
 <Aside type="tip">
 Channels, issue trackers and Figma are set per project in the workspace's integrations, not here. See [Integrations](/integrations/overview/).

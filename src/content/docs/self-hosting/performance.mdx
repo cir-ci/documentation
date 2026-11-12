@@ -1,6 +1,6 @@
 ---
 title: Performance
-description: Measured throughput of the diff engines, and what it means for sizing.
+description: How fast each diff engine compares screenshots in our load tests, and what that means for sizing your server.
 ---
 {/* Source: docs/perf/2026-11-11-diff-engines.md, docs/reference/running-costs.md, packages/config/src/schema.ts (CIRCI_DIFF_ENGINE), perf/ */}
 
@@ -11,7 +11,7 @@ import Diagram from '../../../components/Diagram.astro'
 The pixel comparison runs in the worker, and it's the only CPU-heavy work. CirCI ships three engines.
 
 <SettingCard name="CIRCI_DIFF_ENGINE" defaultValue="native" type="native, js-workers or js">
-Which engine compares screenshots. `native` is a Rust addon the image ships: it runs off the event loop and across cores, and if it can't load the worker logs a warning and uses `js`. `js-workers` is the JavaScript comparison (pixelmatch) in a pool of worker threads, with no native module. `js` is the same comparison on the worker's event loop, the simplest.
+Which engine compares screenshots. `native` is a Rust addon the image ships: it runs in separate native threads, so it doesn't block the worker's other jobs, and uses several cores, and if it can't load the worker logs a warning and uses `js`. `js-workers` is the JavaScript comparison (pixelmatch) in a pool of worker threads, with no native module. `js` is the same comparison on the worker's single main thread, the simplest.
 </SettingCard>
 
 ## At a glance
@@ -39,16 +39,16 @@ From the load tests of 2026-11-11 (Apple M4 Pro, 12 cores, 24 GB, Node 26.13, th
 |---|---:|---:|---:|
 | Builds per minute | 118 | 251 | **261** |
 | Time from finalize to done (median) | 9.9 s | 4.4 s | 4.5 s |
-| Worker CPU (average) | 239% | 514% | 485% |
+| Worker CPU (average) | 239 percent | 514 percent | 485 percent |
 | Worker memory, peak | 696 MB | 1835 MB | 703 MB |
 
-- The JavaScript engine's limit is the worker's one JavaScript thread, not the CPU: it plateaus at about 2.4 cores whatever the load.
+- The JavaScript engine's limit is the worker's one JavaScript thread, not the CPU: it levels off at about 2.4 cores whatever the load.
 - `native` is 2.2 times the throughput of `js` and halves the wait. Its peak memory is about the same (703 MB against 696 MB).
 - `js-workers` recovers almost all of that throughput without a native module, at about 2.6 times the memory (each thread is its own V8 isolate).
 - Per CPU the engines cost about the same (about 50 to 55 builds a minute per worker core). The win is using the machine's cores, so on a server short of cores the gain is smaller.
 - `native` is the clear winner on large changes (2.7 times faster per diff).
 - Builds of 120 screenshots: about 23 builds per minute with `native` and `js-workers`, against 10.5 with `js`.
-- The dashboard's read API isn't affected: p95 was 9 to 26 ms for every endpoint at 50 virtual users.
+- The dashboard's read API isn't affected: 95 percent of requests took 9 to 26 ms or less, for every endpoint, with 50 simulated users.
 
 <Aside type="note">
 One machine, one run each. 100 and more concurrent builds couldn't be measured on that Mac (Docker Desktop's VM shut down). That run found and fixed a real bug: a dropped Postgres connection used to crash the server and worker. Run heavier loads on Linux or in CI.
@@ -66,4 +66,4 @@ In rough order of effect:
 
 ## Run the suite yourself
 
-The repository has a k6 suite (`pnpm perf`, `pnpm perf:down`; `perf/`). See [Contributing](/contributing/local-development/).
+The repository has a k6 load-test suite in `perf/` (`pnpm perf`, `pnpm perf:down`). See [Local development](/contributing/local-development/#performance-suite).

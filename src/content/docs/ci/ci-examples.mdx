@@ -1,6 +1,6 @@
 ---
 title: CI examples
-description: GitHub Actions, GitLab CI, Bitbucket Pipelines, Gitea, Jenkins, sharded runs.
+description: Copy-paste setups for uploading screenshots from GitHub Actions, GitLab CI, Bitbucket Pipelines, Gitea and Jenkins, including sharded runs.
 ---
 {/* Source: docs/reference/ci-examples.md, packages/cli/src/ci-env.ts */}
 
@@ -74,7 +74,7 @@ CircleCI, Buildkite and Azure Pipelines are detected as well; their environment 
 
 ## First build and the gate
 
-A Project's first build has no baseline, so every screenshot is <StatusChip status="added" /> and needs review before the gate opens, even on the default branch. Auto-approve applies only once there is an approved baseline, so someone approves every screenshot once. Pull requests that change only flaky screenshots can pass without review when the workspace or project says flaky changes don't block (see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)).
+A project's first build has no baseline, so every screenshot is <StatusChip status="added" /> and needs review before the gate opens, even on the default branch. Auto-approve applies only once there is an approved baseline, so someone approves every screenshot once. Pull requests that change only flaky screenshots can pass without review when the workspace or project says flaky changes don't block (see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)).
 
 ## Sharded runs
 

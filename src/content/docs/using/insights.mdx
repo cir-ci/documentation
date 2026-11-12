@@ -1,6 +1,6 @@
 ---
 title: Insights
-description: "A workspace's review speed, build outcomes, flaky screenshots, failures and storage over 7, 30 or 90 days."
+description: A workspace's review speed, build outcomes, flaky screenshots, failures and storage over 7, 30 or 90 days.
 ---
 {/* Source: apps/web/src/features/insights (InsightsPage.tsx, Charts.tsx, Lists.tsx, api.ts, sort.tsx), apps/server/src/http/routes/dashboard/inbox/insights.ts, packages/core/src/builds/insights.ts, packages/core/src/builds/flaky.ts */}
 
@@ -17,7 +17,7 @@ Two controls sit in the page header:
 - **Project**: all projects, or one. The choice is kept in the address, so a link shows the same view.
 - **Time range**: 7, 30 or 90 days. The default is 30.
 
-With nothing built or reviewed in the range, the page says "No data yet" and suggests a longer range. The server accepts custom ranges up to 366 days, but the page offers these three.
+With nothing built or reviewed in the range, the page says "No data yet" and suggests a longer range.
 
 Charts use one bar per week, or one per day in a 7-day range. Weeks run Monday to Sunday, UTC.
 
@@ -25,18 +25,18 @@ Charts use one bar per week, or one per day in a 7-day range. Weeks run Monday t
 
 Six tiles open the page. Each has its value, a note, and how it compares with the same number of days before (for example "vs the 30 days before"), marked better or worse where that has a meaning.
 
-| Tile | What it measures |
-|---|---|
-| Median time to first review | From a build being ready to the first approval or rejection by a person (automatic approvals don't count), with the slowest 10% in the note |
-| Median time to decision | From the build being ready to it being approved or rejected, with the slowest 10% |
-| First reviews within target | The share of reviews that came within the project's review target, weekends not counted. "No review target set" when there is none. See [Review requests and rules](/using/review-requests-and-rules/) |
-| Builds reviewed | How many builds got a review in the range |
-| Builds with changes | The share of finished builds that had changes, and how many |
-| Failed builds | How many, and their share of finished builds |
+| Tile | Shown as | What it measures |
+|---|---|---|
+| Median time to first review | Minutes, hours or days (`18h`) | From a build being ready to the first approval or rejection by a person (automatic approvals don't count), with the slowest 10% in the note |
+| Median time to decision | Minutes, hours or days | From the build being ready to it being approved or rejected, with the slowest 10% |
+| First reviews within target | Percent | The share of reviews that came within the project's review target, weekends not counted. "No review target set" when there is none. See [Review requests and rules](/using/review-requests-and-rules/) |
+| Builds reviewed | Builds | How many builds got a review in the range |
+| Builds with changes | Percent | The share of finished builds that had changes, with the count in the note |
+| Failed builds | Builds | How many failed, with their share of finished builds in the note |
 
 ## Trends
 
-- **Median time to first review**, per week or day.
+- **Median time to first review**, in hours, per week or day.
 - **Time to decision**: the median and the slowest 10% as two lines, in hours.
 - **Outcomes**: finished builds per period, stacked as Approved, Auto-approved, Rejected and Failed.
 - **Waiting for review**: builds waiting at the end of each day.
@@ -53,9 +53,9 @@ Hover a bar or point for its exact numbers.
 - **Storage by project**: screenshots, diffs and baselines, with the total. A note says how long retention keeps branch builds; see [Workspace settings](/using/workspace-settings/).
 - **Reviewer load**: for each person, how many reviews, how many requests are open, their median response time and how many were overdue.
 
-## Lists
+## Tables to act on
 
-Four tables point at specific things to act on:
+Four tables point at specific things:
 
 - **Most changed screenshots**: the ones that changed in the most builds, with how many of the last 10 default-branch commits changed them.
 - **Flakiest screenshots**: flip-flops in the last 10 commits on the default branch.
@@ -64,4 +64,8 @@ Four tables point at specific things to act on:
 
 Every table sorts when you click a column header. The sort is kept in the page's address, so you can share a sorted view.
 
-To collect build and review events in your own system rather than read them here, use [webhooks](/integrations/webhooks/).
+## See also
+
+- [Webhooks](/integrations/webhooks/), to collect build and review events in your own system instead of reading them here
+- [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)
+- [Review requests and rules](/using/review-requests-and-rules/)

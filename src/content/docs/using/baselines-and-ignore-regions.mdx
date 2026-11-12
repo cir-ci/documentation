@@ -1,6 +1,6 @@
 ---
 title: Baselines and ignore regions
-description: "What a baseline is, how CirCI picks the one a build is compared with, and how to leave parts of a screenshot out of comparisons."
+description: What a baseline is, how CirCI picks the one a build is compared with, and how to leave parts of a screenshot out of comparisons.
 ---
 {/* Source: apps/web/src/features/baselines (BaselinesPage.tsx, BaselinePage.tsx, api.ts), apps/web/src/features/regions (IgnoreRegionsEditor.tsx, IgnoreRegionsPanel.tsx, IgnoreRegionsPage.tsx), packages/core/src/baselines (baseline.ts, pairing.ts), packages/services/src/pipeline/process.ts, apps/server/src/http/routes/dashboard/projects/ignore-regions.ts, apps/server/src/cli/commands/ignore-region.ts */}
 
@@ -15,8 +15,8 @@ A **baseline** is the approved screenshot a new one is compared with. Every scre
 
 For each build, CirCI picks one earlier build of the same project and the same build name to compare against:
 
-1. Only a finished build can be a baseline, and only one that was **approved** (by a person or automatically), or had **no changes** against its own approved baseline and wasn't rejected.
-2. CirCI walks the build's git ancestors, nearest first: from where the branch started for a pull request, or from the previous commit on the default branch. The first ancestor that has an eligible build is the baseline. If a commit was built several times (CI re-runs), the newest build wins.
+1. Only a finished build can be a baseline, and only one that is **approved** (by a person or automatically) or that matched its own approved baseline.
+2. CirCI walks the commit history back, nearest first: from where the branch started for a pull request, or from the previous commit on the default branch. The first commit that has an eligible build gives the baseline. If a commit was built several times (CI re-runs), the newest build wins.
 3. If no ancestor has one, the newest eligible build on the **default branch** is used. The build page then shows a warning that the history wasn't available.
 4. If there is nothing at all, the build has **No baseline** and every screenshot is new.
 
@@ -35,7 +35,15 @@ A rejected screenshot never becomes a baseline.
 
 ## The Baselines page
 
-Open a project in the sidebar and choose **Baselines**. It lists the current baseline of every screenshot name, grouped by the part of the name before the first `/` ("checkout/cart.png" is in **checkout**; names without a slash are under **Ungrouped**). The header counts them ("12 on main") and has a find field. Each row shows a thumbnail, the name, the build it comes from (and the build name when it isn't `default`), when it was approved, a chip with the number of ignored regions, and a flaky chip that says why ("Came back to an earlier image 4 times") and opens the item in Triage. Until a build of the default branch finishes, the page says "No baselines yet".
+Open a project in the sidebar and choose **Baselines**. It lists the current baseline of every screenshot name, grouped by the part of the name before the first `/` ("checkout/cart.png" is in **checkout**; names without a slash are under **Ungrouped**). The header counts them ("12 on main") and has a find field. Until a build of the default branch finishes, the page says "No baselines yet".
+
+Each row shows:
+
+- a thumbnail and the name
+- the build it comes from, and the build name when it isn't `default`
+- when it was approved
+- a chip with the number of ignored regions
+- a flaky chip that says why ("Came back to an earlier image 4 times") and opens the item in Triage
 
 <ScreenFrame name="use-baselines" alt="The Baselines page of the Web app project. Eight baselines grouped as dashboard, onboarding, settings and Ungrouped, each with a thumbnail and its build. Two show an ignored region chip and two a flaky chip." caption="Every screenshot name with its current baseline. The chips on the right say which have ignore regions or are flaky." />
 
@@ -54,7 +62,7 @@ The page also holds the screenshot's ignore regions.
 An **ignore region** is a rectangle, in whole pixels measured from the top left, that is blanked out on **both** images before they are compared. Use it for a clock, a rotating banner, an ad or a cursor: something that changes without meaning anything.
 
 - A region belongs to a **screenshot name**. It applies to every build of that screenshot, until it's removed.
-- A region on its own is just a rectangle. There's no pattern or per-branch setting.
+- There's no pattern or per-branch setting.
 - Insights shows how many diffs the regions kept unchanged. See [Insights](/using/insights/).
 
 ### Who can change them
@@ -73,12 +81,12 @@ Owners and admins add, move, edit and remove regions. Other members see them. A 
 
 </Steps>
 
-Drag a region's handles to move or resize it ("Ignore region saved"). In the list under the image, **Edit** opens fields for **Left**, **Top**, **Width** and **Height** in pixels, and **Remove** deletes the rectangle after a confirmation: the area is compared again from the next build. Each region shows its size and position (`300 x 40 at 120, 16`) and who added it.
+Drag a region's handles to move or resize it ("Ignore region saved"). In the list under the image, **Edit** opens fields for **Left**, **Top**, **Width** and **Height** in pixels, and **Remove** removes the rectangle after a confirmation: the area is compared again from the next build. Each region shows its size and position (`300 x 40 at 120, 16`) and who added it.
 
-A region can also be added from a server shell with `circi admin ignore add --org <workspace> --project <project> --name <screenshot> --region x,y,width,height`, with `circi admin ignore list` and `circi admin ignore remove <id>` beside it. See [Admin CLI](/reference/admin-cli/).
+A region can also be added from a server shell with `circi admin ignore add --org <slug> --project <project> --name <screenshot> --region x,y,width,height`, with `circi admin ignore list` and `circi admin ignore remove <id>` beside it. See [Admin CLI](/reference/admin-cli/).
 
 <Aside type="note">
-A region applies to builds processed from the moment it's added. A build that was already processed keeps its result until it's processed again (the `/circi rerun` command redoes one).
+A region applies to builds processed after it's added. A build that was already processed keeps its result until CirCI processes it again; the `/circi rerun` command does that.
 </Aside>
 
 ### In project settings

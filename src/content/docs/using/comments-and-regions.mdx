@@ -1,6 +1,6 @@
 ---
 title: Comments and regions
-description: "Discuss a build with threaded comments and @mentions, and pin a comment to a region of a screenshot."
+description: Discuss a build with threaded comments and @mentions, and pin a comment to a region of a screenshot.
 ---
 {/* Source: apps/web/src/features/builds (CommentsTab.tsx, Composer.tsx, api/discussion.ts, ViewOptionsMenu.tsx, ignore-mode.tsx), apps/web/src/features/regions (RegionLayer.tsx), packages/services/src/comments/comments.ts, packages/core/src/reviews/mentions.ts, apps/server/src/http/routes/dashboard/builds/comments.ts */}
 
@@ -9,21 +9,21 @@ import ScreenFrame from '../../../components/ScreenFrame.astro'
 import Kbd from '../../../components/Kbd.astro'
 import StatusChip from '../../../components/StatusChip.astro'
 
-Every build has a discussion in the **Comments** tab beside the image. A comment can be general, or pinned to a rectangle on one screenshot so that everyone looks at the same pixels. Anyone who can see the project can read and write comments.
+Every build has a discussion in the **Comments** tab beside the image. A comment can be general, or pinned to a rectangle on one screenshot. Anyone who can see the project can read and write comments.
 
-<ScreenFrame name="use-comments" alt="The Comments tab of build 61. A comment is pinned to a numbered region on the pricing screenshot, with two replies under it. Its chip reads 1 and pricing." caption="A comment pinned to region 1 of the pricing screenshot, with two replies. The marker on the new image shows where." />
+<ScreenFrame name="use-comments" alt="The Comments tab of build #61. A comment is pinned to a numbered region on the pricing screenshot, with two replies under it. Its chip reads 1 and pricing." caption="A comment pinned to region 1 of the pricing screenshot, with two replies. The marker on the new image shows where." />
 
 ## Write a comment
 
 Press <Kbd keys="c" /> on the build page, or open the **Comments** tab and click the field. Type, then press the **Comment** button or <Kbd keys="Mod+Enter" />. A comment is at most 5000 characters. The tab's badge counts the comments in the build.
 
-- **Reply** under a comment starts a reply. Threads are one level deep: a reply can't have replies of its own, so reply to the first comment of the thread.
+- **Reply** under a comment starts a reply. A reply can't have replies, so reply to the first comment of the thread.
 - **Edit** and **Delete** show under your own comments. An edited comment says "(edited)". Owners and admins of the workspace can delete anyone's comment, but only the author edits it.
 - Deleting asks first ("It can't be restored") and leaves "This comment was deleted." in the thread.
 
 ### Mention people
 
-Type `@` and pick a person from the list. A mention notifies that person in their Inbox, and by push when they have it on. See [Inbox and reviews](/using/inbox-and-reviews/) and [Account settings](/using/account-settings/).
+Type `@` and pick a person from the list. A mention notifies that person in their Inbox, and by push notification when they have it on. See [Inbox and reviews](/using/inbox-and-reviews/) and [Account settings](/using/account-settings/).
 
 A mention is matched to a project member by the part of their email before the `@`, or by their name written as one word (`annlee`, `ann-lee`, `ann.lee`, `ann_lee`), ignoring case. If a handle fits nobody, or fits two members, it mentions no one and nobody is notified. Pick from the list to be sure. When you edit a comment, only people you newly mention are notified.
 
@@ -31,17 +31,17 @@ A mention is matched to a project member by the part of their email before the `
 
 <Steps>
 
-1. Open the screenshot in any compare mode.
+1. **Open the screenshot.** Any compare mode works.
 
-2. Drag a rectangle over the part you mean, on the baseline or on the new screenshot.
+2. **Drag a rectangle.** Cover the part you mean, on the baseline or on the new screenshot.
 
-3. Write the comment in the box that opens. <Kbd keys="Mod+Enter" /> sends it, **Cancel** or <Kbd keys="Esc" /> drops it.
+3. **Write the comment.** Use the box that opens. <Kbd keys="Mod+Enter" /> sends it, **Cancel** or <Kbd keys="Esc" /> drops it.
 
 </Steps>
 
 The region appears as a numbered marker on the image. The same number shows beside the thread in the Comments tab, in a chip with the screenshot's name ("1 · pricing"), and the screenshot's row in the list shows how many comments it has. Click a marker to jump to its thread, or the chip to jump to its screenshot. A region remembers which side it was drawn on, baseline or new.
 
-Regions are fractions of the screenshot, so they stay in place however the image is zoomed. The smallest region is 1% of the screenshot in each direction.
+Regions scale with the image, so they stay in place at any zoom. The smallest region is 1% of the screenshot in each direction.
 
 To change a region, drag its corner handles or move it. Only the author does this, and a "Region saved" toast confirms it.
 
@@ -51,7 +51,7 @@ For keyboard users, the **Mark a region with the keyboard** button (the crosshai
 Drawing is offered only when the screenshot has a new image, so a removed screenshot can't get one. A reply never has a region of its own.
 </Aside>
 
-## Dragging can also draw ignore regions
+## Ignore regions
 
 Owners and admins get a second choice in the **View options** menu (the ⋯ button above the image) under **Dragging draws**: **Comments** or **Ignore regions**. With Ignore regions, a drag adds an area to leave out of every future comparison of that screenshot. This is a different thing from a comment region: it changes how builds are judged. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/). Members only see the Comments behavior.
 

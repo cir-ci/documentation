@@ -10,9 +10,9 @@ CirCI deletes what is old and what nothing uses, in the background.
 
 ## Retention
 
-Each project keeps its builds for a number of days (1 to 3650). Builds older than that, and hosted-site versions past their retention, expire. A new project starts with the instance's default, **30 days** until an instance admin changes **New projects keep builds for** in Instance settings (it has no environment variable, and it doesn't touch existing projects). Each project then changes its own in its settings. Files are deleted after expiry only once nothing references them.
+Each project keeps its builds for a number of days (1 to 3650). Builds older than that, and hosted-site versions past their retention, expire. A new project starts with the instance's default, **30 days** until an instance admin changes **New projects keep builds for** in Instance settings (it has no environment variable, and it doesn't touch existing projects). Each project then changes its own in its settings. A file is deleted only once no build or site uses it.
 
-Baselines matter: a build that is still the baseline for others should be kept. Choose a retention longer than the longest time a branch lives.
+The newest approved baseline on the default branch, for each build name, never expires, because later builds compare with it. Older baselines expire like any build, so choose a retention longer than the longest time a branch lives.
 
 ## Garbage collection
 
@@ -20,15 +20,15 @@ The worker runs a **retention pass every 6 hours**. One pass:
 
 <Steps>
 
-1. Purges workspaces that were deleted more than 30 days ago.
-2. Expires old builds and site versions.
-3. Removes expired undo records.
-4. Un-marks files that became referenced again, and **marks** files nothing references (screenshots, diffs, thumbnails, site files, upload claims).
-5. **Deletes** files that have been marked for longer than the grace period.
+1. **Remove deleted workspaces.** Permanently removes workspaces that were deleted more than 30 days ago.
+2. **Expire old data.** Expires old builds and site versions.
+3. **Clear undo records.** Removes expired undo records.
+4. **Mark unused files.** Un-marks files that became referenced again, and **marks** files nothing uses (screenshots, diffs, thumbnails, site files, and uploads that were never finished).
+5. **Delete marked files.** Deletes files that have been marked for longer than the grace period.
 
 </Steps>
 
-The grace period (**Unused files are deleted after** in Instance settings, or `GC_GRACE_HOURS`; default 24 hours) makes this race-free: a new upload that references a marked file clears the mark, and before deleting, each file is re-checked under a lock. Several processes can run a pass at once.
+The grace period (**Unused files are deleted after** in Instance settings, or `GC_GRACE_HOURS`; default 24 hours) protects files that are about to be used again: a new upload that needs a marked file clears the mark, and each file is checked once more, under a lock, just before it's deleted. Several processes can run a pass at once.
 
 ## Run it by hand
 
@@ -45,7 +45,7 @@ The dry run doesn't simulate builds and sites that are past retention.
 
 Both are also limits in Instance settings: a variable that is set wins and locks the field, otherwise the saved value applies.
 
-| Variable | Default | What it deletes |
+| Variable | Default | What it does |
 |---|---|---|
 | `JOB_RETENTION_DAYS` | 14 | Finished background jobs (done or failed). `0` keeps them. |
 | `UPLOAD_TIMEOUT_MINUTES` | 60 | Not a deletion: a build still uploading after this long fails and names the missing shards. `0` never. |

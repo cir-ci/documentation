@@ -39,7 +39,7 @@ circi admin project rotate-token --org acme --project web-app
 |---|---|---|
 | **Default branch** | `main` | Builds on this branch become baselines. |
 | **Keep builds for** | 30 days | Builds and sites older than this expire. Files nothing uses are deleted after a grace period. |
-| **Diff threshold** | 0% | The percentage of changed pixels at or below which a same-size screenshot counts as unchanged. At 0% every pixel change counts. |
+| **Diff threshold** | 0% | How much of a screenshot may differ before it counts as changed, as a share of its pixels. At 0%, any pixel change counts. |
 | **Approve default-branch builds automatically** | On | Builds on the default branch are approved when they have a baseline. |
 | **Unreviewed changes block merging** | On | Unreviewed changes keep the check red. |
 
