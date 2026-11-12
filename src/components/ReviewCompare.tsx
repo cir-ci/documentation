@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * The landing page's centerpiece: one real changed screenshot from the dashboard (build #22,
- * "contact": 18.2% of pixels changed), as the build page shows it. Drag or use the arrow keys on
+ * The landing page's centerpiece: one real changed screenshot from the dashboard (a seeded build,
+ * "settings/profile": 4.9% of pixels changed, cropped), as the build page shows it. Drag or use the arrow keys on
  * the slider to move between the baseline and this build, or switch to the diff. The slider
  * sweeps once on load (not with reduced motion) and stops at the first touch.
  */
@@ -47,8 +47,8 @@ export default function ReviewCompare(props: {
           </svg>
           <span>Needs review</span>
         </span>
-        <span className="rc-name">contact</span>
-        <span className="rc-meta">18.2% of pixels changed</span>
+        <span className="rc-name">settings/profile</span>
+        <span className="rc-meta">4.9% of pixels changed</span>
         <div role="group" aria-label="View" className="rc-modes">
           <button type="button" aria-pressed={mode === 'slider'} onClick={() => setMode('slider')}>
             Slider
@@ -59,13 +59,13 @@ export default function ReviewCompare(props: {
         </div>
       </div>
       <div className="rc-stage" style={{ aspectRatio: `${width} / ${height}` }}>
-        <img src={after} alt={mode === 'slider' ? 'This build: three contact cards below the heading.' : ''} width={width} height={height} />
         {mode === 'slider' ? (
           <>
+            <img src={after} alt="This build: the cards under the heading in two columns." width={width} height={height} />
             <img
               className="rc-before"
               src={before}
-              alt="Baseline: one contact card."
+              alt="Baseline: the cards under the heading in a single column of three."
               width={width}
               height={height}
               style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
@@ -90,7 +90,7 @@ export default function ReviewCompare(props: {
             />
           </>
         ) : (
-          <img className="rc-diff" src={diff} alt="Changed pixels in red where two cards were added." width={width} height={height} />
+          <img className="rc-diff" src={diff} alt="Changed pixels in red where the cards moved from one column to two." width={width} height={height} />
         )}
       </div>
       {mode === 'diff' ? (
