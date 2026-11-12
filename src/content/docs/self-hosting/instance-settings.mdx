@@ -7,39 +7,46 @@ description: The settings an instance admin can change in the dashboard, and how
 
 import { Aside } from '@astrojs/starlight/components'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
 
-Instance admins open **Instance settings** from the account menu. This is where the settings of the whole installation live, next to the instance's accounts, workspaces and health.
+Instance admins open **Instance** from the sidebar. It holds the settings of the whole installation, next to the instance's accounts, Workspaces and health.
+
+<ScreenFrame name="host-instance" alt="The Instance page: accounts, all workspaces, Instance settings and Health." caption="The Instance page, in the sidebar's Instance group." width={760} />
 
 <InstanceSettingNote setting="Environment settings moving into the dashboard">
-These settings are being moved from environment variables into Instance settings: who can create workspaces, sign-in methods, limits, SMTP, the Slack app and the instance's single sign-on providers. For each of them: set it in Instance settings, or by the environment variable as the initial value. This page is updated as each one lands; until then, check the page in your version of the dashboard.
+These settings are moving from environment variables into Instance settings: who can create workspaces, sign-in methods, limits, SMTP, the Slack app and the instance's single sign-on providers. For each of them, set it in Instance settings, or by the environment variable as the initial value. This page is updated as each one lands. Until then, check the page in your version of the dashboard to see which entries are editable.
 </InstanceSettingNote>
 
-## What the page shows today
+## What the page lists
 
-The current Instance settings page lists these settings with the environment variable behind each (the page names the variable next to the setting):
+Each entry names the environment variable behind it.
 
 | Section | Setting | Environment variable |
 |---|---|---|
 | Dashboard address | The address, and old addresses that redirect to it | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` |
-| Sign-in methods | Which methods the instance accepts (password, email code, single sign-on) | `AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED` |
+| Sign-in methods | Which methods the instance accepts: password, email code, single sign-on | `AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED` |
 | Who can create workspaces | Instance admins only, or everyone | `WORKSPACE_CREATION` |
-| Storage and limits | The storage driver, default retention of new projects, the grace period before unused files are deleted, the upload timeout, whether webhooks may call private addresses | `STORAGE_DRIVER`, `DEFAULT_PROJECT_RETENTION_DAYS`, `GC_GRACE_HOURS`, `UPLOAD_TIMEOUT_MINUTES`, `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` |
+| Storage and limits | The storage driver, the grace period before unused files are deleted, the upload timeout, whether webhooks may call private addresses | `STORAGE_DRIVER`, `GC_GRACE_HOURS`, `UPLOAD_TIMEOUT_MINUTES`, `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` |
 | Hosted sites | The sites domain, or "Not set up" | `STATIC_SITES_HOST` |
 | Mail | The SMTP server and sender, and a button that sends a test mail to your own address | `SMTP_*` |
 
 <Aside type="caution">
-Today these entries show what the server was started with. The goal is that they become editable in the dashboard, with the environment variable acting as the **initial value**. Until a setting is editable, change it by the environment variable and restart. `DEFAULT_PROJECT_RETENTION_DAYS` appears on the page as an environment name but isn't read by the configuration schema in the repository: check `packages/config/src/schema.ts` before relying on it.
+Where an entry isn't editable yet, change the environment variable and restart. The page also shows the default retention of new Projects (30 days) beside a `DEFAULT_PROJECT_RETENTION_DAYS` label, but the server doesn't read that variable: the default is built in, and each Project sets its own in its settings.
 </Aside>
 
-## The other instance pages
+## The other Instance pages
 
-- **Workspaces**: every workspace on the instance, and creating one. Instance admins manage accounts and workspaces but see the projects only of the workspaces they belong to.
-- **Accounts**: every account; change an email, ban or unban.
-- **Health**: checks (the same findings as `circi admin doctor`), services including queue depth, the domains and cookies check, and the **Setup code**.
-- **GitHub App**: create the GitHub App with the manifest flow, or see the one configured. See [GitHub](/integrations/github/).
+| Page | What it does |
+|---|---|
+| **Accounts** | Every account. Change an email, ban or unban. |
+| **Workspaces** | Every Workspace on the instance, deleted ones too, and creating one. Instance admins manage accounts and Workspaces but see the Projects only of the Workspaces they belong to. |
+| **Health** | The same checks as `circi admin doctor`, the services including queue depth, the domains and cookies check, and the **Setup code**. |
+| **GitHub App** | Create the GitHub App with the manifest flow, or see the one configured. See [GitHub](/integrations/github/). |
+
+<ScreenFrame name="host-health" alt="The Health page: four passing checks, then storage, disk space, database and mail." caption="Health. Run checks again repeats what circi admin doctor reports." width={760} />
 
 See [Instance administration](/using/instance-administration/) for how admins use these pages.
 
 ## Settings that stay environment variables
 
-Deployment-level values stay environment variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `PUBLIC_URL`, `HOST`, `PORT`, the storage settings, `TRUSTED_PROXIES`, `CIRCI_DIFF_ENGINE`. The full list, with the ones moving marked, is the [environment variable reference](/reference/environment-variables/).
+Deployment-level values stay environment variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `PUBLIC_URL`, `HOST`, `PORT`, the storage settings, `TRUSTED_PROXIES` and `CIRCI_DIFF_ENGINE`. The [environment variable reference](/reference/environment-variables/) marks the ones that are moving.

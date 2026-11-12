@@ -4,7 +4,7 @@ description: The compose files, what they run, and what to change for production
 ---
 {/* Source: deploy/docker-compose.yml, deploy/docker-compose.caddy.yml, deploy/docker-compose.s3.yml, deploy/.env.example, deploy/README.md, deploy/Dockerfile */}
 
-import { Aside, FileTree } from '@astrojs/starlight/components'
+import { Aside, FileTree, Steps } from '@astrojs/starlight/components'
 
 The `deploy/` folder of the repository is the reference install.
 
@@ -32,7 +32,7 @@ Everything the app reads comes from the `environment:` list, filled from `.env`.
 
 ## Settings file
 
-Copy `.env.example` to `.env`. Required: `POSTGRES_PASSWORD` and `BETTER_AUTH_SECRET`. For production also set:
+Copy `.env.example` to `.env`. `POSTGRES_PASSWORD` and `BETTER_AUTH_SECRET` are required. For production also set:
 
 | Variable | Why |
 |---|---|
@@ -60,15 +60,36 @@ For production S3 point `S3_*` at AWS S3, Cloudflare R2, Backblaze B2 or similar
 
 ## First run
 
-After the stack is up, open `PUBLIC_URL` and follow the setup page, or script it. The server commands run inside the container:
+Open `PUBLIC_URL` and follow the setup page, or script it. The server commands run inside the container.
 
-```sh
-docker compose exec circi circi admin setup-code
-docker compose exec circi circi admin user create --email you@acme.io --name "You" --instance-admin
-docker compose exec circi circi admin workspace create --name "Acme" --owner you@acme.io
-docker compose exec circi circi admin project create --org acme --name "Web app"
-docker compose exec circi circi admin doctor
-```
+<Steps>
+
+1. Print the code the setup page asks for.
+
+   ```sh
+   docker compose exec circi circi admin setup-code
+   ```
+
+2. Create the first account, as an instance admin.
+
+   ```sh
+   docker compose exec circi circi admin user create --email you@acme.io --name "You" --instance-admin
+   ```
+
+3. Create a Workspace and a Project. The project command prints its CI token once.
+
+   ```sh
+   docker compose exec circi circi admin workspace create --name "Acme" --owner you@acme.io
+   docker compose exec circi circi admin project create --org acme --name "Web app"
+   ```
+
+4. Check the install.
+
+   ```sh
+   docker compose exec circi circi admin doctor
+   ```
+
+</Steps>
 
 <Aside type="tip">
 `circi admin doctor` checks storage, the database and its migrations, mail, free disk space, the dashboard address, and the cookie scope of the domains. It exits 1 if anything warns or fails, so it works in a deploy script.

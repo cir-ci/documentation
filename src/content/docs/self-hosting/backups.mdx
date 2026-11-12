@@ -4,7 +4,9 @@ description: What to back up and how to restore.
 ---
 {/* Source: PLAN.md section 8 (Backups), deploy/docker-compose.yml, packages/db/src/schema/instance.ts, apps/server/src/cli/commands/storage.ts */}
 
-Two things hold your data, plus one secret.
+import { Steps } from '@astrojs/starlight/components'
+
+Two things hold your data, plus one secret. Back all three up.
 
 | What | Where | How |
 |---|---|---|
@@ -28,4 +30,12 @@ If a few files were lost, builds that reference them fail to load images, and a 
 
 ## Test a restore
 
-Restore into a scratch stack, point `PUBLIC_URL` at it, and run `circi admin doctor`. A backup you haven't restored is a guess.
+<Steps>
+
+1. Start a scratch stack with the same `BETTER_AUTH_SECRET`.
+2. Restore the dump with `pg_restore` and the files into its storage.
+3. Point `PUBLIC_URL` at the scratch stack, then run `circi admin doctor`.
+
+</Steps>
+
+A backup you haven't restored is a guess.

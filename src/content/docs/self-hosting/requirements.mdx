@@ -6,6 +6,13 @@ description: What you need to run CirCI, and how big a machine.
 
 import { Aside } from '@astrojs/starlight/components'
 
+Before you start, have:
+
+- A Linux host (or any machine) with Docker and Compose v2.
+- A hostname for the dashboard, such as `ci.acme.io`, with TLS.
+- Optionally a second domain used for nothing else, for hosted sites.
+- Optionally an SMTP server, for sign-in codes and invitations.
+
 ## What CirCI is made of
 
 | Part | What it is |
@@ -16,12 +23,11 @@ import { Aside } from '@astrojs/starlight/components'
 | **A reverse proxy** | Optional for a try-out, needed for https. The repository ships a Caddy setup. |
 | **SMTP** | Optional. Needed for email sign-in codes, invitations and "new sign-in" mail. |
 
-## What you need
+## Notes on the list
 
-- A Linux host (or any machine) with **Docker and Compose v2**. A small install is one VM.
-- A **hostname** for the dashboard (`ci.acme.io`) and TLS for it. Logins need https outside local development.
-- For [hosted sites](/self-hosting/site-domains/): a second, **separate** domain used for nothing else.
-- Enough disk (local storage) or a bucket. Storage is usually the biggest cost: every screenshot, diff and thumbnail is an object, though unchanged screenshots are stored once.
+- A small install is one VM. Logins need https outside local development.
+- [Hosted sites](/self-hosting/site-domains/) need their own **separate** domain, never one you serve anything else from.
+- Plan disk (local storage) or a bucket. Storage is usually the biggest cost: every screenshot, diff and thumbnail is an object, though unchanged screenshots are stored once.
 
 ## Sizing
 
@@ -42,6 +48,6 @@ The worker wakes on Postgres `LISTEN/NOTIFY`, so give it a **direct connection o
 
 ## Where the image comes from
 
-The Docker image is built from the repository (`docker compose up -d --build` in `deploy/`). Its layers include a Rust build of the native diff engine for the image's own architecture. The image runs one bundle plus `sharp`, `pg` and the AWS SDK, about 457 MB.
+The image is built from the repository (`docker compose up -d --build` in `deploy/`) and includes a Rust build of the native diff engine for the image's own architecture. It runs one bundle plus `sharp`, `pg` and the AWS SDK, about 457 MB.
 
 Next: [Docker Compose](/self-hosting/docker-compose/).
