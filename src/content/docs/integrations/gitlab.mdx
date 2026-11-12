@@ -20,7 +20,7 @@ It differs from [GitHub](/integrations/github/) in three ways: it uses an access
 
 ## Set up
 
-An owner or admin of the workspace does this under **Workspace settings**, **Integrations**, **Add integration**, **GitLab**.
+An owner or admin of the workspace does this under **Workspace settings** › **Integrations** › **Add integration** › **GitLab**.
 
 <Steps>
 
@@ -36,7 +36,7 @@ A connection is identified by the token's user on that GitLab server (`host#user
 
 ### Add the webhook on GitLab
 
-CirCI only learns about merge requests and notes if GitLab calls it. On the GitLab integration's page, owners and admins see the address and the secret to use. In each GitLab project (or group) open **Settings**, **Webhooks** and add:
+CirCI only learns about merge requests and notes if GitLab calls it. On the GitLab integration's page, owners and admins see the address and the secret to use. In each GitLab project (or group) open **Settings** › **Webhooks** and add:
 
 - **URL**: `PUBLIC_URL/webhooks/gitlab` (the alias `PUBLIC_URL/api/integrations/gitlab/webhook` also works).
 - **Secret token**: the secret shown on the integration's page. It's derived from the instance secret, so it doesn't change unless the instance secret does.

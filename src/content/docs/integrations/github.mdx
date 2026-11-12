@@ -28,7 +28,7 @@ Steps 1 and 2 are done once per instance by an instance admin; steps 3 and 4 by 
 
 1. Create the GitHub App on the instance, by one click or by hand (below).
 2. Install the App on your GitHub account or organization.
-3. In **Workspace settings**, **Integrations**, **Add integration**, pick **GitHub**. If the instance has an App, the dialog sends you to GitHub to install it, and the return connects that installation to this workspace.
+3. In **Workspace settings** › **Integrations** › **Add integration**, pick **GitHub**. If the instance has an App, the dialog sends you to GitHub to install it, and the return connects that installation to this workspace.
 4. Link each project to a repository (see [Link a project to a repository](#link-a-project-to-a-repository)), then mark the check as required in the repository's branch protection if it should block merging.
 
 </Steps>
@@ -54,7 +54,7 @@ The link from GitHub works once. If creation fails, start again from the button.
 </TabItem>
 <TabItem label="By hand (environment)">
 
-Create a GitHub App yourself (GitHub **Settings**, **Developer settings**, **GitHub Apps**) with:
+Create a GitHub App yourself (GitHub **Settings** › **Developer settings** › **GitHub Apps**) with:
 
 - Webhook URL: `PUBLIC_URL/webhooks/github` (the alias `PUBLIC_URL/api/integrations/github/webhook` also works), and a webhook secret you choose.
 - Permissions: **Checks: write**, **Pull requests: write**, **Metadata: read**.
@@ -200,7 +200,7 @@ Decisions made this way appear in the build's activity as coming from a GitHub c
 | No check appears on the pull request | The project isn't linked to this repository. Check **Repository** in the project's settings, and that the App is installed on it |
 | The check never moves from "Processing screenshots…" | The worker isn't running or the build is stuck. See [Instance administration](/using/instance-administration/) for the worker's health |
 | `/circi approve` gets a thumbs-down | Read the help comment: it names the reason (see the table above) |
-| The help comment says it can't tell who you are | Link your GitHub account in **Profile**, **Signed in with**, using an account that belongs to the project's workspace |
+| The help comment says it can't tell who you are | Link your GitHub account in **Profile** › **Signed in with**, using an account that belongs to the project's workspace |
 | The integration shows **needs attention** | GitHub removed or suspended the installation, or rejected the credentials. Reinstall the App; an unsuspend or a fresh install clears the flag |
 | Buttons or comments do nothing at all | GitHub's webhook deliveries are failing. In the GitHub App's **Advanced** page, look at **Recent deliveries**, and check that `PUBLIC_URL` is reachable from GitHub and the secret matches |
 

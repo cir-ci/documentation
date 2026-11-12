@@ -7,7 +7,7 @@ description: The CI API under /v1, the Argos-compatible /v2, the dashboard's JSO
 import { Aside, Steps } from '@astrojs/starlight/components'
 import Diagram from '../../../components/Diagram.astro'
 
-CirCI's server exposes four kinds of HTTP surface. Only the CI API and the webhooks are meant for outside programs.
+CirCI's server answers on seven groups of paths. Scripts should use only the CI API (`/v1`) and the Argos-compatible API (`/v2`); webhooks are for git hosts and other tools sending events to CirCI.
 
 | Prefix | For | Authentication |
 |---|---|---|
@@ -20,7 +20,7 @@ CirCI's server exposes four kinds of HTTP surface. Only the CI API and the webho
 | `/internal/*` | Answers the reverse proxy only (Caddy's `tls-ask`). | Never reachable from browsers. |
 
 <Aside type="caution">
-Only `/v1` and `/v2` are intended for scripts. The dashboard API under `/api` changes with the dashboard. Its wire types are in the `@circi/api` package (types only), one namespace per resource.
+Scripts should use only `/v1` and `/v2`. The dashboard API under `/api` changes with the dashboard. Its wire types are in the `@circi/api` package (types only), one namespace per resource.
 </Aside>
 
 ## The CI API (`/v1`)
@@ -33,7 +33,7 @@ A token can only act on its own project. A session can't upload, and a token can
 | `POST /v1/builds` | Create a build (or join the shard of an existing one) from the commit, branch, pull request, base branch, ancestry and the list of screenshot files (SHA-256, size, `image/png`). Answers `201` with the build and the upload instructions for the files the server doesn't have. |
 | `PUT /v1/files/:sha256` | Upload a file through the API (local-disk storage). With S3, the instruction is a presigned URL bound to the checksum instead. Body: `image/png` or `application/octet-stream`. Stored only if the bytes hash to `:sha256`. |
 | `POST /v1/builds/:id/finalize` | Send the screenshot names, hashes and metadata of one shard (`shardIndex` for sharded builds). `409` with the missing files when any weren't uploaded or failed verification. Answers `complete` and the shard counts. |
-| `GET /v1/builds/:id/status` | The build, counts, `outcome`, `gate` and `errorMessage`. `?gate=status|exit-code` to ask for a mode. |
+| `GET /v1/builds/:id/status` | The build, counts, `outcome`, `gate` and `errorMessage`. `?gate=status` or `?gate=exit-code` to ask for a mode. |
 | `POST /v1/sites` | Upload a site as a `.tar.gz` (the CLI does this). `404` when hosting isn't set up, `403` when it's off for the project. |
 | `GET /v1/sites/served` | Which sites the project serves. |
 

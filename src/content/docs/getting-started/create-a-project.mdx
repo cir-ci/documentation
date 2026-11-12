@@ -27,7 +27,7 @@ docker compose exec circi circi admin project create --org acme --name "Web app"
 
 A CI token identifies one project to the upload API. It starts with `circi_`, is shown **once** (store it in your CI's secret store), and is kept hashed. A token can only upload builds and read the status of its own project's builds. It can't read the dashboard.
 
-To replace it, open the project's **Settings**, **CI token**, and rotate it. The old token stops working immediately. From the command line:
+To replace it, open the project's **Settings** › **CI token**, and rotate it. The old token stops working immediately. From the command line:
 
 ```sh
 circi admin project rotate-token --org acme --project web-app

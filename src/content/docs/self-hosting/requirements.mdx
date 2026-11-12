@@ -36,7 +36,7 @@ From reading the code and the load tests (see [Performance](/self-hosting/perfor
 - About **2 vCPU and 4 GB** with a small Postgres serves dozens to a couple of hundred people browsing, and a few CI builds per minute. Browsing is cheap; **image processing is the limit**.
 - The worker runs two builds at a time by default. With the native diff engine a 12-core machine processed about 250 builds of 10 screenshots per minute in the load tests. A server with fewer cores gets less.
 - Worker memory peaks around 700 MB with the default engine in those tests (the `js-workers` engine used about 2 GB).
-- Keep the worker in the same process on a 1 to 2 vCPU box. Run a second worker only when the queue depth (Instance settings, Health) stays above zero.
+- Keep the worker in the same process on a 1 to 2 vCPU box. Run a second worker only when the queue depth (**Instance** › **Health**) stays above zero.
 
 <Aside type="note">
 The capacity figures are estimates, except for the measurements in the performance report, which came from one machine. Measure on yours.

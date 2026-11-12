@@ -17,7 +17,7 @@ The Bitbucket integration supports Bitbucket Cloud. Each build of a linked proje
 
 ## Set up
 
-An owner or admin of the workspace opens **Workspace settings**, **Integrations**, **Add integration**, **Bitbucket**.
+An owner or admin of the workspace opens **Workspace settings** › **Integrations** › **Add integration** › **Bitbucket**.
 
 <Steps>
 
@@ -34,7 +34,7 @@ A connection is one Bitbucket workspace, and that workspace can be connected in 
 
 ### Add the webhook on Bitbucket
 
-On the Bitbucket integration's page, owners and admins see the webhook address and the secret. In each Bitbucket repository open **Repository settings**, **Webhooks** and add:
+On the Bitbucket integration's page, owners and admins see the webhook address and the secret. In each Bitbucket repository open **Repository settings** › **Webhooks** and add:
 
 - **URL**: `PUBLIC_URL/webhooks/bitbucket` (the alias `PUBLIC_URL/api/integrations/bitbucket/webhook` also works).
 - **Secret**: the secret shown on the integration's page. It's derived from the instance secret.

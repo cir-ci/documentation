@@ -52,7 +52,7 @@ Run any number of each from the same image, against the same Postgres and storag
   <path d="M524 115h54m-6 -6l6 6l-6 6" class="d-line" />
 </Diagram>
 
-Workers claim jobs with `FOR UPDATE SKIP LOCKED`, so several never take the same job, and the sweeps take an exclusive lock, so running them in every worker is safe. Run extra workers when the queue stays above zero: **Instance**, **Health** shows it under Background jobs, with each queue's waiting, running and failed counts.
+Workers claim jobs with `FOR UPDATE SKIP LOCKED`, so several never take the same job, and the sweeps take an exclusive lock, so running them in every worker is safe. Run extra workers when the queue stays above zero: **Instance** › **Health** shows it under Background jobs, with each queue's waiting, running and failed counts.
 
 Several servers can run behind one proxy: they share everything through Postgres and storage. A saved Instance setting reaches each process within about 30 seconds. See [Instance settings](/self-hosting/instance-settings/).
 

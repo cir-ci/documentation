@@ -16,7 +16,7 @@ On a fresh install the dashboard shows **Set up CirCI**, a guided flow in four s
 
 1. **Account.** Enter the setup code (from `docker compose logs circi`, or `docker compose exec circi circi admin setup-code`), then your name, email and a password of at least 12 characters. This account is an **instance admin**.
 2. **Workspace.** A name and an address (the slug in URLs, for example `acme`). You are its owner.
-3. **Storage.** The flow checks that the server can write to storage and lets you re-run the check. You can continue with warnings and come back to them under Instance settings, Health.
+3. **Storage.** The flow checks that the server can write to storage and lets you re-run the check. You can continue with warnings and come back to them under **Instance** › **Health**.
 4. **Project.** Name your first project. The flow shows its CI token once: copy it now.
 
 </Steps>
@@ -33,7 +33,7 @@ The sign-in page offers the methods your instance allows.
 - **Email code.** With SMTP configured, people with an account can get a 6-digit code by email. A code works once, expires after 10 minutes and locks after 5 wrong attempts. Requests are limited to 5 per address per 15 minutes. An address without an account gets the same answer and no mail.
 - **Single sign-on.** A button for each configured provider (GitHub, Google, GitLab or any OpenID Connect provider), and "Sign in through your workspace" when a workspace has connected its own provider.
 
-Signing in through a provider never creates an account by itself. The person must have been invited, or the provider must be trusted for email and the address on a verified workspace domain. See [Members and roles](/using/members-and-roles/) and [Workspace settings](/using/workspace-settings/).
+Signing in through a provider doesn't create an account unless the person was invited, or the provider is trusted for email and the address is on a verified workspace domain. See [Members and roles](/using/members-and-roles/) and [Workspace settings](/using/workspace-settings/).
 
 ## Adding people
 

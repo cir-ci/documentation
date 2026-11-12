@@ -10,7 +10,7 @@ The dashboard, the CLI and the API use the same terms. For a quick alphabetical 
 
 ## Workspaces and projects
 
-**Workspace.** The top-level group: your company or team. It has members with roles, sign-in rules, email domains, integrations and defaults for its projects. In the CLI the flag that names a workspace is `--org <slug>`, kept from when workspaces were called organizations.
+**Workspace.** The top-level group that owns projects, such as a company or a team. It has members with roles, sign-in rules, email domains, integrations and defaults for its projects. In the CLI, the flag that names a workspace is `--org <slug>`.
 
 **Project.** One thing you test, for example a web app. A project has a CI token, a default branch, a diff threshold, retention, review rules, ignore regions and optionally a linked repository and hosted sites. Everything below belongs to a project.
 
@@ -40,7 +40,7 @@ The dashboard, the CLI and the API use the same terms. For a quick alphabetical 
 
 **Triage.** The list of things in a project that need a decision beyond a normal review: flaky screenshots, screenshots with no baseline, and builds that failed. Items can be snoozed (until the next push, tomorrow, next week or a date).
 
-**Flaky** <StatusChip status="flaky" glyph />**.** A screenshot whose image keeps coming back to one it already had on the default branch (by default 3 times in the last 10 commits, settable from 2 to 8), or that came out different on two runs of the same commit. A screenshot that was redesigned (A, then B, then C) isn't flaky.
+**Flaky.** <StatusChip status="flaky" /> A screenshot whose image keeps coming back to one it already had on the default branch (by default 3 times in the last 10 commits, settable from 2 to 8), or that came out different on two runs of the same commit. A screenshot that was redesigned (A, then B, then C) isn't flaky.
 
 ## Gates and sites
 

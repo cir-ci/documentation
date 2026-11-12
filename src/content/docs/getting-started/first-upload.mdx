@@ -13,7 +13,7 @@ You need three things: a folder of PNG screenshots (any test tool will do; Playw
 
 <Steps>
 
-1. Set your address and token. The project's **Settings**, **CI token** page shows this snippet with your address filled in.
+1. Set your address and token. The project's **Settings** › **CI token** page shows this snippet with your address filled in.
 
    ```sh
    export CIRCI_API_URL=http://localhost:3000
@@ -29,7 +29,7 @@ You need three things: a folder of PNG screenshots (any test tool will do; Playw
 </Steps>
 
 <Aside type="note">
-`npx circi` needs the CLI package (`@circi/cli`) to be installable from where you run it. If it isn't published to a registry yet, build it from the repository (`pnpm build`, then run `packages/cli/dist/main.mjs`).
+`npx circi` runs the CLI package, `@circi/cli`, so your CI must be able to install it. Otherwise build it from the repository (`pnpm build`) and run `packages/cli/dist/main.mjs`.
 </Aside>
 
 ## What the CLI does
@@ -38,7 +38,7 @@ You need three things: a folder of PNG screenshots (any test tool will do; Playw
 - An optional `<file>.png.json` next to a screenshot adds metadata (browser, viewport, test name).
 - A screenshot can be at most 25 MB.
 - On a CI it recognizes, it reads the commit, branch and pull request itself. Locally it uses git. Override with `CIRCI_COMMIT`, `CIRCI_BRANCH`, `CIRCI_PR_NUMBER` and `CIRCI_BASE_BRANCH`.
-- It retries transient errors with backoff and prints how many screenshots it found.
+- It retries network errors and server errors (5xx) with growing waits, and prints how many screenshots it found.
 
 With `--wait` it then waits for the result and exits `0` (passed), `1` (changes need review) or `2` (error). Every flag is in the [CLI reference](/ci/cli/).
 
