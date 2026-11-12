@@ -131,10 +131,13 @@ const ratio = asked !== undefined && Number.isFinite(asked) && asked > natural ?
     overflow: hidden;
     background: var(--circi-surface-chrome);
   }
+  /* margin 0: Starlight spaces any element after a sibling in prose by 1rem, which pushed the
+     second (light) capture down inside the frame. */
   .shot :global(img) {
     display: block;
     width: 100%;
     height: auto;
+    margin: 0;
   }
   .shot-light,
   .zoom-light {
@@ -205,6 +208,7 @@ const ratio = asked !== undefined && Number.isFinite(asked) && asked > natural ?
   }
   .zoom-stage :global(img) {
     display: block;
+    margin: 0;
     width: 100%;
     height: auto;
     border-radius: var(--circi-radius-control);

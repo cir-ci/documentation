@@ -91,6 +91,7 @@ const [b, a, d] = await Promise.all([before, after, diff].map((src) => getImage(
   }
   .rc-stage img {
     display: block;
+    margin: 0; /* Starlight spaces a sibling in prose by 1rem */
     width: 100%;
     height: 100%;
     object-fit: cover;
