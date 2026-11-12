@@ -9,13 +9,13 @@ import ScreenFrame from '../../../components/ScreenFrame.astro'
 import Kbd from '../../../components/Kbd.astro'
 import StatusChip from '../../../components/StatusChip.astro'
 
-Every build has a discussion in the **Comments** tab beside the viewer. A comment can be general, or pinned to a rectangle on one screenshot so that everyone looks at the same pixels. Anyone who can see the project can read and write comments.
+Every build has a discussion in the **Comments** tab beside the image. A comment can be general, or pinned to a rectangle on one screenshot so that everyone looks at the same pixels. Anyone who can see the project can read and write comments.
 
 <ScreenFrame name="use-comments" alt="The Comments tab of build 61. A comment is pinned to a numbered region on the pricing screenshot, with two replies under it. Its chip reads 1 and pricing." caption="A comment pinned to region 1 of the pricing screenshot, with two replies. The marker on the new image shows where." />
 
 ## Write a comment
 
-Press <Kbd keys="c" /> on the build screen, or open the **Comments** tab and click the field. Type, then press the **Comment** button or <Kbd keys="Mod+Enter" />. A comment is at most 5000 characters. The tab's badge counts the comments in the build.
+Press <Kbd keys="c" /> on the build page, or open the **Comments** tab and click the field. Type, then press the **Comment** button or <Kbd keys="Mod+Enter" />. A comment is at most 5000 characters. The tab's badge counts the comments in the build.
 
 - **Reply** under a comment starts a reply. Threads are one level deep: a reply can't have replies of its own, so reply to the first comment of the thread.
 - **Edit** and **Delete** show under your own comments. An edited comment says "(edited)". Owners and admins of the workspace can delete anyone's comment, but only the author edits it.
@@ -45,7 +45,7 @@ Regions are fractions of the screenshot, so they stay in place however the image
 
 To change a region, drag its corner handles or move it. Only the author does this, and a "Region saved" toast confirms it.
 
-For keyboard users, the **Mark a region with the keyboard** button (the crosshair in the viewer toolbar) starts a region: the arrow keys move it, <Kbd keys="Shift" /> + arrow keys resize it, <Kbd keys="Enter" /> confirms, <Kbd keys="Esc" /> cancels.
+For keyboard users, the **Mark a region with the keyboard** button (the crosshair in the toolbar above the image) starts a region: the arrow keys move it, <Kbd keys="Shift" /> + arrow keys resize it, <Kbd keys="Enter" /> confirms, <Kbd keys="Esc" /> cancels.
 
 <Aside type="note">
 Drawing is offered only when the screenshot has a new image, so a removed screenshot can't get one. A reply never has a region of its own.

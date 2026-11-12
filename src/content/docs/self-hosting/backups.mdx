@@ -10,8 +10,8 @@ Two things hold your data, plus one secret. Back all three up.
 
 | What | Where | How |
 |---|---|---|
-| **The database** | Postgres | `pg_dump` on a schedule, or your managed Postgres' snapshots and point-in-time recovery. |
-| **The files** | The `files` volume (local disk) or the S3 bucket | Snapshot the volume, or turn on bucket versioning, or replicate the bucket. |
+| **The database** | Postgres | `pg_dump` on a schedule, or your managed Postgres' backups and point-in-time recovery. |
+| **The files** | The `files` volume (local disk) or the S3 bucket | Back up the volume or bucket, turn on bucket versioning, or replicate the bucket. |
 | **The secret** | `BETTER_AUTH_SECRET` | Keep it in your secret manager. Without it a restored instance signs everyone out. |
 
 ## Database

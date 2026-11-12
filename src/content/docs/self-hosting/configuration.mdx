@@ -38,7 +38,7 @@ Some variables only make sense together. The server checks them at start and pri
 | `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_WEBHOOK_SECRET` | All three or none. |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Both, and a matching P-256 pair. |
 | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` | `PUBLIC_URL` is the root of its own hostname. The previous list can't contain the current host. |
-| `STATIC_SITES_HOST` | Refused if it is the dashboard host, its parent or child, or shares its parent domain. |
+| `STATIC_SITES_HOST` | Refused if it's the dashboard host, its parent or child, or shares its parent domain. |
 | `AUTH_EMAIL_ENABLED=true` | Without SMTP this only logs a warning, and email sign-in stays off. |
 | `AUTH_PASSWORD_ENABLED=false` | Needs email codes to be available, or nobody could sign in. |
 

@@ -9,9 +9,9 @@ import ScreenFrame from '../../../components/ScreenFrame.astro'
 import Kbd from '../../../components/Kbd.astro'
 import StatusChip from '../../../components/StatusChip.astro'
 
-A build is one upload of screenshots from CI. When it has changes against the baseline, someone looks at each changed screenshot and approves or rejects it. The build's status follows from those decisions. This page covers the build screen; [Comments and regions](/using/comments-and-regions/) covers the discussion beside it.
+A build is one upload of screenshots from CI. When it has changes against the baseline, someone looks at each changed screenshot and approves or rejects it. The build's status follows from those decisions. This page covers the build page; [Comments and regions](/using/comments-and-regions/) covers the discussion beside it.
 
-<ScreenFrame name="use-build-review" alt="Build 93 with one changed screenshot, pricing, shown side by side with its baseline. The header has the Needs review state, the overdue time and the watchers, with Request review, Reject, Approve and Approve all on the right. The Details tab lists the build and the people asked." caption="A build with one changed screenshot. The list is on the left, the viewer in the middle and the Details tab on the right." />
+<ScreenFrame name="use-build-review" alt="Build 93 with one changed screenshot, pricing, shown side by side with its baseline. The header has the Needs review status, the overdue time and the watchers, with Request review, Reject, Approve and Approve all on the right. The Details tab lists the build and the people asked." caption="A build with one changed screenshot. The list is on the left, the viewer in the middle and the Details tab on the right." />
 
 Anyone who can see the project can approve, reject, comment and ask for reviews: project members, and owners and admins of the workspace. See [Members and roles](/using/members-and-roles/).
 
@@ -29,11 +29,11 @@ The header shows the build's state:
 | <StatusChip status="approved" /> | Every changed screenshot is approved. |
 | <StatusChip status="rejected" /> | At least one changed screenshot is rejected. |
 | <StatusChip status="unchanged">No changes</StatusChip> | Nothing differs from the baseline. |
-| No baseline | There was nothing to compare with. The first build of a project is like this: every screenshot is new, and later builds are compared with it once it is approved. |
+| No baseline | There was nothing to compare with. The first build of a project is like this: every screenshot is new, and later builds are compared with it once it's approved. |
 | <StatusChip status="failed" /> | The build errored. The message is shown under the header. |
 | Expired | Its screenshots were deleted under the project's retention. See [Project settings](/using/project-settings/). |
 
-Next to the state the header can show the review target (for example "22h left" or "Overdue 22h"), and an eye with the number of people watching the build: its author and whoever was asked to review, with "you're watching" when you are one of them. Nothing else sits under the header: the screenshot list and the viewer start right below it.
+Next to the status the header can show the review target (for example "22h left" or "Overdue 22h"), and an eye with the number of people watching the build: its author and whoever was asked to review, with "you're watching" when you are one of them. Nothing else sits under the header: the screenshot list and the viewer start right below it.
 
 ## The screenshot list
 
@@ -48,7 +48,7 @@ The list on the left groups the screenshots in review order. A group is only sho
 | Flaky | collapsed | Changed screenshots known to be flaky on the default branch. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/) |
 | Unchanged | collapsed | Identical or within the threshold |
 
-A screenshot that couldn't be read has nothing to compare and nothing to decide: the viewer shows the file's name and the reason instead of images, and the rest of the build stays reviewable. The build can't pass until it is uploaded again with a valid PNG. What that means for the merge follows the project's **Unreviewed changes block merging** setting, like a build that failed to process: with it on, the check fails and `circi upload --wait` exits 2; with it off, the check is neutral and `--wait` exits 0 with a warning that names each file.
+A screenshot that couldn't be read has nothing to compare and nothing to decide: the build page shows the file's name and the reason instead of images, and the rest of the build stays reviewable. The build can't pass until it's uploaded again with a valid PNG. What that means for the merge follows the project's **Unreviewed changes block merging** setting; see [How a build flows](/introduction/how-a-build-flows/#couldnt-read).
 
 Each row shows a status icon, the name, the number of comment threads, and a short figure: the percentage of pixels that changed, or "resized" when the dimensions differ. Above the list, "2 of 5 reviewed" counts the screenshots that need a decision and have one. Press <Kbd keys="j" /> and <Kbd keys="k" /> to move through the list; a collapsed group counts as one stop, opened with <Kbd keys="Enter" />.
 
@@ -56,7 +56,7 @@ Right-click a row for Open, Open in new tab, Copy link, Copy name, Approve, Reje
 
 ## Look at a change
 
-The viewer has four compare modes, chosen with the buttons above the image or the keys <Kbd keys="1" /> to <Kbd keys="4" />:
+The build page has four compare modes, chosen with the buttons above the image or the keys <Kbd keys="1" /> to <Kbd keys="4" />:
 
 | Key | Mode | Shows |
 |---|---|---|
@@ -93,7 +93,7 @@ Decisions are made per screenshot. Each acts at once and shows a toast with **Un
 
 The build's review status is derived from its screenshots: all changed screenshots approved means the build is **Approved**; one rejected means **Rejected**; anything else is still **Needs review**. Unchanged screenshots need no decision. When the status moves, the author is notified, webhooks fire (see [Webhooks](/integrations/webhooks/)), and the check on the pull request is updated. People who were asked to review stop being asked once the build is decided.
 
-On the project's default branch, an approved screenshot becomes the baseline later builds are compared with. A default-branch screenshot can be accepted as a baseline even while the rest of the build is still pending. Other branches only count once the whole build is approved. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
+On the project's default branch, an approved screenshot becomes the baseline later builds are compared with. A default-branch screenshot can become the baseline even while the rest of the build is still pending. Other branches only count once the whole build is approved. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
 
 ### Merge gate
 
@@ -101,7 +101,7 @@ With a repository linked, the pull request check follows the build. By default u
 
 ## The sidebar
 
-Three tabs sit beside the viewer.
+Three tabs sit beside the image.
 
 - **Details**: two groups. **Build** has the pull request, commit, branch, when it was uploaded, and the baseline it was compared with and how it was chosen ("where this branch started", or the latest build on the default branch when git history wasn't available). **People** lists everyone who was asked to review and by whom ("Assigned automatically" when a [review rule](/using/review-requests-and-rules/) did). Below that: how the selected screenshot changed over recent default-branch builds ("This screenshot on main"), linked issues, and **Decisions**, every decision made so far with its reason.
 - **Activity**: what happened to the build, oldest first: upload, checks, review requests, decisions, comments and issues created.

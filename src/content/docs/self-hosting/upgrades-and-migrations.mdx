@@ -10,7 +10,7 @@ CirCI is one image plus Postgres. Upgrading is: back up, build the new image, st
 
 <Steps>
 
-1. **Back up** the database (and the storage if it is local disk). See [Backups](/self-hosting/backups/).
+1. **Back up** the database (and the storage if it's local disk). See [Backups](/self-hosting/backups/).
 2. **Read the changes** in the repository since your version, especially new migrations in `packages/db/migrations` and new environment variables.
 3. **Pull and rebuild.**
 
@@ -38,7 +38,7 @@ docker compose run --rm circi migrate          # applies migrations and exits
 Background jobs are rows in the database and **outlive a deploy**. A new version has to understand jobs queued by the old one, and the old one may still be running while the new starts. The project's rule is that a job name or payload key is never changed without a rolling-deploy plan, so upgrades between adjacent versions are safe to roll. If you skip many versions, stop the old workers and let the queue drain first (Instance settings, Health shows the queue depth), then upgrade.
 
 <Aside type="caution">
-Migrations are forward-only SQL. There is no automatic downgrade: to go back to an older version, restore the backup you took in step 1.
+Migrations are forward-only SQL. There's no automatic downgrade: to go back to an older version, restore the backup you took in step 1.
 </Aside>
 
 ## Things that sign people out or break links

@@ -26,7 +26,7 @@ deploy/
 - **postgres** (`postgres:18-alpine`) with a named volume `pgdata`, a health check, user and database `circi`, and the password from `POSTGRES_PASSWORD`.
 - **circi**, built from `deploy/Dockerfile`, command `all` (server and worker in one process), published on `CIRCI_PORT` (default 3000). Files go to the `files` volume at `/var/lib/circi/files`. It waits for Postgres to be healthy, then applies migrations on start.
 
-Everything the app reads comes from the `environment:` list, filled from `.env`. The compose file passes through the common variables (URLs, SMTP, sign-in, GitHub App, sites, timeouts, diff engine). A variable that is not in that list is **not** passed to the container: for example `SMTP_SECURE`, `SLACK_CLIENT_ID`, `AUTH_GITLAB_*`, `CIRCI_DIFF_THREADS` and `DATABASE_POOL_MAX`. Add it to the `environment:` block (or use an `env_file`) when you need it.
+Everything the app reads comes from the `environment:` list, filled from `.env`. The compose file passes through the common variables (URLs, SMTP, sign-in, GitHub App, sites, timeouts, diff engine). A variable that isn't in that list is **not** passed to the container: for example `SMTP_SECURE`, `SLACK_CLIENT_ID`, `AUTH_GITLAB_*`, `CIRCI_DIFF_THREADS` and `DATABASE_POOL_MAX`. Add it to the `environment:` block (or use an `env_file`) when you need it.
 
 ## Settings file
 

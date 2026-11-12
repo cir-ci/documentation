@@ -80,12 +80,12 @@ A site can have **one custom domain**, such as `storybook.acme.com`, that always
 
 </Steps>
 
-**Change** edits the domain and **Remove** stops the site from opening on it (after a confirmation). A domain another site holds, the dashboard's host, or anything that shares cookie scope with it is refused: with the dashboard on `ci.acme.io`, `storybook.acme.io` is refused, but `storybook.acme.com` is fine. A domain that can't be a CNAME, such as an apex, can use `A` or `AAAA` records instead; the dashboard only shows the CNAME.
+**Change** edits the domain and **Remove** stops the site from opening on it (after a confirmation). A domain another site holds, the dashboard's host, or anything that shares cookie scope with it's refused: with the dashboard on `ci.acme.io`, `storybook.acme.io` is refused, but `storybook.acme.com` is fine. A domain that can't be a CNAME, such as an apex, can use `A` or `AAAA` records instead; the dashboard only shows the CNAME.
 
 ## How long sites are kept
 
 Hosted site versions expire with their project's retention (**Keep builds for**, 30 days by default), except a version a live branch link still serves. See [Retention and garbage collection](/self-hosting/retention-and-gc/) and [Workspace settings](/using/workspace-settings/).
 
 <Aside type="note">
-Not supported yet: a site switcher injected into the page, a live view embedded in the review screen, deep links from screenshots to stories, branch expiry and garbage collection of old versions.
+Not supported yet: a site switcher injected into the page, a live view embedded in the build page, deep links from screenshots to stories, branch expiry and garbage collection of old versions.
 </Aside>

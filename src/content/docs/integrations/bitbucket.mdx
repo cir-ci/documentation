@@ -73,11 +73,11 @@ CirCI has no Bitbucket sign-in provider (the sign-in providers are GitHub, GitLa
 
 ## Settings
 
-The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read follows **Unreviewed changes block merging** too: it fails when that is on and passes, with the count in the description, when it is off.
+The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read follows **Unreviewed changes block merging** too: it fails when that is on and passes, with the count in the description, when it's off.
 
 ### The merge gate in CI
 
-`circi upload --wait` decides who blocks the merge: the status on Bitbucket or the CI job (see [the CLI](/ci/cli/)). The server picks the status as the gate when a project reports to a git host, but today it only knows that when the GitHub App is configured on the instance. On an instance without it, a Bitbucket-linked project defaults to the CI job being the gate (exit code 1 until approved). Pass `--gate status` to make Bitbucket's status the gate.
+Who blocks the merge, Bitbucket's status or the CI job, is explained in [How a build flows](/introduction/how-a-build-flows/#merge-gate). On an instance without the GitHub App configured, the server doesn't know a Bitbucket-linked project reports to a git host, so pass `--gate status` to make Bitbucket's status the gate.
 
 ## Troubleshooting
 

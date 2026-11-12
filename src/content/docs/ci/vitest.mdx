@@ -42,13 +42,13 @@ Import `circiScreenshot` from `@circi/vitest/browser`, not `@circi/vitest`: the 
 
 It turns CSS animation and transitions off, waits for fonts and two animation frames, then saves `<project root>/.circi/screenshots/button/primary.png`. Both a locator (`page.getByRole(...)`, `page.elementLocator(el)`) and `page` itself work as the target. Names are lowercased and `/` makes folders.
 
-Set `CIRCI_API_URL` and `CIRCI_TOKEN` in CI. Without them the reporter prints a line and does nothing, and the pictures stay in `.circi/screenshots` (add it to `.gitignore`). Delete that folder before a run (a Vitest `globalSetup` is the place), or pictures of tests you removed are uploaded again.
+Set `CIRCI_API_URL` and `CIRCI_TOKEN` in CI. Without them the reporter prints a line and does nothing, and the screenshots stay in `.circi/screenshots` (add it to `.gitignore`). Delete that folder before a run (a Vitest `globalSetup` is the place), or screenshots of tests you removed are uploaded again.
 
 Reporters are a root-level Vitest option, not per project: with several projects, one `CirciReporter` collects what all of them saved.
 
 ## Using `toMatchScreenshot`
 
-Already using Vitest's `expect(...).toMatchScreenshot()`? Set `collectToMatchScreenshot: true` on the reporter and the pictures it keeps in `__screenshots__` folders are uploaded too (its `-actual` and `-diff` pictures are skipped). CirCI then does the comparing and review; keep or drop Vitest's own assertion as you prefer.
+Already using Vitest's `expect(...).toMatchScreenshot()`? Set `collectToMatchScreenshot: true` on the reporter and the screenshots it keeps in `__screenshots__` folders are uploaded too (its `-actual` and `-diff` files are skipped). CirCI then does the comparing and review; keep or drop Vitest's own assertion as you prefer.
 
 ## One build per browser, and shards
 
@@ -61,7 +61,7 @@ Give each browser project its own reporter `name` (`vitest-chromium`, `vitest-fi
 | `apiUrl`, `token` | Default to `CIRCI_API_URL` and `CIRCI_TOKEN`. |
 | `name` | The build name. |
 | `dir` | Where to look for screenshots. |
-| `collectToMatchScreenshot` | Also upload `toMatchScreenshot` pictures. |
+| `collectToMatchScreenshot` | Also upload `toMatchScreenshot` screenshots. |
 | `root` | The project root. |
 | `wait` | Fail the run when changes need review. |
 | `strict` | Fail the run when the upload fails. By default a failed upload never changes the test result. |

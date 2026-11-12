@@ -87,7 +87,7 @@ deploy/ dev/ e2e/ perf/ docs/
 
 - **`@circi/db` subpaths say the layer.** Import `@circi/db/queries`, `/repositories`, `/queue` or `/schema`; the root is the connection, errors and shared types.
 - **Repositories store and look up, nothing else.** They never queue jobs; a repository that changes something returns what happened and the caller decides what follows.
-- **Services own every change that triggers something.** The service opens the transaction and queues the jobs and notices, so a webhook delivery or check run exists exactly when the change is committed (a transactional outbox). The build pipeline is the one exception: it is idempotent step by step, so no connection is held across image work.
+- **Services own every change that triggers something.** The service opens the transaction and queues the jobs and notices, so a webhook delivery or check run exists exactly when the change is committed (a transactional outbox). The build pipeline is the one exception: it's idempotent step by step, so no connection is held across image work.
 - **Read models** (`db/queries`) are shaped for the dashboard, and their return types must fit `@circi/api`: `apps/server/src/contract-check.ts` fails to typecheck if they drift. Routes may call them directly.
 - **Routes decide no roles.** Use the policies in `services/src/access`. A route file stays under 250 lines.
 - **Better-auth's tables** (`schema/auth.ts`) are generated (`pnpm db:auth-schema`, then `pnpm db:generate`), never edited by hand.

@@ -11,16 +11,17 @@ Terms are in alphabetical order.
 | **Added** | A screenshot in a build that has no baseline (new name, or no baseline build at all). |
 | **Admin (role)** | A workspace role that can manage settings, members and integrations, except deleting the workspace and managing owners. See [Members and roles](/using/members-and-roles/). |
 | **Approve / Reject** | A reviewer's decision on a screenshot or a build. A rejection can carry a reason (a project can require one). |
+| **Auto-approved** | A build on the default branch that was approved automatically because it has an approved baseline. |
 | **Baseline** | The approved screenshot a new one is compared with, from the nearest approved build (same project, same build name) in the commit history. |
 | **Build** | One upload for one commit. Has a name, a conclusion (changes or no changes), a review status and counts. |
 | **Build name** | `--name`. Different build names have separate baselines (for example `chromium` and `mobile`). |
-| **CI token** | A project's credential for the upload API, starting with `circi_`, shown once. |
 | **Changed** | A screenshot whose image differs from its baseline by more than the project's threshold, or whose size differs. |
-| **Check** | The **CirCI / (build name)** check run on GitHub (statuses on GitLab and Bitbucket). It is the merge gate when marked required. |
+| **Check** | The `CirCI / <build name>` check run on GitHub (statuses on GitLab and Bitbucket). It's the merge gate when marked required. |
+| **CI token** | A project's credential for the upload API, starting with `circi_`, shown once. |
 | **Comment** | A message on a build, optionally anchored to a region of a screenshot. Mentions notify people. |
 | **Custom domain** | A project site's own domain (for example `storybook.acme.com`) serving the default branch. |
 | **Default branch** | The project's branch (`main` unless changed) whose builds become baselines. |
-| **Diff** | The comparison of a screenshot with its baseline, drawn as an image, with a score. See `CIRCI_DIFF_ENGINE` for how it is computed. |
+| **Diff** | The comparison of a screenshot with its baseline, drawn as an image, with a score. See `CIRCI_DIFF_ENGINE` for how it's computed. |
 | **Diff threshold** | The percentage of changed pixels at or below which a same-size screenshot counts as unchanged. Default 0%. |
 | **Flaky** | A screenshot whose image keeps coming back to one it already had on the default branch, or that rendered differently on two runs of the same commit. |
 | **Gate** | What blocks a merge while changes are unreviewed: the git host check (`--gate status`) or the CI job (`--gate exit-code`). |
@@ -29,17 +30,20 @@ Terms are in alphabetical order.
 | **Instance** | One CirCI installation. **Instance admin** is an account that manages the instance. |
 | **Integration** | A connection to GitHub, GitLab, Bitbucket, Slack, Linear, Jira or Figma, added per workspace. |
 | **Member (role)** | A workspace role that can review builds. |
+| **Overdue** | A review request that has waited longer than the project's review target. |
 | **Owner (role)** | The workspace role with every permission, including deleting the workspace. |
 | **Project** | One tested thing; has a CI token, settings and baselines. |
 | **Region** | A rectangle on a screenshot, used for comments and ignore regions. |
 | **Removed** | A screenshot that is in the baseline but not in the build. |
 | **Retention** | How many days a project keeps its builds (30 by default). |
 | **Review request** | A request that a person review a build, created by hand or by a review rule. |
-| **Review rule** | A glob over screenshot names or the build name that decides who is asked to review. |
+| **Review rule** | A pattern over screenshot names or the build name that decides who is asked to review. |
+| **Review target** | How long a project expects a review to take, for example 24 hours. A request past it is overdue. |
 | **Saved view** | A saved filter of builds. |
 | **Shard** | One of several parallel uploads (`--shard 2/4`) that form one build. |
 | **Site** | A built static site (Storybook, report) hosted per commit and branch on the sites domain. |
 | **Sites domain** | `STATIC_SITES_HOST`: the separate domain hosted sites are served from. |
+| **Slug** | The short name in an address, such as `acme` in a workspace's URL or `web-app` for a project. |
 | **Snooze** | Hiding a triage item until the next push, tomorrow, next week or a date. |
 | **Triage** | The list of flaky screenshots, screenshots with no baseline and failed builds that need a decision. |
 | **Unchanged** | A screenshot with the same hash as its baseline, or a difference within the threshold. |

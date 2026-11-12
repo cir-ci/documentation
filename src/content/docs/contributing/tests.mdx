@@ -4,6 +4,8 @@ description: The test projects, which command runs which, and the rules for writ
 ---
 {/* Source: CLAUDE.md (Tests), e2e/README.md, vitest.config.ts, package.json, turbo.json */}
 
+CirCI's tests run in four kinds of project, each with its own command. This page lists them and the rules new tests follow.
+
 ## Kinds of tests
 
 | Kind | Where | Runs in |
@@ -41,7 +43,7 @@ With Turborepo, each test project is its own cached root task (`//#test:node`, `
 
 ## Rules
 
-- **No `@testing-library/*`.** Components get `*.browser.test.tsx` run in Chromium (`vitest-browser-react`, `page.getByRole`, `userEvent` from `vitest/browser`). Logic goes in `api.ts` or `lib/` so it is testable in Node. Page tests render through `apps/web/test/support/render.tsx`.
+- **No `@testing-library/*`.** Components get `*.browser.test.tsx` run in Chromium (`vitest-browser-react`, `page.getByRole`, `userEvent` from `vitest/browser`). Logic goes in `api.ts` or `lib/` so it's testable in Node. Page tests render through `apps/web/test/support/render.tsx`.
 - **Never import another package's `test/` folder.**
 - **Server route tests** build the app with `buildServer`, use `app.inject`, and sign in through the real `/api/auth` endpoints (`apps/server/test/support/helpers.ts`).
 - **External services** (GitHub, SMTP, OIDC) are faked at their edge. Say so when something has only been tested against a fake.

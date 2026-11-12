@@ -17,7 +17,7 @@ Every build of a linked project shows on its pull request as a check named `CirC
 | One help comment when a command or button can't be used | The same conversation, edited in place |
 
 <Aside type="note">
-The App and **Sign in with GitHub** are two separate things. The App reports builds and receives GitHub's webhooks, and is set up once per instance. Sign-in lets people log in to the dashboard with GitHub, through a separate OAuth app. They meet in one place: to use `/circi` commands and the check's buttons, each person links their GitHub login to their CirCI account (see [Who may approve from GitHub](#who-may-approve-from-github)).
+The App and **Sign in with GitHub** are two separate things. The App reports builds and receives GitHub's webhooks, and is set up once per instance. Sign-in lets people log in to the dashboard with GitHub, through a separate OAuth app. They meet in one place: to use `/circi` commands and the check's buttons, each person links their GitHub account to their CirCI account (see [Who may approve from GitHub](#who-may-approve-from-github)).
 </Aside>
 
 ## Set up
@@ -93,7 +93,7 @@ CirCI verifies the installation with GitHub (it requests a token and lists the r
 Each project reports to one repository. There are four ways to link:
 
 - **The integration's page.** Open the GitHub integration under Integrations and choose a repository for each project. The list comes from the installation; you can also type `owner/name`.
-- **The project's settings.** The **Repository** row shows the link, and **Remove repository link** takes it away.
+- **The project's settings.** The **Repository** row shows the link, and **Remove** takes it away.
 - **Import from GitHub.** On the projects page, owners and admins of a workspace with a GitHub connection can import repositories as new projects. Each picked repository becomes a project named after it (`acme/web-app` becomes `web-app`, or `acme-web-app` if that address is taken). Up to 50 repositories can be imported at once, and you become a member of each. The imported projects get no CI token until you issue one in their settings.
 - **The command line**, run on the server:
 
@@ -158,7 +158,7 @@ Reply on the pull request with one of these on a line of its own:
 | `/circi reject` | Rejects them |
 | `/circi rerun` | Processes the builds again, for example after changing a threshold |
 
-CirCI reacts to the comment with a thumbs up when it acted. When it didn't, it reacts with a thumbs down and says why in **one help comment per pull request**. That comment is found again by a hidden marker and edited in place, so repeated mistakes never pile up comments. It carries the latest reason:
+CirCI reacts to the comment with a thumbs-up when it acted. When it didn't, it reacts with a thumbs-down and says why in **one help comment per pull request**. That comment is found again by a hidden marker and edited in place, so repeated mistakes never pile up comments. It carries the latest reason:
 
 | Reason | What the help comment says |
 | --- | --- |
@@ -182,19 +182,13 @@ To block merging, mark the check as required in the repository's branch protecti
 - **Flaky-only changes block merging**: whether changes to flaky screenshots hold the pull request.
 - **Approve default-branch builds automatically**: needs an approved baseline to compare with, so a project's first build is always reviewed.
 
-A build with screenshots that couldn't be read follows **Unreviewed changes block merging**, like a build that failed to process: with it on, the check fails until the build is uploaded again; with it off, the check is neutral and still says how many couldn't be read. Approving the rest doesn't change that, because those screenshots were never compared.
-
-The CLI's `--wait` flag decides whether the CI job itself is the gate:
-
-- **With a linked repository** the check is the gate. `circi upload --wait` waits for processing and exits 0 even with unreviewed changes. A green CI job then doesn't mean "reviewed". It exits 2 for a processing error, or for screenshots that couldn't be read in a project that blocks merging; in a project that doesn't, it exits 0 with a warning that names each file.
-- **Without a linked repository** the CI job is the gate. It exits 1 until the build is approved, then you re-run the job.
-- `--gate status` or `--gate exit-code` overrides the choice. See [the CLI](/ci/cli/).
+Screenshots that couldn't be read follow **Unreviewed changes block merging** as well, and the check still says how many couldn't be read. Who blocks the merge, the check or the CI job, and what `--wait` exits with, is explained in [How a build flows](/introduction/how-a-build-flows/#merge-gate).
 
 The first build of a project has nothing to compare with, so every screenshot is new and waits for review.
 
 ### Who may approve from GitHub
 
-Commands and the check's buttons are accepted from a person who has linked their GitHub login in the **Signed in with** section of their CirCI **Profile** and who can see the project (a project member, or an owner or admin of its workspace). CirCI matches the GitHub account ID, never the email address. Anyone else gets the linking help above. Linking needs GitHub sign-in to be configured on the instance.
+Commands and the check's buttons are accepted from a person who has linked their GitHub account in the **Signed in with** section of their CirCI **Profile** and who can see the project (a project member, or an owner or admin of its workspace). CirCI matches the GitHub account ID, never the email address. Anyone else gets the linking help above. Linking needs GitHub sign-in to be configured on the instance.
 
 Decisions made this way appear in the build's activity as coming from a GitHub comment (`github-comment`) or a GitHub check (`github-check`).
 
@@ -205,8 +199,8 @@ Decisions made this way appear in the build's activity as coming from a GitHub c
 | The dialog says **Not set up on this server** | The instance has no GitHub App yet. An instance admin creates one under **Instance settings** |
 | No check appears on the pull request | The project isn't linked to this repository. Check **Repository** in the project's settings, and that the App is installed on it |
 | The check never moves from "Processing screenshots…" | The worker isn't running or the build is stuck. See [Instance administration](/using/instance-administration/) for the worker's health |
-| `/circi approve` gets a thumbs down | Read the help comment: it names the reason (see the table above) |
-| The help comment says it can't tell who you are | Link your GitHub login in **Profile**, **Signed in with**, using an account that belongs to the project's workspace |
+| `/circi approve` gets a thumbs-down | Read the help comment: it names the reason (see the table above) |
+| The help comment says it can't tell who you are | Link your GitHub account in **Profile**, **Signed in with**, using an account that belongs to the project's workspace |
 | The integration shows **needs attention** | GitHub removed or suspended the installation, or rejected the credentials. Reinstall the App; an unsuspend or a fresh install clears the flag |
 | Buttons or comments do nothing at all | GitHub's webhook deliveries are failing. In the GitHub App's **Advanced** page, look at **Recent deliveries**, and check that `PUBLIC_URL` is reachable from GitHub and the secret matches |
 
@@ -214,8 +208,8 @@ Decisions made this way appear in the build's activity as coming from a GitHub c
 
 The App's webhook is the one entry point. CirCI verifies the signature and handles each delivery once.
 
-- `pull_request` opened, reopened or synchronized: remembers the author, which replaces the login the CI sent, and gives builds their pull request number.
-- `pull_request` closed or merged: closes the open review requests on that pull request's builds and clears their "please review" notices. The builds keep their own review state.
+- `pull_request` opened, reopened or synchronized: remembers the author, which replaces the username the CI sent, and gives builds their pull request number.
+- `pull_request` closed or merged: closes the open review requests on that pull request's builds and clears their "please review" notices. The builds keep their own review status.
 - `check_run` with a button press: Approve or Reject.
 - `issue_comment` created on a pull request: the `/circi` commands. Comments by bots are ignored.
 - `installation` deleted or suspended: flags the connection as needing attention. Created or unsuspended clears it.

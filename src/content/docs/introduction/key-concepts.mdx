@@ -32,7 +32,7 @@ The dashboard, the CLI and the API use the same terms. For a quick alphabetical 
 
 **Review.** A person's decision on a screenshot or a build: approved or rejected, with an optional reason. Every decision records where it came from (the dashboard, a GitHub check, a `/circi` comment).
 
-**Review request.** Asking a person to review a build, by hand or by a **review rule**. A rule is a glob over screenshot names (`checkout/**`) or over the build name that decides who is asked. Requests show up in the **Reviews** page and the Inbox.
+**Review request.** Asking a person to review a build, by hand or by a **review rule**. A rule is a pattern over screenshot names (`checkout/**`) or over the build name that decides who is asked. Requests show up in the **Reviews** page and the Inbox.
 
 **Inbox.** The signed-in person's list of builds and mentions that need attention.
 
@@ -40,7 +40,7 @@ The dashboard, the CLI and the API use the same terms. For a quick alphabetical 
 
 **Triage.** The list of things in a project that need a decision beyond a normal review: flaky screenshots, screenshots with no baseline, and builds that failed. Items can be snoozed (until the next push, tomorrow, next week or a date).
 
-**Flaky** <StatusChip status="flaky" glyph />**.** A screenshot whose image keeps coming back to one it already had on the default branch (by default 3 times in the last 10 commits, settable from 2 to 8), or that came out different on two runs of the same commit. A screenshot that was redesigned (A, then B, then C) is not flaky.
+**Flaky** <StatusChip status="flaky" glyph />**.** A screenshot whose image keeps coming back to one it already had on the default branch (by default 3 times in the last 10 commits, settable from 2 to 8), or that came out different on two runs of the same commit. A screenshot that was redesigned (A, then B, then C) isn't flaky.
 
 ## Gates and sites
 

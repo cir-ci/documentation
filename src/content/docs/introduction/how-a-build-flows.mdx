@@ -22,22 +22,24 @@ A **build** is one upload of screenshots for one commit. It passes through four 
    - The CLI collects every `*.png` under the folder (the screenshot's name is its path without `.png`) and hashes each file with SHA-256.
    - It reads the commit, branch, pull request and base branch from the CI environment (GitHub Actions, GitLab CI, Bitbucket Pipelines, Gitea and Forgejo Actions, CircleCI, Buildkite, Jenkins, Azure Pipelines).
    - It collects the git history it needs to find the right baseline. A shallow checkout is fine: it fetches the base branch and just enough history.
-   - It creates the build, learns which files the server doesn't have yet, uploads only those, and finalizes. Unchanged screenshots are stored once, whatever the number of builds.
+   - It creates the build, learns which files the server doesn't have yet, uploads only those, and tells CirCI the upload is complete. Unchanged screenshots are stored once, whatever the number of builds.
 
-2. **Compare.** When the last shard of the build arrives, the build moves to <StatusChip status="processing" /> and the worker pairs screenshots by name with the baseline.
+2. **Compare.** When the last shard of the build arrives, the build moves to <StatusChip status="processing" /> and the worker (the background process that compares screenshots, started with the server by default) pairs screenshots by name with the baseline.
 
-   - A screenshot only in this build is <StatusChip status="added" />, only in the baseline <StatusChip status="removed" />, with the same hash <StatusChip status="unchanged" /> (no work), and otherwise it is diffed.
-   - A different image size is always a change, whatever the share of changed pixels. Otherwise a change is a change when it is bigger than the project's diff threshold.
+   - A screenshot only in this build is <StatusChip status="added" />, only in the baseline <StatusChip status="removed" />, with the same hash <StatusChip status="unchanged" /> (no work), and otherwise it's diffed.
+   - A different image size is always a change, whatever the share of changed pixels. Otherwise a change is a change when it's bigger than the project's diff threshold.
    - The worker writes a diff image and thumbnails, and sets the build's conclusion.
 
 3. **Review.** If anything changed, the build is <StatusChip status="needs-review" />. People open it in the dashboard (or from the GitHub check) and approve or reject each screenshot, or the whole build. Screenshots known to be <StatusChip status="flaky" /> are marked so reviewers can skip them. See [Reviewing a build](/using/reviewing-a-build/).
 
-4. **Merge gate.** What blocks the merge depends on whether the project is linked to a repository on a git host.
+4. <a id="merge-gate"></a>**Merge gate.** What blocks the merge depends on whether the project is linked to a repository on a git host.
 
-   - **Linked (GitHub today with buttons and commands; GitLab and Bitbucket with statuses and comments):** the CirCI check is the gate. Mark it as required in branch protection. `circi upload --wait` waits for processing, exits 0 even with unreviewed changes (so a green CI job isn't confused with a visual review) and fails only on processing errors or, in a project that blocks merges, on screenshots that couldn't be read. Approving in the dashboard or on GitHub updates the check within seconds, with no re-run.
+   - **Linked (GitHub today with buttons and commands; GitLab and Bitbucket with statuses and comments):** the CirCI check is the gate. Mark it as required in branch protection. `circi upload --wait` waits for processing and exits 0 even with unreviewed changes, so a green CI job isn't mistaken for a visual review. It fails only on processing errors and, in a project that blocks merges, on screenshots that couldn't be read. Approving in the dashboard or on GitHub updates the check within seconds, with no re-run.
    - **Not linked:** the CI job is the gate. `--wait` exits 1 while changes need review. After approval, re-run the job.
-   - A screenshot the server can't read is marked **Couldn't read** and can't be approved. It follows the project's blocking setting, like a build that failed to process: in a project that blocks merges the check fails and `--wait` exits 2; otherwise the check is neutral and `--wait` exits 0 with a warning. Upload the build again to clear it.
-   - `--gate status` or `--gate exit-code` overrides the choice.
+   - `--gate status` makes the git host's check the gate, and `--gate exit-code` makes the CI job the gate. Without `--gate`, the server chooses from the project's settings.
+
+   <a id="couldnt-read"></a>
+   **Screenshots that couldn't be read.** A file that isn't a valid PNG is marked **Couldn't read** and can't be approved. This follows the project's **Unreviewed changes block merging** setting, like a build that failed to process. With it on, the check fails and `--wait` exits 2. With it off, the check is neutral and `--wait` exits 0 with a warning that names each file. Upload the build again with valid PNGs to clear it.
 
 </Steps>
 

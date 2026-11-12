@@ -17,7 +17,7 @@ For each build, CirCI picks one earlier build of the same project and the same b
 
 1. Only a finished build can be a baseline, and only one that was **approved** (by a person or automatically), or had **no changes** against its own approved baseline and wasn't rejected.
 2. CirCI walks the build's git ancestors, nearest first: from where the branch started for a pull request, or from the previous commit on the default branch. The first ancestor that has an eligible build is the baseline. If a commit was built several times (CI re-runs), the newest build wins.
-3. If no ancestor has one, the newest eligible build on the **default branch** is used. The build screen then shows a warning that the history wasn't available.
+3. If no ancestor has one, the newest eligible build on the **default branch** is used. The build page then shows a warning that the history wasn't available.
 4. If there is nothing at all, the build has **No baseline** and every screenshot is new.
 
 Within the build, screenshots are paired by name:
@@ -43,7 +43,7 @@ Press <Kbd keys="j" /> and <Kbd keys="k" /> to move, and right-click a row for O
 
 ### One baseline
 
-Open a row to see the screenshot's page: the baseline image, which build it is from and who approved it, **Open build**, and **History on main**: the recent builds where this screenshot changed, each with its status, newest first. If the screenshot is flaky, it says why.
+Open a row to see the screenshot's page: the baseline image, which build it's from and who approved it, **Open build**, and **History on main**: the recent builds where this screenshot changed, each with its status, newest first. If the screenshot is flaky, it says why.
 
 The page also holds the screenshot's ignore regions.
 
@@ -53,8 +53,8 @@ The page also holds the screenshot's ignore regions.
 
 An **ignore region** is a rectangle, in whole pixels measured from the top left, that is blanked out on **both** images before they are compared. Use it for a clock, a rotating banner, an ad or a cursor: something that changes without meaning anything.
 
-- A region belongs to a **screenshot name**. It applies to every build of that screenshot, until it is removed.
-- A region on its own is just a rectangle. There is no pattern or per-branch setting.
+- A region belongs to a **screenshot name**. It applies to every build of that screenshot, until it's removed.
+- A region on its own is just a rectangle. There's no pattern or per-branch setting.
 - Insights shows how many diffs the regions kept unchanged. See [Insights](/using/insights/).
 
 ### Who can change them
@@ -67,7 +67,7 @@ Owners and admins add, move, edit and remove regions. Other members see them. A 
 
 1. Open the screenshot's baseline page, or open the screenshot in a build and choose **Ignore regions** under **Dragging draws** in the View options menu (⋯).
 
-2. Drag a rectangle over the baseline image. It is saved at once, with a toast ("Ignore region added").
+2. Drag a rectangle over the baseline image. It's saved at once, with a toast ("Ignore region added").
 
 3. To place it precisely, use the keyboard tool (the crosshair button): arrow keys move, <Kbd keys="Shift" /> + arrows resize, <Kbd keys="Enter" /> confirms.
 
@@ -78,7 +78,7 @@ Drag a region's handles to move or resize it ("Ignore region saved"). In the lis
 A region can also be added from a server shell with `circi admin ignore add --org <workspace> --project <project> --name <screenshot> --region x,y,width,height`, with `circi admin ignore list` and `circi admin ignore remove <id>` beside it. See [Admin CLI](/reference/admin-cli/).
 
 <Aside type="note">
-A region applies to builds processed from the moment it is added. A build that was already processed keeps its result until it is processed again (the `/circi rerun` command redoes one).
+A region applies to builds processed from the moment it's added. A build that was already processed keeps its result until it's processed again (the `/circi rerun` command redoes one).
 </Aside>
 
 ### In project settings

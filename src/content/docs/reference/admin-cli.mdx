@@ -12,7 +12,7 @@ The `circi` command inside the Docker image is the **server** command. It reads 
 docker compose exec circi circi admin doctor
 ```
 
-It is not the upload CLI (see [CLI reference](/ci/cli/)). Commands that act inside a workspace take `--org <slug>`; the flag keeps its name from when workspaces were called organizations. Expected failures print one line and exit 1. `--debug` (or `DEBUG=1`) prints a stack trace.
+It's not the upload CLI (see [CLI reference](/ci/cli/)). Commands that act inside a workspace take `--org <slug>`; the flag keeps its name from when workspaces were called organizations. Expected failures print one line and exit 1. `--debug` (or `DEBUG=1`) prints a stack trace.
 
 ## Processes
 
@@ -33,12 +33,12 @@ Every command starts with `circi admin`. Add `--help` to any of them.
 
 | Command | What it does |
 |---|---|
-| `user create --email --name [--password] [--instance-admin] [--json]` | Create an account. There is no self sign-up. The password needs at least 12 characters; without `--password` one is generated and printed once. |
+| `user create --email --name [--password] [--instance-admin] [--json]` | Create an account. There's no self sign-up. The password needs at least 12 characters; without `--password` one is generated and printed once. |
 | `user set-password --email [--password] [--json]` | Set a new password. |
 | `workspace create --name --owner <email> [--slug] [--json]` | Create a workspace owned by an existing account. |
 | `workspace list [--json]` | List workspaces. |
 | `member add --org --email [--role owner\|admin\|member]` | Add an existing account to a workspace (default role `member`). |
-| `auth enable\|disable <email\|password> --org` | Change a workspace's accepted sign-in methods. Skips the lockout guard: break-glass if a setting locked everyone out. |
+| `auth enable\|disable <email\|password> --org` | Change a workspace's allowed sign-in methods. Skips the lockout guard: break-glass if a setting locked everyone out. |
 
 ### Projects
 

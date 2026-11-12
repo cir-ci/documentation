@@ -17,7 +17,7 @@ On a build, press <Kbd keys="Shift+R" /> or choose **Request review** in the hea
 
 On a builds list, select several builds with <Kbd keys="x" /> and choose **Request review** in the bar to ask the same people about all of them. A single request covers at most 50 builds, and at most 20 reviewers.
 
-The person who asked can **Nudge** the reviewer from the Reviews page. A nudge is a "review again" notice; it is allowed once per 24 hours, counting the original request. Only whoever asked can nudge.
+The person who asked can **Nudge** the reviewer from the Reviews page. A nudge is a "review again" notice; it's allowed once per 24 hours, counting the original request. Only whoever asked can nudge.
 
 Requests close on their own:
 
@@ -34,7 +34,7 @@ The list reads top to bottom: each rule says what it matches and whom it asks, a
 Each rule has:
 
 - **Matches**: **Screenshot name** or **Build name**.
-- **Pattern**: a glob. `*` matches any run of characters except `/`, `**` matches across folders (so `checkout/**` matches everything under `checkout/`), and `?` matches one character. The whole name must match, case matters, and there are no character classes or braces. Examples: `checkout/**`, `Button*`, `release/*`.
+- **Pattern**: a name pattern. `*` matches any run of characters except `/`, `**` matches across folders (so `checkout/**` matches everything under `checkout/`), and `?` matches one character. The whole name must match, case matters, and there are no character classes or braces. Examples: `checkout/**`, `Button*`, `release/*`.
 - **Reviewers**: one or more members of the project, up to 20.
 
 When a build finishes with changes, every rule that matches asks its reviewers. A **Screenshot name** rule matches when any screenshot of the build matches; a **Build name** rule matches the build's own name. A person named by several rules is asked once. If no rule matches, the build goes to whoever is on the triage rotation that week, when the project has a rotation (see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)); with neither, nobody is asked automatically.

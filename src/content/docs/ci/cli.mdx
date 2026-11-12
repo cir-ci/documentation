@@ -7,7 +7,7 @@ description: The circi upload command, its flags, environment variables and exit
 import { Aside } from '@astrojs/starlight/components'
 import CopyCommand from '../../../components/CopyCommand.tsx'
 
-The `circi` CLI (package `@circi/cli`) uploads screenshots and sites from CI. It is a different program from the `circi` server command inside the Docker image (see [the admin CLI](/reference/admin-cli/)).
+The `circi` CLI (package `@circi/cli`) uploads screenshots and sites from CI. It's a different program from the `circi` server command inside the Docker image (see [the admin CLI](/reference/admin-cli/)).
 
 <CopyCommand client:visible command="CIRCI_TOKEN=circi_… CIRCI_API_URL=https://ci.acme.io npx circi upload ./screenshots --wait" />
 
@@ -21,9 +21,9 @@ Uploads a directory of PNG screenshots as a build.
 | `--name <name>` | Build name, for several kinds of builds per commit (default `default`). Letters, digits, `.`, `_`, `-`; at most 64. Each name has its own baselines. |
 | `--wait` | Wait for the result and exit non-zero when it should block the merge. |
 | `--shard <n/total>` | This job uploads shard `n` of `total` of one parallel build (for example `2/4`). The build is processed once all shards arrive. |
-| `--nonce <id>` | Ties the shards of one parallel build together. Default: the CI run's ID. |
+| `--nonce <id>` | Ties the shards of one parallel build together. Default: the CI job's run ID. |
 | `--gate <mode>` | Who blocks the merge: `status` (the git host's check; exit 0 on unreviewed changes) or `exit-code` (this job). Default: decided by the server from the project's settings. |
-| `--author <login>` | Who made the change. Default: the CI actor (for example `GITHUB_ACTOR`). |
+| `--author <username>` | Who made the change. Default: the CI actor (for example `GITHUB_ACTOR`). |
 | `--timeout <seconds>` | How long `--wait` waits (default 600). |
 | `--api-url <url>` | CirCI address. Default: `CIRCI_API_URL`. |
 | `--no-fetch` | Don't run `git fetch` to complete a shallow history. |
@@ -72,13 +72,11 @@ The CLI collects the commit history CirCI needs to pick the baseline, from the *
 | `1` | With `--wait`: visual changes need review and this job is the gate. Approve them in the dashboard, then re-run the job. |
 | `2` | An error: bad flags or setup, the server couldn't be reached, the build failed to process (the server's reason is printed), screenshots couldn't be read (see below), or `--wait` timed out. |
 
-A screenshot the server can't read (a file that isn't a valid PNG) is marked **Couldn't read**, and `--wait` names each file and why. It follows the project's **Unreviewed changes block merging** setting, like a build that failed to process: in a project that blocks merges the build can't pass and `--wait` exits `2`; otherwise it exits `0` with a warning. Either way, upload the build again with valid PNGs to clear it.
+`--wait` names each screenshot the server couldn't read and why. Whether that exits `2` or `0` is explained in [How a build flows](/introduction/how-a-build-flows/#couldnt-read).
 
 Errors print one line (`error: No such directory: ./screenshotz`). API calls are retried with backoff on network errors and 5xx answers, and time out after 30 seconds each.
 
-<Aside type="caution" title="Which job is the gate?">
-With the project linked to a git host, `--wait` waits for processing, exits 0 even with unreviewed changes and fails only on processing errors (and on unreadable screenshots, in a project that blocks merges): the CirCI check is the gate, and approving updates it with no re-run. Without a linked repository the CI job is the gate: exit 1 until approved, then re-run. Override with `--gate`.
-</Aside>
+Who blocks the merge, the git host's check or this job, is explained in [How a build flows](/introduction/how-a-build-flows/#merge-gate). Override it with `--gate`.
 
 ## `circi site upload <dir>` and `circi storybook upload <dir>`
 

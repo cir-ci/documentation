@@ -9,19 +9,19 @@ import ScreenFrame from '../../../components/ScreenFrame.astro'
 import Kbd from '../../../components/Kbd.astro'
 import StatusChip from '../../../components/StatusChip.astro'
 
-Triage is the queue of problems with a project's **default branch** that no single pull request owns. Where a review is about one build, triage is about the screenshots and builds that keep causing trouble. It is a page of the project, in the sidebar under the open project, with a count of items waiting. Anyone who can see the project can work the queue.
+Triage is the queue of problems with a project's **default branch** that no single pull request owns. Where a review is about one build, triage is about the screenshots and builds that keep causing trouble. It's a page of the project, in the sidebar under the open project, with a count of items waiting. Anyone who can see the project can work the queue.
 
 <ScreenFrame name="use-triage" alt="The Triage page of the Web app project. A flaky screenshot, two screenshots with no baseline and a failed build are listed in groups. The flaky one is open on the right with why it is flaky, the last 10 commits on main with the changed ones marked, a preview, the assignee and what it blocks." caption="A queue with one of each kind of item. The pane shows why dashboard/overview is flaky." />
 
 ## What is in the queue
 
-| Group | What it is |
+| Group | What it's |
 |---|---|
 | <StatusChip status="flaky">Flaky</StatusChip> | A screenshot that keeps changing on the default branch without anyone meaning it to |
 | No baseline | A screenshot with no approved baseline yet. The pane shows "First seen in build #N" |
 | <StatusChip status="failed">Failed</StatusChip> | A default-branch build that failed to process. The pane shows its error |
 
-Each row shows the screenshot or build, why it is here, the assignee, and how long ago it was first seen. The pane on the right adds the detail: for flaky items **Why it's flaky**, a strip of the **last 10 commits on main** with the ones where the screenshot changed marked `~`, and a preview (**Where it changes**) with **Open in build**; plus the assignee, how long the item has been in triage, and what it is **Blocking** ("The check on this commit is failing", or "3 pull requests show it as changed").
+Each row shows the screenshot or build, why it's here, the assignee, and how long ago it was first seen. The pane on the right adds the detail: for flaky items **Why it's flaky**, a strip of the **last 10 commits on main** with the ones where the screenshot changed marked `~`, and a preview (**Where it changes**) with **Open in build**; plus the assignee, how long the item has been in triage, and what it's **Blocking** ("The check on this commit is failing", or "3 pull requests show it as changed").
 
 The count next to the title is the number of items; "2 handled" counts what you dealt with since the page opened. "Triage is clear" means nothing is waiting.
 
@@ -43,7 +43,7 @@ When an item leaves the queue the next row is selected, so you can keep going wi
 
 ## The weekly rotation
 
-A project can have a **triage rotation**: its members take turns, one calendar week each (Monday to Sunday, UTC). The header shows a chip such as "You're on triage until Mon" when it is you, and the name of whoever is on triage otherwise. With **Assign new items to whoever is on triage** on, items nobody holds are assigned to the person on triage, and move to the next person at the handover. Items someone assigns or unassigns by hand stay as they left them. The person gets an Inbox notice, "Assigned to you as the person on triage". See [Inbox and reviews](/using/inbox-and-reviews/).
+A project can have a **triage rotation**: its members take turns, one calendar week each (Monday to Sunday, UTC). The header shows a chip such as "You're on triage until Mon" when it's you, and the name of whoever is on triage otherwise. With **Assign new items to whoever is on triage** on, items nobody holds are assigned to the person on triage, and move to the next person at the handover. Items someone assigns or unassigns by hand stay as they left them. The person gets an Inbox notice, "Assigned to you as the person on triage". See [Inbox and reviews](/using/inbox-and-reviews/).
 
 The rotation also catches builds that no [review rule](/using/review-requests-and-rules/) matches: those are requested from whoever is on triage that week.
 
@@ -53,12 +53,12 @@ All of this is set by owners and admins in **Project settings, Reviews and triag
 
 CirCI looks at the last **10 commits** on the default branch (runs of the same commit count once). A screenshot is flaky when either of these holds:
 
-- **Flip-flops.** Its image keeps returning to one it already had in that window: A, B, A is one flip-flop, A, B, A, B is two. A steady redesign (A, B, C, D) never counts, because nothing came back. It is flaky once the flip-flops reach the project's threshold, **3 by default**, settable from 2 to 8.
+- **Flip-flops.** Its image keeps returning to one it already had in that window: A, B, A is one flip-flop, A, B, A, B is two. A steady redesign (A, B, C, D) never counts, because nothing came back. It's flaky once the flip-flops reach the project's threshold, **3 by default**, settable from 2 to 8.
 - **Rerun disagreement.** Two runs of the same commit rendered different images. That is nondeterminism, so one such commit is enough whatever the threshold.
 
 Flaky screenshots show up in several places:
 
-- the **Flaky** group (collapsed) in the build screen, instead of Changed. See [Reviewing a build](/using/reviewing-a-build/);
+- the **Flaky** group (collapsed) on the build page, instead of Changed. See [Reviewing a build](/using/reviewing-a-build/);
 - a banner on the project's builds page, and a chip on the screenshot's row on the Baselines page. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/);
 - a **Flaky** chip on review requests;
 - the "Flakiest screenshots" list and flaky chart in [Insights](/using/insights/);
@@ -66,7 +66,7 @@ Flaky screenshots show up in several places:
 
 ### Flaky changes and the merge gate
 
-When every change in a pull request's build is to a flaky screenshot, and each change looks like variation already seen (it is an image the screenshot already had on the default branch, or it differs no more than the biggest wobble seen there, at the same size), the gate can let it pass: "Only flaky screenshots changed". Whether it does is the **Flaky-only changes block merging** setting. The workspace sets the default (blocking, unless changed), and each project can follow it or override it. A change that breaks the layout of a flaky screenshot still needs a person.
+When every change in a pull request's build is to a flaky screenshot, and each change looks like variation already seen (it's an image the screenshot already had on the default branch, or it differs no more than the biggest wobble seen there, at the same size), the gate can let it pass: "Only flaky screenshots changed". Whether it does is the **Flaky-only changes block merging** setting. The workspace sets the default (blocking, unless changed), and each project can follow it or override it. A change that breaks the layout of a flaky screenshot still needs a person.
 
 <Aside type="tip">
 The fix for a flaky screenshot is usually to make it deterministic in your tests. When part of the page is the problem, such as a clock or an animation, an [ignore region](/using/baselines-and-ignore-regions/) leaves that part out of every comparison. The Baselines page links each flaky screenshot to its triage item.

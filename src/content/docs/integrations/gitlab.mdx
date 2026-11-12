@@ -49,7 +49,7 @@ GitLab sends the secret in the `X-Gitlab-Token` header. CirCI refuses deliveries
 On the integration's page, choose the **GitLab project** each CirCI Project reports to, written as the path with its namespace, for example `acme/web` or `acme/team/web`. The list comes from the repositories the token can read; you can also type the path. A Project reports to one git host at a time.
 
 <InstanceSettingNote title="Set up GitLab sign-in in Instance settings">
-Linking a GitLab login (needed for commands) requires GitLab sign-in to be configured on the instance. An instance admin adds a GitLab provider in Instance settings (with the GitLab address for a self-managed GitLab), or sets `AUTH_GITLAB_CLIENT_ID` and `AUTH_GITLAB_CLIENT_SECRET` (plus `AUTH_GITLAB_URL`), which then win and lock it. See [Instance settings](/self-hosting/instance-settings/).
+Linking a GitLab account (needed for commands) requires GitLab sign-in to be configured on the instance. An instance admin adds a GitLab provider in Instance settings (with the GitLab address for a self-managed GitLab), or sets `AUTH_GITLAB_CLIENT_ID` and `AUTH_GITLAB_CLIENT_SECRET` (plus `AUTH_GITLAB_URL`), which then win and lock it. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 
 ## What appears where
@@ -85,13 +85,13 @@ CirCI puts a thumbs-up reaction on the note when it acted. When it didn't, it re
 
 ## Settings
 
-The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read follows **Unreviewed changes block merging** too: it fails when that is on and passes, with the count in the description, when it is off.
+The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read follows **Unreviewed changes block merging** too: it fails when that is on and passes, with the count in the description, when it's off.
 
-A person may use commands when they have linked their GitLab login in the **Signed in with** section of their CirCI **Profile** and can see the project (a member, or an owner or admin of its workspace). CirCI matches the GitLab user ID, never the email.
+A person may use commands when they have linked their GitLab account in the **Signed in with** section of their CirCI **Profile** and can see the project (a member, or an owner or admin of its workspace). CirCI matches the GitLab user ID, never the email.
 
 ### The merge gate in CI
 
-`circi upload --wait` decides who blocks the merge: the status on GitLab, or the CI job (see [the CLI](/ci/cli/)). The server picks the status as the gate when a project reports to a git host, but today it only knows that when the GitHub App is configured on the instance. On an instance without a GitHub App, a GitLab-linked project defaults to the CI job being the gate (exit code 1 until approved). To make GitLab's status the gate there, pass `--gate status`.
+Who blocks the merge, GitLab's status or the CI job, is explained in [How a build flows](/introduction/how-a-build-flows/#merge-gate). On an instance without the GitHub App configured, the server doesn't know a Gitlab-linked project reports to a git host, so pass `--gate status` to make GitLab's status the gate.
 
 ## Troubleshooting
 

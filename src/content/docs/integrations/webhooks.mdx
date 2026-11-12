@@ -11,7 +11,7 @@ An outgoing webhook makes CirCI send a signed JSON request to an address you cho
 
 ## Events
 
-A webhook says which events it wants, and needs at least one. There is no "all events" shortcut.
+A webhook says which events it wants, and needs at least one. There's no "all events" shortcut.
 
 | Event | Sent when |
 | --- | --- |
@@ -31,7 +31,7 @@ Owners and admins of the project's workspace can add, test, regenerate and remov
 
 1. Press **Add webhook**.
 2. Enter the **Address** and tick the events. The address must be public (see [Address rules](#address-rules)).
-3. Add it. The dialog shows the **Signing secret** once (`whsec_…`). Copy it now: CirCI can't show it again.
+3. Choose **Add**. The dialog shows the **Signing secret** once (`whsec_…`). Copy it now: CirCI can't show it again.
 
 </Steps>
 
@@ -163,7 +163,7 @@ If a secret leaks, or you lost it, open the webhook and press **Regenerate secre
 To rotate without a gap, update the receiver to accept either secret first, regenerate, then drop the old one.
 
 <Aside type="caution">
-There is no way to read a secret again later. If you didn't copy it, regenerate it. The command-line tool has no regenerate command yet; use the dashboard.
+There's no way to read a secret again later. If you didn't copy it, regenerate it. The command-line tool has no regenerate command yet; use the dashboard.
 </Aside>
 
 ## Troubleshooting

@@ -18,12 +18,12 @@ Open the build from the project page. The build page lists its screenshots group
 <Steps>
 
 1. Look through the screenshots. In a first build every one is <StatusChip status="added" />.
-2. Approve them one by one, or approve the whole build. The build becomes <StatusChip status="approved" />, and it is now the baseline for later builds with the same name.
+2. Approve them one by one, or approve the whole build. The build becomes <StatusChip status="approved" />, and it's now the baseline for later builds with the same name.
 3. Upload the same screenshots again (a re-run). The build finishes with no changes and `circi upload --wait` exits `0`.
 
 </Steps>
 
-Now change a screenshot and upload from a new commit. The build shows that screenshot as changed, with the diff next to the baseline. That is the loop. [Reviewing a build](/using/reviewing-a-build/) covers the viewer, shortcuts, comments and requests.
+Now change a screenshot and upload from a new commit. The build shows that screenshot as changed, with the diff next to the baseline. That is the loop. [Reviewing a build](/using/reviewing-a-build/) covers the build page, shortcuts, comments and requests.
 
 <ScreenFrame name="build-review" alt="A build page with one changed screenshot: the baseline and the new version side by side." caption="A changed screenshot, baseline on the left." width={900} />
 
@@ -33,7 +33,7 @@ Now change a screenshot and upload from a new commit. The build shows that scree
 - Mark that check as required in the repository's branch protection to block merges until someone reviews.
 - Add [Slack](/integrations/slack/) or a [webhook](/integrations/webhooks/) to hear about builds.
 
-## Then
+## Next steps
 
 - Tune [project settings](/using/project-settings/): threshold, retention, merge gate, flaky handling.
 - Set up [review rules](/using/review-requests-and-rules/) so the right people are asked.

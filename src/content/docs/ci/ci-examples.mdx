@@ -22,7 +22,7 @@ Every example uploads a directory of PNG screenshots with `circi upload`. Put th
     CIRCI_API_URL: https://ci.acme.io
 ```
 
-With the GitHub App linked to the repository, `--wait` exits 0 even when changes need review and the **CirCI** check is the merge gate (mark it required). Without it, the job fails until the changes are approved, then re-run it. Either way, `--wait` exits 2 for a processing error, and for screenshots that couldn't be read when the project blocks merges (otherwise it exits 0 with a warning naming each file).
+Whether the **CirCI** check or the CI job blocks the merge, and when `--wait` exits 2, is explained in [How a build flows](/introduction/how-a-build-flows/#merge-gate).
 
 </TabItem>
 <TabItem label="GitLab CI">

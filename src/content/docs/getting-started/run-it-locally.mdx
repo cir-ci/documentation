@@ -7,7 +7,7 @@ description: Start CirCI with Docker Compose in a few minutes.
 import { Steps, Aside } from '@astrojs/starlight/components'
 import CopyCommand from '../../../components/CopyCommand.tsx'
 
-This starts the whole stack on one machine: the app (server, worker and dashboard in one process) and Postgres, with files on a Docker volume. It is also the starting point of a production install: see [Docker Compose](/self-hosting/docker-compose/) for what to change.
+This starts the whole stack on one machine: the app (server, worker and dashboard in one process) and Postgres, with files on a Docker volume. It's also the starting point of a production install: see [Docker Compose](/self-hosting/docker-compose/) for what to change.
 
 You need Docker with Compose v2, and a clone of the CirCI repository (the image is built from it).
 
@@ -55,7 +55,7 @@ curl http://localhost:3000/readyz    # readiness: Postgres and storage answer
 If `readyz` fails, `docker compose exec circi circi admin doctor` names the check that did.
 
 <Aside type="note" title="Two commands named circi">
-Inside the image, `circi` is the **server** command (`circi all`, `circi migrate`, `circi admin …`). The command you run in CI to upload screenshots is also called `circi`, but it is a different program, the CLI from the `@circi/cli` package. See [the CLI reference](/ci/cli/).
+Inside the image, `circi` is the **server** command (`circi all`, `circi migrate`, `circi admin …`). The command you run in CI to upload screenshots is also called `circi`, but it's a different program, the CLI from the `@circi/cli` package. See [the CLI reference](/ci/cli/).
 </Aside>
 
 ## Useful commands

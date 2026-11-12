@@ -17,7 +17,7 @@ Instance admins open **Instance** in the sidebar, then **Instance settings**. Th
 
 Every setting has up to three sources, and the first one that exists wins.
 
-1. **The environment variable**, when it is set. The setting is locked: the page shows **Set by VARIABLE**, its control is disabled, and a save through the API is refused with "Set by VARIABLE in the environment: change it there."
+1. **The environment variable**, when it's set. The setting is locked: the page shows **Set by VARIABLE**, its control is disabled, and a save through the API is refused with "Set by VARIABLE in the environment: change it there."
 2. **The value saved in the dashboard.**
 3. **The default.**
 
@@ -28,7 +28,7 @@ A saved setting takes effect within about 30 seconds on every server and worker 
 To hand a setting over to the dashboard, remove its variable and restart once. To lock it again, set the variable.
 
 <Aside type="note" title="Secrets are write-only">
-A password or client secret is never shown again after it is saved: the page only says that one is saved. Secrets are encrypted before they reach the database (sealed at rest). Leave a secret field empty to keep the saved one, and type a new value to replace it.
+A password or client secret is never shown again after it's saved: the page only says that one is saved. Secrets are encrypted before they reach the database (sealed at rest). Leave a secret field empty to keep the saved one, and type a new value to replace it.
 </Aside>
 
 ## What you can change
@@ -76,7 +76,7 @@ The **Client ID** and **Client secret** of the Slack app CirCI posts as, and **R
 
 <ScreenFrame name="host-instance-limits" aspect="16 / 10" alt="The Storage and limits section: Local disk with its variable, then number fields for new project retention, unused files, upload timeout, job retention and webhook timeout, and the Hosted sites section saying Not set up." caption="Storage and limits and Hosted sites. A limit set by its variable shows the variable and a disabled field." width={760} />
 
-**New projects keep builds for** is the retention a new project starts with. It is a real setting with no environment variable: each project then changes its own in its settings, and the instance value doesn't touch existing projects. See [Retention and garbage collection](/self-hosting/retention-and-gc/).
+**New projects keep builds for** is the retention a new project starts with. It's a real setting with no environment variable: each project then changes its own in its settings, and the instance value doesn't touch existing projects. See [Retention and garbage collection](/self-hosting/retention-and-gc/).
 
 ## Read-only on this page
 

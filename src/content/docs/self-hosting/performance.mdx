@@ -8,7 +8,7 @@ import { Aside } from '@astrojs/starlight/components'
 import SettingCard from '../../../components/SettingCard.astro'
 import Diagram from '../../../components/Diagram.astro'
 
-The pixel comparison runs in the worker, and it is the only CPU-heavy work. CirCI ships three engines.
+The pixel comparison runs in the worker, and it's the only CPU-heavy work. CirCI ships three engines.
 
 <SettingCard name="CIRCI_DIFF_ENGINE" defaultValue="native" type="native, js-workers or js">
 Which engine compares screenshots. `native` is a Rust addon the image ships: it runs off the event loop and across cores, and if it can't load the worker logs a warning and uses `js`. `js-workers` is the JavaScript comparison (pixelmatch) in a pool of worker threads, with no native module. `js` is the same comparison on the worker's event loop, the simplest.
