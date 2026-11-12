@@ -1,6 +1,6 @@
 ---
 title: Tests
-description: The test projects, how to run them and the testing rules.
+description: The test projects, which command runs which, and the rules for writing new tests.
 ---
 {/* Source: CLAUDE.md (Tests), e2e/README.md, vitest.config.ts, package.json, turbo.json */}
 
@@ -13,7 +13,19 @@ description: The test projects, how to run them and the testing rules.
 | Design system visual tests | `packages/ui/visual` | `pnpm test:visual`, uploaded to a CirCI if configured |
 | End to end | `e2e/` | The real Docker stack: Postgres, LocalStack S3, Mailpit, the built image |
 
+## Which test do I write?
+
+| You changed | Write |
+| --- | --- |
+| A rule in `packages/core`, a helper in `lib/` or an `api.ts` | A `*.test.ts` in the package's `test/` folder |
+| A route | A server route test with `buildServer` and `app.inject` |
+| A service or repository | A test under `packages/services/test/` or `packages/db/test/`, on PGlite |
+| A component or a page | A `*.browser.test.tsx` |
+| A bug only the real stack finds | A regression test in its owning package, and an end-to-end test if it needs the stack |
+
 ## Commands
+
+Pick the smallest command that covers your change.
 
 ```sh
 pnpm test                  # every Vitest project in one process
@@ -41,4 +53,4 @@ See `e2e/README.md` for the stack, debugging (`E2E_KEEP`, `E2E_HEADED`), shardin
 
 ## Quality gates
 
-`pnpm gate` is the check before a commit. Visual runs are never cached. See [Local development](/contributing/local-development/).
+`pnpm gate` is the check before a commit; it runs the Node, UI and web browser projects and skips the end-to-end groups, which need Docker (`pnpm gate:full` adds them). Visual runs are never cached. See [Local development](/contributing/local-development/).

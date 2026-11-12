@@ -8,11 +8,16 @@ import { Steps, Aside } from '@astrojs/starlight/components'
 
 The Linear integration adds a **Create issue** button to the build review. It files an issue in the Linear team you chose for the Project, with the build link, the branch, who rejected the changes and why, and a link to the diff image. The issue then shows on the build.
 
-CirCI the product is styled after Linear, and some of the plans in `docs/plans/linear-features-plan.md` borrow Linear's workflows. That is about CirCI's own screens, not about this integration.
+| You get | Where |
+| --- | --- |
+| A **Create issue** button | The build review header, for the selected screenshot or the whole build |
+| The issue key (for example `ENG-123`) | On the build, and in a **Created ENG-123** toast |
 
-## Connect Linear
+## Set up
 
-An owner or admin of the Workspace opens **Workspace settings**, **Integrations**, **Add integration**, **Linear**.
+An owner or admin of the Workspace does this.
+
+Open **Workspace settings**, **Integrations**, **Add integration**, **Linear**.
 
 <Steps>
 
@@ -23,11 +28,11 @@ An owner or admin of the Workspace opens **Workspace settings**, **Integrations*
 
 The key is stored encrypted and never shown again. Issues are created as the person who owns the key. If Linear later rejects the key, the integration is flagged as needing attention with the reason.
 
-## Choose a team for each Project
+### Choose a team for each Project
 
 On the Linear integration's page, choose a Linear **Team** for each Project. A Project without a team has no Create issue button. A Project maps to one Linear connection at a time.
 
-## Create an issue
+## What appears where
 
 When a Project has a tracker mapped, the build review header shows **Create issue**. It acts on the screenshot you have selected, or on the whole build when none is selected.
 
@@ -41,12 +46,21 @@ The description CirCI sends says what changed, then lists the branch, pull reque
 
 When Linear answers, CirCI records the link (for example `ENG-123`) on the build and shows a **Created ENG-123** toast. If Linear fails, the dialog shows the error and nothing is recorded. The issue links back to the build.
 
+## Troubleshooting
+
+| What you see | Why, and what to do |
+| --- | --- |
+| There's no **Create issue** button | The Project has no Linear team mapped. Choose a **Team** on the integration's page |
+| Connect fails with a message | Linear rejected the key. Create a new personal API key |
+| The dialog shows an error from Linear | Nothing was recorded. Fix what the message says (for example a deleted team) and try again |
+| The integration shows **needs attention** | Linear rejected the key later. Connect again with a new key |
+
 ## Not built
 
 - Status sync. CirCI doesn't read an issue's state back from Linear, and doesn't close issues when a build is approved. The link on the build is all it keeps.
 - Choosing labels, priority or assignee in the dialog.
 - Creating issues automatically. Every issue is made by a person pressing the button.
 
-<Aside type="note">
-Only fake-tested so far: the Linear edge is faked in the repository's tests.
+<Aside type="caution" title="Tested against fakes only">
+The Linear edge is faked in the repository's tests and has not been run against Linear.
 </Aside>

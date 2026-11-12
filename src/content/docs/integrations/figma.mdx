@@ -8,11 +8,16 @@ import { Steps, Aside } from '@astrojs/starlight/components'
 
 The Figma integration links screenshots to the Figma frames they implement. In the build review, a screenshot with a linked frame shows a **Figma frame** chip that opens the frame in Figma.
 
+| You get | Where |
+| --- | --- |
+| A **Figma frame** chip, with the frame's name | The build review, on a screenshot whose name matches a link |
+| A **Frame links** table | The Figma integration's page, under each Project |
+
 <Aside type="caution" title="Only linking is built">
 The plans for the Figma integration also describe a **Design** compare mode (a screenshot beside its frame, with differences marked), frames as first baselines, and comments posted on frames when a build is approved or rejected. None of that is built. The Design compare mode is switched off in the dashboard, and CirCI never writes to Figma. See "Not built" below.
 </Aside>
 
-## Connect Figma
+## Set up
 
 An owner or admin of the Workspace opens **Workspace settings**, **Integrations**, **Add integration**, **Figma**.
 
@@ -25,11 +30,11 @@ An owner or admin of the Workspace opens **Workspace settings**, **Integrations*
 
 The token is stored encrypted. A Figma account can be connected in one CirCI Workspace of the instance, but a Workspace can connect several Figma accounts. If Figma rejects the token later, the integration is flagged as needing attention and asks you to remove it and connect again with a new token.
 
-## Choose a file for each Project
+### Choose a file for each Project
 
 On the Figma integration's page, give each Project the Figma **File** it's designed in. Paste the file's address (`https://www.figma.com/design/…`) or just the file key. CirCI reads the file with your token and saves its key and name. It tells you when Figma can't find the file or the token has no access to it. Branch addresses count as their own file. A Project without a file doesn't use Figma.
 
-## Link screenshots to frames
+### Link screenshots to frames
 
 Under each mapped Project the page shows a **Frame links** table (screenshot name or pattern, the frame, whether the link is **Auto** or **Manual**, and **Remove**). There are two ways to fill it.
 
@@ -44,9 +49,18 @@ It never guesses. A screenshot that fits two frames gets no link, a frame that s
 
 If you change the Project's file, the automatic links made for the old file are dropped. Clearing the file drops them all. Manual links stay.
 
-## What you see in a build
+## What appears where
 
 A screenshot whose name matches a link shows the **Figma frame** chip in the review view, with the frame's name when CirCI has it.
+
+## Troubleshooting
+
+| What you see | Why, and what to do |
+| --- | --- |
+| Saving the file fails with a message that Figma can't find it | The address or key is wrong, or the token has no access to that file. Check the token's account can open it |
+| A frame link is refused | The address has no `node-id`. In Figma, select the frame and use **Copy link to selection** |
+| **Link automatically** links nothing for a screenshot | Its name fits two frames, or no frame, so it's left alone by design. Add the link by hand |
+| The integration shows **needs attention** | Figma rejected the token. Remove the integration and connect again with a new token |
 
 ## Not built
 
@@ -55,6 +69,6 @@ A screenshot whose name matches a link shows the **Figma frame** chip in the rev
 - **Posting results on frames**: the client method for comments exists, but nothing calls it.
 - Penpot is a **Planned** tile and has no backend.
 
-<Aside type="note">
-Only fake-tested so far: the Figma edge is faked in the repository's tests.
+<Aside type="caution" title="Tested against fakes only">
+The Figma edge is faked in the repository's tests and has not been run against Figma.
 </Aside>

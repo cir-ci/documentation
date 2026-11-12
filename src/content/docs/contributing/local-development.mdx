@@ -1,23 +1,43 @@
 ---
 title: Local development
-description: pnpm dev, the QA environment, and pnpm gate.
+description: Run the QA environment with pnpm dev, and check your work with pnpm gate before you commit.
 ---
 {/* Source: README.md (Development), CLAUDE.md (Commands), dev/, package.json scripts, turbo.json */}
 
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, Steps } from '@astrojs/starlight/components'
+import CopyCommand from '../../../components/CopyCommand.tsx'
 
-## Prerequisites
+## Set up
 
-Node 26 (`nvm install && nvm use`, from `.nvmrc`) and pnpm 12.
+You need Node 26 (`nvm install && nvm use` reads `.nvmrc`), pnpm 12 and, for `pnpm dev`, Docker.
 
-```sh
-pnpm install
-pnpm exec playwright install chromium   # once: component tests run in headless Chromium
-```
+<Steps>
+
+1. Install the dependencies.
+
+   <CopyCommand client:visible command="pnpm install" />
+
+2. Install Chromium once. Component tests run in headless Chromium.
+
+   <CopyCommand client:visible command="pnpm exec playwright install chromium" />
+
+3. Start the QA environment.
+
+   <CopyCommand client:visible command="pnpm dev" />
+
+</Steps>
 
 ## `pnpm dev`
 
-A local QA environment (needs Docker): Postgres and Mailpit in containers, the server from source under `node --watch`, and Vite for the dashboard on port 5173 (it proxies every server path to the server on 3000). On the first run it seeds `owner@example.com` and `member@example.com` (password `circi-dev-password`), the workspace `acme`, the project `web-app` and four builds in different review states.
+`pnpm dev` is the local QA environment, and the dashboard on **http://localhost:5173** is what you open. It starts:
+
+| Part | What runs | Where |
+| --- | --- | --- |
+| Postgres and Mailpit | Docker containers (Compose project `circi-dev`) | Mailpit catches every email the server sends |
+| The server and worker | `circi all` from source under `node --watch`, so a change restarts it | Port 3000 |
+| The dashboard | Vite with hot reload. It proxies every server path to the server | Port 5173 (`PUBLIC_URL`) |
+
+On the first run it seeds `owner@example.com` and `member@example.com` (password `circi-dev-password`), the Workspace `acme`, the Project `web-app` and builds in different review states, so every screen has something to show.
 
 ```sh
 pnpm dev          # Ctrl+C stops it and keeps the data
@@ -30,29 +50,41 @@ To run the server from source against your own Postgres:
 DATABASE_URL=postgres://… BETTER_AUTH_SECRET=$(openssl rand -base64 32) STORAGE_PATH=./data pnpm circi all
 ```
 
-## Before committing
+## Before committing: `pnpm gate`
+
+Run the formatter, then the gate.
 
 ```sh
 pnpm format       # oxfmt
-pnpm gate         # Turborepo: format check, lint, typecheck, tests and build, cached by inputs
+pnpm gate         # Turborepo: format check, lint, typecheck, tests and build
 ```
 
-`pnpm gate` runs format check, lint (oxlint, type-aware), typecheck, the Node, UI and web browser tests and the build, in parallel where independent. A second run on an unchanged tree is instant. `pnpm gate:full` adds the end-to-end groups (needs Docker and Chromium). The old chain `pnpm lint && pnpm typecheck && pnpm test && pnpm build` still works.
+`pnpm gate` runs these in parallel where they're independent, each cached by its inputs, so a second run on an unchanged tree is instant:
 
-What emits what: `tsc` only type-checks. `pnpm build` runs tsdown for `@circi/ui`, `@circi/cli`, `@circi/vitest` and the server bundle, then Vite for the dashboard. Other packages have no build; their `exports` point at `src/*.ts`.
+| Task | What it checks |
+| --- | --- |
+| Format check | oxfmt |
+| Lint | oxlint, type-aware, plus the layer rules from [Repo layout](/contributing/repo-layout/) |
+| Typecheck | `tsc` with `noEmit` |
+| Tests | The Node, UI and web browser projects (see [Tests](/contributing/tests/)) |
+| Build | tsdown for `@circi/ui`, `@circi/cli`, `@circi/vitest` and the server bundle, then Vite for the dashboard |
+
+`pnpm gate:full` adds the two end-to-end groups, which need Docker and Chromium. The older chain `pnpm lint && pnpm typecheck && pnpm test && pnpm build` still works.
+
+`tsc` only type-checks. Packages other than the four above have no build: their `exports` point at `src/*.ts`, which Node, Vitest, Vite, tsc and tsdown all read directly.
 
 ## Database changes
 
-Edit the table files in `packages/db/src/schema/`, then `pnpm db:generate` writes a SQL migration to `packages/db/migrations/`. Commit both. After changing better-auth's plugins run `pnpm db:auth-schema`, then `pnpm db:generate`.
+Edit the table files in `packages/db/src/schema/`, then run `pnpm db:generate`, which writes a SQL migration to `packages/db/migrations/`. Commit both. After changing better-auth's plugins run `pnpm db:auth-schema`, then `pnpm db:generate`.
 
 ## Performance suite
 
-`pnpm perf` runs the k6 suite against a fresh stack (`pnpm perf:down` tears it down; `pnpm perf:bench` runs the diff microbenchmark). Results are in `docs/perf`.
+`pnpm perf` runs the k6 suite against a fresh stack. `pnpm perf:down` tears it down and `pnpm perf:bench` runs the diff microbenchmark. Results are in `docs/perf`.
 
 ## Commits
 
 Commit messages end with the project's `Co-Authored-By` line (see `CLAUDE.md`).
 
 <Aside type="tip">
-`pnpm test:visual` screenshots every `@circi/ui` component in light and dark with `@circi/vitest`, and uploads to a CirCI when `CIRCI_API_URL` and `CIRCI_TOKEN` are set: CirCI tests its own design system with itself.
+`pnpm test:visual` screenshots every `@circi/ui` component in light and dark with `@circi/vitest`, and uploads to a CirCI when `CIRCI_API_URL` and `CIRCI_TOKEN` are set. CirCI tests its own design system with itself.
 </Aside>

@@ -5,8 +5,20 @@ description: What integrations are, which kinds exist, who can add them and how 
 {/* Source: docs/integration-sdk.md, packages/integrations/src/kinds/*, packages/integrations/src/sdk/catalog.ts, packages/core/src/integrations, apps/web/src/features/integrations, apps/server/src/http/routes/dashboard/integrations */}
 
 import { Aside } from '@astrojs/starlight/components'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
 
 An integration connects a Workspace to an outside tool. CirCI reports builds to your git host, posts review notices to chat, files issues in your tracker and links screenshots to designs. Integrations belong to the Workspace, and each Project then chooses what it maps to: a repository, a channel, a tracker project or a design file.
+
+## What appears where
+
+| Kind | On the pull request | In a channel | On the build | Commands |
+| --- | --- | --- | --- | --- |
+| GitHub | A check with buttons and one summary comment | | | `/circi approve`, `reject`, `rerun` |
+| GitLab | A commit status and one summary note | | | The same |
+| Bitbucket | A commit status and one summary comment | | | The same, but no account can be linked yet |
+| Slack | | Review and decision notices, one channel per Project | | |
+| Linear, Jira | | | A **Create issue** button, then the issue key | |
+| Figma | | | A **Figma frame** chip | |
 
 ## The kinds
 
@@ -24,7 +36,7 @@ Azure DevOps, Microsoft Teams and Penpot appear in the Add integration dialog as
 
 Integrations are separate from [outgoing webhooks](/integrations/webhooks/), which are a Project setting that sends signed JSON to your own services, and from sign-in providers, which let people log in (see [Instance settings](/self-hosting/instance-settings/)).
 
-<Aside type="note">
+<Aside type="caution" title="Tested against fakes only">
 GitHub, GitLab, Bitbucket, Slack, Linear, Jira and Figma have so far been tested against fakes of their HTTP APIs, not against the live services. The repository's own release checklist asks for one manual run against each real service. Report anything that differs from these pages.
 </Aside>
 
@@ -34,6 +46,8 @@ Open **Workspace settings**, then **Integrations**. The page lists the integrati
 
 - **Planned**: the kind isn't built.
 - **Not set up on this server**: the kind needs an app of its own on this instance (the GitHub App, the Slack app) and none is configured yet.
+
+<ScreenFrame name="int-add-dialog" alt="The Add an integration dialog: git hosts, chat and design tools, each with an Add button, and Planned or Not set up on this server where a kind isn't available." caption="The Add integration dialog on an instance without a Slack app." width={760} />
 
 Adding an integration connects it. Its own page then maps Projects to targets: which repository, channel, tracker project or Figma file each Project uses. Some kinds also keep project-wide links there (Figma's frame links). A Project can map to one git host and to one connection per tracker kind, and mapping it to another moves it.
 

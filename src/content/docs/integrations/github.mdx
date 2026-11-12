@@ -1,33 +1,44 @@
 ---
 title: GitHub
-description: Connect the CirCI GitHub App to report builds as checks on pull requests and review from GitHub.
+description: Connect the CirCI GitHub App to report builds as checks on pull requests, and review from GitHub.
 ---
-{/* Source: packages/integrations/src/kinds/github (definition.ts, manifest.ts), packages/integrations/src/git/render.ts, packages/services/src/git/events.ts, packages/services/src/integration-admin/github-app.ts, packages/services/src/uploads/status.ts, apps/web/src/features/instance (GithubSetupPage, GithubAppSection), apps/server/src/cli/commands/github.ts, README.md */}
+{/* Source: packages/integrations/src/kinds/github (definition.ts, client.ts, manifest.ts), packages/integrations/src/git/render.ts, packages/services/src/git/events.ts, packages/services/src/integration-admin/github-app.ts, packages/services/src/uploads/status.ts, packages/core/src/reviews/review-sources.ts, apps/web/src/features/instance (GithubSetupPage, GithubAppSection), apps/web/src/features/account/LinkedAccounts.tsx, apps/server/src/cli/commands/github.ts, README.md */}
 
 import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
-With the GitHub integration, every build of a linked Project shows on the pull request as a check named `CirCI / <build name>`, with **Approve** and **Reject** buttons, plus one summary comment. People can also review by replying `/circi approve` or `/circi reject`. It works through a GitHub App that belongs to your CirCI instance.
+Every build of a linked Project shows on its pull request as a check named `CirCI / <build name>`, with **Approve** and **Reject** buttons, plus one summary comment that CirCI edits in place. People can also review by replying `/circi approve` or `/circi reject`. It works through a GitHub App that belongs to your CirCI instance.
 
-## Two different things: the App and sign-in
+| You get | Where |
+| --- | --- |
+| A check per build name, with Approve and Reject buttons | The pull request's **Checks** tab and merge box |
+| One summary comment per pull request | The pull request's conversation |
+| `/circi approve`, `/circi reject`, `/circi rerun` | A comment on the pull request |
+| One help comment when a command or button can't be used | The same conversation, edited in place |
 
-- The **GitHub App** reports builds and receives GitHub's webhooks. It's set up once per instance, then installed on your accounts or organizations.
-- **Sign in with GitHub** lets people log in to the dashboard with their GitHub login. It's a separate OAuth app.
+<Aside type="note">
+The App and **Sign in with GitHub** are two separate things. The App reports builds and receives GitHub's webhooks, and is set up once per instance. Sign-in lets people log in to the dashboard with GitHub, through a separate OAuth app. They meet in one place: to use `/circi` commands and the check's buttons, each person links their GitHub login to their CirCI account (see [Who may approve from GitHub](#who-may-approve-from-github)).
+</Aside>
 
-The two meet in one place. For `/circi` commands and the check's buttons, CirCI identifies who pressed them by their GitHub account ID, so each person must have linked their GitHub login to their CirCI account (see [Who may approve from GitHub](#who-may-approve-from-github)).
+## Set up
 
-<InstanceSettingNote setting="GitHub sign-in">
-Sign-in with GitHub is configured in Instance settings, or by `AUTH_GITHUB_CLIENT_ID` and `AUTH_GITHUB_CLIENT_SECRET` as the initial value. Register `PUBLIC_URL/api/auth/callback/github` as the callback address on GitHub. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
-</InstanceSettingNote>
+Steps 1 and 2 are done once per instance by an instance admin; steps 3 and 4 by an owner or admin of each Workspace.
 
-## Set up the GitHub App
+<Steps>
 
-An instance admin does this once. There are two ways.
+1. Create the GitHub App on the instance, by one click or by hand (below).
+2. Install the App on your GitHub account or organization.
+3. In **Workspace settings**, **Integrations**, **Add integration**, pick **GitHub**. If the instance has an App, the dialog sends you to GitHub to install it, and the return connects that installation to this Workspace.
+4. Link each Project to a repository (see [Link a Project to a repository](#link-a-project-to-a-repository)), then mark the check as required in the repository's branch protection if it should block merging.
+
+</Steps>
+
+### Create the App
 
 <Tabs>
 <TabItem label="One click (manifest)">
 
-Open **Instance settings** (the instance administration area) and find the **GitHub App** section. It shows a badge: **Not set up**, **Environment** or **Created here**.
+Open **Instance settings** and find the **GitHub App** section. It shows a badge: **Not set up**, **Environment** or **Created here**.
 
 <Steps>
 
@@ -61,21 +72,23 @@ Install it on your repositories, then set these on the server:
 </TabItem>
 </Tabs>
 
-If `GITHUB_APP_*` is set in the environment it always wins. The instance page then only shows the App (ID and slug) and hides the create button. An App created from the page is stored in the instance database; several replicas pick it up when they restart. The `GITHUB_APP_*` variables aren't moving into Instance settings: they stay environment variables, and the manifest flow is the alternative to setting them.
+If `GITHUB_APP_*` is set in the environment it always wins: the instance page then only shows the App (ID and slug) and hides the create button. An App created from the page is stored in the instance database, and several replicas pick it up when they restart. The `GITHUB_APP_*` variables aren't moving into Instance settings; the manifest flow is the alternative to setting them.
 
 The permissions are the smallest set that works: Checks for the check run and its buttons, Pull requests for the summary comment and its reactions, Metadata because GitHub always grants it.
 
-## Connect an installation to a Workspace
+<InstanceSettingNote setting="GitHub sign-in">
+Sign-in with GitHub is configured in Instance settings, or by `AUTH_GITHUB_CLIENT_ID` and `AUTH_GITHUB_CLIENT_SECRET` as the initial value. Register `PUBLIC_URL/api/auth/callback/github` as the callback address on GitHub. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
+</InstanceSettingNote>
 
-An owner or admin of the Workspace opens **Workspace settings**, **Integrations**, **Add integration**, and picks GitHub.
+### Connect an installation to a Workspace
 
-- If the instance has an App, the dialog sends you to GitHub to install it, and the return connects that installation to this Workspace.
+- If the instance has an App, **Add integration** sends you to GitHub to install it, and the return connects that installation to this Workspace.
 - If the App was installed from GitHub itself, the return lands on a **Connect GitHub** page where you choose the Workspace.
 - If the instance has no App yet, an instance admin sees a prompt to set one up, and anyone else is told to ask an admin.
 
-CirCI verifies the installation with GitHub (it requests a token and lists the repositories), so the App must really be installed there. An installation can belong to one Workspace of the instance. If the App is removed or suspended on GitHub, the installation event flags the connection as needing attention, and an unsuspend or a fresh install clears it.
+CirCI verifies the installation with GitHub (it requests a token and lists the repositories), so the App must really be installed there. An installation belongs to one Workspace of the instance.
 
-## Link a Project to a repository
+### Link a Project to a repository
 
 Each Project reports to one repository. There are four ways to link:
 
@@ -91,41 +104,51 @@ circi admin github unlink --org acme --project web
 
 The installation ID is the number at the end of the installation's settings address on GitHub. The command checks it with GitHub before saving anything. Linking from the Project's settings page records the installation without that check, so prefer the integration's page when you can.
 
-## What shows on the pull request
+## What appears where
 
-**The check.** One per build name, called `CirCI / <build name>` (for example `CirCI / default`). It's in progress while screenshots are processed, then ends as one of:
+### The check
 
-| Situation | Check result |
-| --- | --- |
-| No visual changes | Passes, "No visual changes" |
-| Changes awaiting review | Title like "3 changed · 1 added: review required". Action required, or pass with a summary when the Project doesn't block merging |
-| Approved | Passes, "Changes approved" |
-| Rejected | Fails, "Changes rejected" |
-| Only flaky screenshots changed | Passes when the Project doesn't hold merges for flaky ones |
-| Processing failed | Fails, or neutral when the Project doesn't block merging |
-| No changes, but the Project approves by hand | Action required, with an Approve button |
+One check per build name, called `CirCI / <build name>` (for example `CirCI / default`). It's in progress while screenshots are processed ("Processing screenshots…"), then ends as one of:
 
-While a build waits, the check carries **Approve** and **Reject** buttons. Approving in the dashboard or on GitHub updates the check within seconds, with no CI re-run.
+| Situation | Check title | Result |
+| --- | --- | --- |
+| No visual changes | No visual changes | Passes |
+| Changes await review | `3 changed · 1 added: review required` | Action required, or passes when the Project doesn't block merging |
+| Approved | `Changes approved (3 changed · 1 added)` | Passes |
+| Rejected | `Changes rejected (3 changed · 1 added)` | Fails |
+| Only flaky screenshots changed | `Only flaky screenshots changed (2 changed)` | Passes when the Project doesn't hold merges for flaky ones |
+| Some screenshots couldn't be read | `1 screenshot couldn't be read` | Fails until the build is uploaded again, whatever was approved |
+| Processing failed | Processing failed, with the error | Fails, or neutral when the Project doesn't block merging |
+| No changes, but the Project approves by hand | No visual changes: approval required | Action required, with an Approve button |
 
-**The summary comment.** One comment per pull request, headed "CirCI visual tests", with a row per build name (status, change counts, review state and who decided). It's edited in place whenever a build changes. If the Project hosts static sites, the comment also lists the sites for the newest commit under **Hosted sites for this commit**; see [Hosted sites](/using/hosted-sites/).
+The counts in a title read `changed`, `added`, `removed` and `couldn't be read`, joined with a middle dot, for example `3 changed · 1 couldn't be read`. While a build waits, the check carries **Approve** and **Reject** buttons, and approving in the dashboard or on GitHub updates the check within seconds, with no CI re-run.
 
-## The merge gate
+A check that waits says what to do next: "Approve or reject it here or reply `/circi approve` or `/circi reject` on the pull request, or open the build to see it." The sentence about replying is left out for a build with no pull request.
 
-To block merging, mark the check as required in the repository's branch protection. On the Project's **Settings** page, the **Merge gate** section controls what the check says while changes wait:
+### The summary comment
 
-- **Unreviewed changes block merging**: on, the check stays at action required until someone approves. Off, it passes with a "changes to review" summary.
-- **Flaky-only changes block merging**: whether changes to flaky screenshots hold the pull request.
-- **Approve default-branch builds automatically**: needs an approved baseline to compare with, so a Project's first build is always reviewed.
+One comment per pull request, edited in place whenever a build changes, with a row for each build name. This is its text:
 
-The CLI's `--wait` flag decides whether the CI job itself is the gate:
+```md
+### CirCI visual tests
 
-- **With a linked repository** the check is the gate. `circi upload --wait` waits for processing, exits 0 even with unreviewed changes, and fails only on processing errors. A green CI job then doesn't mean "reviewed".
-- **Without a linked repository** the CI job is the gate. It exits 1 until the build is approved, then you re-run the job.
-- `--gate status` or `--gate exit-code` overrides the choice. See [the CLI](/ci/cli/).
+| Build | Status | Changes | Review |
+| --- | --- | --- | --- |
+| [default](https://circi.example.com/acme/web-app/builds/42) | Changes detected | 3 changed · 1 added | [Review](https://circi.example.com/acme/web-app/builds/42) |
+| [mobile](https://circi.example.com/acme/web-app/builds/43) | No changes | — | — |
 
-The first build of a Project has nothing to compare with, so every screenshot is new and waits for review.
+**Hosted sites for this commit**
 
-## Commands in comments
+- [Storybook](https://circi.example.com/…) 
+
+Review the builds in CirCI (the links above), or reply `/circi approve` or `/circi reject` here. `/circi rerun` processes them again.
+```
+
+In the real comment each status starts with a symbol: a yellow circle for changes, a check mark for no changes or approved, a cross for failed or rejected, an hourglass while processing. Once someone decides, the review cell reads "Approved by Ada Lovelace", and when a build's screenshots were decided differently, the detail follows, for example "(2 approved · 1 pending)". A build with screenshots that couldn't be read shows "1 screenshot couldn't be read" in that cell instead of a review link. The closing line changes to "Reply `/circi approve`, `/circi reject` or `/circi rerun` to act on the latest builds." when nothing waits for a decision.
+
+The **Hosted sites for this commit** list appears only when the Project hosts static sites, and names the sites of the newest commit; see [Hosted sites](/using/hosted-sites/).
+
+### Commands in comments
 
 Reply on the pull request with one of these on a line of its own:
 
@@ -135,13 +158,57 @@ Reply on the pull request with one of these on a line of its own:
 | `/circi reject` | Rejects them |
 | `/circi rerun` | Processes the builds again, for example after changing a threshold |
 
-CirCI reacts to the comment with a thumbs up when it acted, and with a thumbs down plus a short reply when it didn't (no build yet, still processing, failed, or nothing to review). Edited comments don't repeat the action.
+CirCI reacts to the comment with a thumbs up when it acted. When it didn't, it reacts with a thumbs down and says why in **one help comment per pull request**. That comment is found again by a hidden marker and edited in place, so repeated mistakes never pile up comments. It carries the latest reason:
 
-## Who may approve from GitHub
+| Reason | What the help comment says |
+| --- | --- |
+| No build yet | "There's no CirCI build for this pull request yet. Reply again once your tests have uploaded screenshots." |
+| Still processing | "The latest build is still processing. Reply `/circi approve` again when its check finishes." |
+| Processing failed | "The latest build failed, so there's nothing to approve. `/circi rerun` processes it again." |
+| Nothing to decide | "Nothing to approve: the latest build has no visual changes, and this project doesn't require approval." |
+| You aren't linked | "I couldn't tell who you are in CirCI. Sign in at `PUBLIC_URL` with GitHub, using a member of this project's workspace, then try again." (The real text also names the page where the account is linked.) |
 
-Commands and the check's buttons are accepted from a person who has linked their GitHub login on their CirCI **Account** page and who can see the Project (a Project member, or an owner or admin of its Workspace). CirCI matches the GitHub account ID, never the email address. Anyone else gets a reply or a note on the check explaining how to link. Linking needs GitHub sign-in to be configured on the instance (see above).
+The command's name replaces "approve" in the replies (`reject`, `rerun`). Edited comments don't repeat the action.
 
-Decisions made this way are recorded in the build's activity as coming from a GitHub comment or a GitHub check.
+A button on the check that can't act answers on the check itself: a note titled **Nothing to decide** with the same reasons, or **Not allowed** with the linking help (which is also posted in the help comment when the build has a pull request).
+
+## Settings
+
+### The merge gate
+
+To block merging, mark the check as required in the repository's branch protection. Then, on the Project's **Settings** page, the **Merge gate** section controls what the check says while changes wait:
+
+- **Unreviewed changes block merging**: on, the check stays at action required until someone approves. Off, it passes with a "changes to review" summary.
+- **Flaky-only changes block merging**: whether changes to flaky screenshots hold the pull request.
+- **Approve default-branch builds automatically**: needs an approved baseline to compare with, so a Project's first build is always reviewed.
+
+A build with screenshots that couldn't be read fails the check whatever these say, because those screenshots were never compared.
+
+The CLI's `--wait` flag decides whether the CI job itself is the gate:
+
+- **With a linked repository** the check is the gate. `circi upload --wait` waits for processing and exits 0 even with unreviewed changes. A green CI job then doesn't mean "reviewed".
+- **Without a linked repository** the CI job is the gate. It exits 1 until the build is approved, then you re-run the job.
+- `--gate status` or `--gate exit-code` overrides the choice. See [the CLI](/ci/cli/).
+
+The first build of a Project has nothing to compare with, so every screenshot is new and waits for review.
+
+### Who may approve from GitHub
+
+Commands and the check's buttons are accepted from a person who has linked their GitHub login in the **Signed in with** section of their CirCI **Profile** and who can see the Project (a Project member, or an owner or admin of its Workspace). CirCI matches the GitHub account ID, never the email address. Anyone else gets the linking help above. Linking needs GitHub sign-in to be configured on the instance.
+
+Decisions made this way appear in the build's activity as coming from a GitHub comment (`github-comment`) or a GitHub check (`github-check`).
+
+## Troubleshooting
+
+| What you see | Why, and what to do |
+| --- | --- |
+| The dialog says **Not set up on this server** | The instance has no GitHub App yet. An instance admin creates one under **Instance settings** |
+| No check appears on the pull request | The Project isn't linked to this repository. Check **Repository** in the Project's settings, and that the App is installed on it |
+| The check never moves from "Processing screenshots…" | The worker isn't running or the build is stuck. See [Instance administration](/using/instance-administration/) for the worker's health |
+| `/circi approve` gets a thumbs down | Read the help comment: it names the reason (see the table above) |
+| The help comment says it can't tell who you are | Link your GitHub login in **Profile**, **Signed in with**, using an account that belongs to the Project's Workspace |
+| The integration shows **needs attention** | GitHub removed or suspended the installation, or rejected the credentials. Reinstall the App; an unsuspend or a fresh install clears the flag |
+| Buttons or comments do nothing at all | GitHub's webhook deliveries are failing. In the GitHub App's **Advanced** page, look at **Recent deliveries**, and check that `PUBLIC_URL` is reachable from GitHub and the secret matches |
 
 ## Webhook events CirCI handles
 
@@ -153,6 +220,6 @@ The App's webhook is the one entry point. CirCI verifies the signature and handl
 - `issue_comment` created on a pull request: the `/circi` commands. Comments by bots are ignored.
 - `installation` deleted or suspended: flags the connection as needing attention. Created or unsuspended clears it.
 
-<Aside type="note">
-Only fake-tested so far: the GitHub edge is faked in the repository's tests and end-to-end suite. See the [overview](/integrations/overview/).
+<Aside type="caution" title="Tested against fakes only">
+The GitHub edge is faked in the repository's tests and end-to-end suite. It hasn't been run against github.com. See the [overview](/integrations/overview/).
 </Aside>

@@ -7,29 +7,36 @@ description: Report builds to GitLab merge requests as a commit status and a sum
 import { Steps, Aside } from '@astrojs/starlight/components'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
-The GitLab integration works with gitlab.com and self-managed GitLab. Each build of a linked Project shows on the merge request as a commit status named `CirCI / <build name>`, and CirCI keeps one summary note on the merge request up to date. People can approve, reject or rerun with `/circi` commands in a note.
+The GitLab integration works with gitlab.com and self-managed GitLab. Each build of a linked Project shows on the merge request as a commit status named `CirCI / <build name>`, and CirCI keeps one summary note on the merge request up to date. People approve, reject or rerun with `/circi` commands in a note.
 
 It differs from [GitHub](/integrations/github/) in three ways: it uses an access token instead of an App, GitLab statuses have no Approve and Reject buttons, and you add the webhook on GitLab yourself.
 
-## Connect GitLab
+| You get | Where |
+| --- | --- |
+| A commit status per build name | The merge request's pipeline and merge widget |
+| One summary note per merge request | The merge request's discussion |
+| `/circi approve`, `/circi reject`, `/circi rerun` | A note on the merge request |
+| One help note when a command can't be used | The same discussion, edited in place |
+
+## Set up
 
 An owner or admin of the Workspace does this under **Workspace settings**, **Integrations**, **Add integration**, **GitLab**.
 
 <Steps>
 
 1. In GitLab, create an access token with the `api` scope. A project, group or personal access token works; use one whose account can see the repositories you want to report to and can post statuses and notes.
-2. In CirCI, enter the **GitLab address** (`https://gitlab.com` or your self-managed address) and the **Access token** (`glpat-…`).
-3. Connect. CirCI asks GitLab who the token belongs to and lists the projects it can read, so a wrong address, a rejected token or a token without the `api` scope fails here with a message.
+2. In CirCI, enter the **GitLab address** (`https://gitlab.com` or your self-managed address) and the **Access token** (`glpat-…`), then connect. CirCI asks GitLab who the token belongs to and lists the projects it can read, so a wrong address, a rejected token or a token without the `api` scope fails here with a message.
+3. Add the webhook on GitLab (below).
+4. On the integration's page, choose the **GitLab project** each CirCI Project reports to.
+5. To block merging, require the status to pass in the GitLab project's merge request settings.
 
 </Steps>
 
-A connection is identified by the token's user on that GitLab server (`host#user`), so the same GitLab user can't be connected in two Workspaces. Connecting again with a new token replaces the credentials and clears a "needs attention" flag. If GitLab later rejects the token, the integration shows the reason and asks for a new one.
+A connection is identified by the token's user on that GitLab server (`host#user`), so the same GitLab user can't be connected in two Workspaces. Connecting again with a new token replaces the credentials and clears a "needs attention" flag. A self-managed address must be public unless the instance sets `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` (see [Environment variables](/reference/environment-variables/)).
 
-A self-managed address must be public unless the instance sets `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` (see [Environment variables](/reference/environment-variables/)).
+### Add the webhook on GitLab
 
-## Add the webhook on GitLab
-
-CirCI can only learn about merge requests and notes if GitLab calls it. On the GitLab integration's page, owners and admins see the address and the secret to use. In each GitLab project (or group) open **Settings**, **Webhooks** and add:
+CirCI only learns about merge requests and notes if GitLab calls it. On the GitLab integration's page, owners and admins see the address and the secret to use. In each GitLab project (or group) open **Settings**, **Webhooks** and add:
 
 - **URL**: `PUBLIC_URL/webhooks/gitlab` (the alias `PUBLIC_URL/api/integrations/gitlab/webhook` also works).
 - **Secret token**: the secret shown on the integration's page. It's derived from the instance secret, so it doesn't change unless the instance secret does.
@@ -37,18 +44,34 @@ CirCI can only learn about merge requests and notes if GitLab calls it. On the G
 
 GitLab sends the secret in the `X-Gitlab-Token` header. CirCI refuses deliveries without it.
 
-## Link a Project to a GitLab project
+### Link a Project to a GitLab project
 
 On the integration's page, choose the **GitLab project** each CirCI Project reports to, written as the path with its namespace, for example `acme/web` or `acme/team/web`. The list comes from the repositories the token can read; you can also type the path. A Project reports to one git host at a time.
 
-## What shows on the merge request
+<InstanceSettingNote setting="GitLab sign-in">
+Linking a GitLab login (needed for commands) requires GitLab sign-in to be configured on the instance. Set it in Instance settings, or by `AUTH_GITLAB_CLIENT_ID` and `AUTH_GITLAB_CLIENT_SECRET` as the initial value, plus `AUTH_GITLAB_URL` for a self-managed GitLab (default gitlab.com). See [Instance settings](/self-hosting/instance-settings/).
+</InstanceSettingNote>
 
-- **Commit status.** One per build name, `CirCI / <build name>`. It's `running` while screenshots are processed, `success` when there are no changes, the changes are approved, or the Project doesn't block merging, and `failed` when changes await review with merge blocking on, or when they are rejected. The description is the same title the GitHub check uses, such as "3 changed: review required", and it links to the build.
-- **Summary note.** One note per merge request, edited in place, with a table of builds (status, changes, review state) and any hosted sites for the newest commit.
+## What appears where
 
-Statuses have no buttons, so review happens in the dashboard or with commands. To block merging, require the status to pass in the GitLab project's merge request settings. The **Merge gate** settings on the CirCI Project page apply as they do for GitHub.
+### The commit status
 
-## Commands
+One status per build name, `CirCI / <build name>`. Its description is the same title the GitHub check uses, and it links to the build.
+
+| Situation | Status | Description |
+| --- | --- | --- |
+| Processing | `running` | Processing screenshots… |
+| No changes, approved, or the Project doesn't block merging | `success` | No visual changes; Changes approved (3 changed · 1 added); or `3 changed · 1 added: review required` |
+| Changes await review and merging is blocked | `failed` | `3 changed · 1 added: review required` |
+| Rejected | `failed` | Changes rejected (3 changed · 1 added) |
+| Some screenshots couldn't be read | `failed` | `1 screenshot couldn't be read`, until the build is uploaded again |
+| Processing failed | `failed`, or `success` when merging isn't blocked | Processing failed |
+
+### The summary note
+
+One note per merge request, edited in place, with a table of builds (status, changes, review) and any hosted sites for the newest commit. It has the same text as the [GitHub summary comment](/integrations/github/#the-summary-comment): the heading **CirCI visual tests**, the columns Build, Status, Changes and Review, and a closing line that points to the dashboard and the `/circi` commands. A build with screenshots that couldn't be read says "1 screenshot couldn't be read" in its review cell.
+
+### Commands
 
 In a note on the merge request, put one of these on a line of its own:
 
@@ -58,29 +81,39 @@ In a note on the merge request, put one of these on a line of its own:
 | `/circi reject` | Rejects them |
 | `/circi rerun` | Processes them again |
 
-CirCI answers with a thumbs-up reaction on the note when it acted, and with a thumbs-down plus a short reply when it didn't. Edits of a note don't repeat the action.
+CirCI puts a thumbs-up reaction on the note when it acted. When it didn't, it reacts with a thumbs-down and writes the reason in **one help note per merge request**, which it finds again by a hidden marker and edits in place, so repeated mistakes don't pile up notes. The reasons are the ones on the [GitHub page](/integrations/github/#commands-in-comments): no build yet, still processing, processing failed, or nothing to decide. For someone CirCI can't match to an account the note says "I couldn't tell who you are in CirCI. Sign in at `PUBLIC_URL` with GitLab (a member of this project's workspace), then try again." Edits of a note don't repeat the action.
 
-A person may use commands when they have linked their GitLab login to their CirCI account and can see the Project (a member, or an owner or admin of its Workspace). CirCI matches the GitLab user ID, never the email. Others get a reply explaining how to link.
+## Settings
 
-<InstanceSettingNote setting="GitLab sign-in">
-Linking a GitLab login needs GitLab sign-in to be configured on the instance. Set it in Instance settings, or by `AUTH_GITLAB_CLIENT_ID` and `AUTH_GITLAB_CLIENT_SECRET` as the initial value, plus `AUTH_GITLAB_URL` for a self-managed GitLab (default gitlab.com). See [Instance settings](/self-hosting/instance-settings/).
-</InstanceSettingNote>
+The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read fails whatever they say.
+
+A person may use commands when they have linked their GitLab login in the **Signed in with** section of their CirCI **Profile** and can see the Project (a member, or an owner or admin of its Workspace). CirCI matches the GitLab user ID, never the email.
+
+### The merge gate in CI
+
+`circi upload --wait` decides who blocks the merge: the status on GitLab, or the CI job (see [the CLI](/ci/cli/)). The server picks the status as the gate when a Project reports to a git host, but today it only knows that when the GitHub App is configured on the instance. On an instance without a GitHub App, a GitLab-linked Project defaults to the CI job being the gate (exit code 1 until approved). To make GitLab's status the gate there, pass `--gate status`.
+
+## Troubleshooting
+
+| What you see | Why, and what to do |
+| --- | --- |
+| Connect fails with a message | The address isn't a GitLab server, the token was rejected, or it lacks the `api` scope. Create a new token with `api` |
+| Statuses appear but commands do nothing | The webhook isn't added, or its secret token doesn't match the one on the integration's page. Check **Recent events** on GitLab's webhook page |
+| Commands get a thumbs-down and the help note | Read the note: it names the reason. If it says it can't tell who you are, link GitLab in **Profile** |
+| The integration shows **needs attention** | GitLab rejected the token. Connect again with a new token |
+| A closed merge request still has review requests | Not handled: nothing happens when a merge request is closed |
 
 ## What the webhook handles
 
 - Merge request opened or reopened: remembers the author and gives builds their merge request number. Other merge request updates aren't used.
 - Note created on a merge request: the `/circi` commands.
 
-## The merge gate in CI
-
-`circi upload --wait` decides who blocks the merge: the status on GitLab, or the CI job (see [the CLI](/ci/cli/)). The server picks the status as the gate when a Project reports to a git host, but today it only knows that when the GitHub App is configured on the instance. On an instance without a GitHub App, a GitLab-linked Project defaults to the CI job being the gate (exit code 1 until approved). To make GitLab's status the gate there, pass `--gate status`.
-
 ## Not built
 
 - Approve and Reject buttons on the status (GitLab has none).
-- GitLab-specific events beyond merge request open, reopen and notes: for example, nothing happens when a merge request is closed (GitHub closes its review requests).
+- GitLab events beyond merge request open, reopen and notes. For example, closing a merge request does nothing (GitHub closes its review requests).
 - Reporting a Project to more than one GitLab project.
 
-<Aside type="note">
-Only fake-tested so far: the GitLab edge is faked in the repository's tests.
+<Aside type="caution" title="Tested against fakes only">
+The GitLab edge is faked in the repository's tests. It hasn't been run against gitlab.com or a self-managed server.
 </Aside>

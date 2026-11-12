@@ -5,6 +5,7 @@ description: Send a Project's build events as signed JSON to your own services, 
 {/* Source: packages/core/src/node/webhook.ts, packages/core/src/node/webhook-url.ts, packages/db/src/queue/webhooks.ts, packages/services/src/jobs/deliver-webhook.ts, packages/services/src/projects/webhooks.ts, apps/server/src/cli/commands/webhook.ts, apps/server/src/http/routes/dashboard/projects/settings.ts, apps/web/src/features/project-settings (WebhooksPage.tsx, DeliveriesTable.tsx, webhook-events.ts), README.md */}
 
 import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
 
 An outgoing webhook makes CirCI send a signed JSON request to an address you choose whenever something happens to a build in a Project. Use it to feed your own tools when there's no ready-made [integration](/integrations/overview/). Webhooks belong to a Project, not to the Workspace.
 
@@ -35,6 +36,8 @@ Owners and admins of the Project's Workspace can add, test, regenerate and remov
 </Steps>
 
 Each webhook in the list has **Send test**, **Regenerate secret** and **Remove**, and a table of recent deliveries.
+
+<ScreenFrame name="int-webhooks" alt="The Webhooks settings page of a Project: two webhooks with their events and a Failing badge, each with Send test, Regenerate secret and Remove, and a table of recent deliveries." caption="A Project's Webhooks page. Both addresses here fail because nothing listens on them." width={760} />
 
 </TabItem>
 <TabItem label="Command line">
@@ -162,6 +165,17 @@ To rotate without a gap, update the receiver to accept either secret first, rege
 <Aside type="caution">
 There is no way to read a secret again later. If you didn't copy it, regenerate it. The command-line tool has no regenerate command yet; use the dashboard.
 </Aside>
+
+## Troubleshooting
+
+| What you see | Why, and what to do |
+| --- | --- |
+| **Failing: fetch failed** next to a webhook | CirCI couldn't reach the address: wrong host or port, or a firewall. Press **Send test** after fixing it |
+| The receiver rejects every request | The secret is wrong or was regenerated, or the signature was computed over re-serialized JSON instead of the raw body. See [Verify the signature](#verify-the-signature) |
+| A delivery shows "The address is on a private network" | The name now resolves to a private address. Use a public address or set `WEBHOOK_ALLOW_PRIVATE_ADDRESSES=true` |
+| A delivery shows a `3xx` status | Redirects aren't followed. Put the final address in the webhook |
+| The same delivery arrives twice | A retry after a slow answer. Ignore repeats of the same `CirCI-Delivery` value |
+| Nothing arrives for a build | The webhook isn't subscribed to the event, or it was removed. Each webhook needs at least one event |
 
 ## See also
 
