@@ -1,7 +1,7 @@
 ---
 // The page title area: the section the page belongs to (the sidebar group, like the app's
-// breadcrumbs), the title, and the page description as a short lead. On the landing page the
-// h1 stays for assistive tech and search, and the page draws its own headline.
+// breadcrumbs), the title, and the page description as a short lead. The landing page draws its
+// own headline, which is its h1.
 type SidebarEntry = { type: 'link'; isCurrent: boolean } | { type: 'group'; label: string; entries: SidebarEntry[] }
 
 const { entry, sidebar } = Astro.locals.starlightRoute
@@ -23,7 +23,7 @@ const section = isSplash ? undefined : groupOf(sidebar as SidebarEntry[])
 
 {
   isSplash ? (
-    <h1 id="_top" class="sr-only">{entry.data.title}</h1>
+    <span id="_top"></span>
   ) : (
     <div class="page-title">
       {section && <p class="section">{section}</p>}

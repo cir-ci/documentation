@@ -8,7 +8,7 @@ Inter and JetBrains Mono, small radii.
 
 | What | Where |
 |---|---|
-| Tokens and the Starlight mapping (the only place colours, fonts, radii are defined) | `src/styles/circi-theme.css` |
+| Tokens and the Starlight mapping (the only place colors, fonts, radii are defined) | `src/styles/circi-theme.css` |
 | Component-level CSS on Starlight's markup | `src/styles/docs.css` |
 | Shared components | `src/components/` (`EnvTable.astro`, `InstanceSettingNote.astro`, `CopyCommand.tsx` React island) |
 | Data behind generated tables | `src/data/env.ts` (the environment variable reference) |
@@ -42,7 +42,7 @@ The `--circi-*` variables are copied with their values; `--sl-*` are derived fro
 | `--sl-font`, `--sl-font-mono` | `font-sans`, `font-mono` | Inter Variable, JetBrains Mono Variable | same |
 
 Radii: inline 4px, control 6px, popup 8px, panel 10px, command 12px (`--circi-radius-*`). Use them in
-`docs.css`, never raw numbers. Never write hex values outside `circi-theme.css`. The state colours
+`docs.css`, never raw numbers. Never write hex values outside `circi-theme.css`. The state colors
 (`--circi-state-*`: approved, review, processing, failed, rejected, added, removed, flaky) are available for
 status chips in prose; light-scheme values are darkened for 4.5:1 contrast.
 
@@ -84,7 +84,7 @@ In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a
 - `Kbd.astro`: `<Kbd keys="Shift+A" />`, `<Kbd keys="Mod+K" />` (Mod is Command; Shift, Alt, Ctrl, Enter, Esc also map to symbols).
   A sequence is `<Kbd keys="g then i" />` (key, release, key), never two `Kbd`s with "then" between them.
 - `Diagram.astro`: a themed, accessible inline SVG (`viewBox`, `title`, `desc`, optional `caption`, `width`). Draw its children with the
-  `d-box`, `d-box--accent`, `d-line`, `d-title`, `d-mono`, `d-text`, `d-fill` classes so both themes work; no inline colours. The title and
+  `d-box`, `d-box--accent`, `d-line`, `d-title`, `d-mono`, `d-text`, `d-fill` classes so both themes work; no inline colors. The title and
   description are the accessible name, so say what the picture shows, not "diagram of". `BuildFlow` stays its own component (two layouts).
   Example: the layers in `contributing/repo-layout`.
 - Steps and Asides: an Aside indented under a step stays in the step (one short warning about that action). Anything longer ends the list:

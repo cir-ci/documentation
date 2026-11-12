@@ -10,7 +10,7 @@ CirCI deletes what is old and what nothing uses, in the background.
 
 ## Retention
 
-Each project keeps its builds for a number of days (1 to 3650). Builds older than that, and hosted-site versions past their retention, expire. A new Project starts with the instance's default, **30 days** until an instance admin changes **New projects keep builds for** in Instance settings (it has no environment variable, and it doesn't touch existing Projects). Each Project then changes its own in its settings. Files are deleted after expiry only once nothing references them.
+Each project keeps its builds for a number of days (1 to 3650). Builds older than that, and hosted-site versions past their retention, expire. A new project starts with the instance's default, **30 days** until an instance admin changes **New projects keep builds for** in Instance settings (it has no environment variable, and it doesn't touch existing projects). Each project then changes its own in its settings. Files are deleted after expiry only once nothing references them.
 
 Baselines matter: a build that is still the baseline for others should be kept. Choose a retention longer than the longest time a branch lives.
 

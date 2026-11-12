@@ -6,7 +6,7 @@ description: Create a Linear issue from a build or a screenshot, with the build 
 
 import { Steps, Aside } from '@astrojs/starlight/components'
 
-The Linear integration adds a **Create issue** button to the build review. It files an issue in the Linear team you chose for the Project, with the build link, the branch, who rejected the changes and why, and a link to the diff image. The issue then shows on the build.
+The Linear integration adds a **Create issue** button to the build review. It files an issue in the Linear team you chose for the project, with the build link, the branch, who rejected the changes and why, and a link to the diff image. The issue then shows on the build.
 
 | You get | Where |
 | --- | --- |
@@ -15,7 +15,7 @@ The Linear integration adds a **Create issue** button to the build review. It fi
 
 ## Set up
 
-An owner or admin of the Workspace does this.
+An owner or admin of the workspace does this.
 
 Open **Workspace settings**, **Integrations**, **Add integration**, **Linear**.
 
@@ -30,15 +30,15 @@ The key is stored encrypted and never shown again. Issues are created as the per
 
 ### Choose a team for each Project
 
-On the Linear integration's page, choose a Linear **Team** for each Project. A Project without a team has no Create issue button. A Project maps to one Linear connection at a time.
+On the Linear integration's page, choose a Linear **Team** for each project. A Project without a team has no Create issue button. A Project maps to one Linear connection at a time.
 
 ## What appears where
 
-When a Project has a tracker mapped, the build review header shows **Create issue**. It acts on the screenshot you have selected, or on the whole build when none is selected.
+When a project has a tracker mapped, the build review header shows **Create issue**. It acts on the screenshot you have selected, or on the whole build when none is selected.
 
 The **Create issue** dialog has:
 
-- a **Tracker** switch, only when the Project has both Linear and Jira,
+- a **Tracker** switch, only when the project has both Linear and Jira,
 - a **Title**, pre-filled as `Visual regression: <screenshot> in build #<number>` (or `Visual regression in build #<number>` for a whole build), up to 250 characters,
 - a read-only **Description** preview.
 
@@ -50,7 +50,7 @@ When Linear answers, CirCI records the link (for example `ENG-123`) on the build
 
 | What you see | Why, and what to do |
 | --- | --- |
-| There's no **Create issue** button | The Project has no Linear team mapped. Choose a **Team** on the integration's page |
+| There's no **Create issue** button | The project has no Linear team mapped. Choose a **Team** on the integration's page |
 | Connect fails with a message | Linear rejected the key. Create a new personal API key |
 | The dialog shows an error from Linear | Nothing was recorded. Fix what the message says (for example a deleted team) and try again |
 | The integration shows **needs attention** | Linear rejected the key later. Connect again with a new key |

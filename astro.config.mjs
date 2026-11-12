@@ -8,6 +8,8 @@ import { defineConfig } from 'astro/config'
 // a file under src/content/docs (see DESIGN.md for the page conventions).
 // `site` is a placeholder until the docs have their address: it makes Starlight generate sitemap-index.xml.
 export default defineConfig({
+  // Smart punctuation would turn `--wait` into an en dash and break copied commands.
+  markdown: { smartypants: false },
   site: 'https://docs.circi.dev',
   server: { port: 4321 },
   integrations: [
@@ -51,6 +53,7 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Introduction',
+          collapsed: true,
           items: [
             'introduction/what-is-circi',
             'introduction/how-a-build-flows',
@@ -59,6 +62,7 @@ export default defineConfig({
         },
         {
           label: 'Getting started',
+          collapsed: true,
           items: [
             'getting-started/run-it-locally',
             'getting-started/sign-in-and-set-up',
@@ -69,6 +73,7 @@ export default defineConfig({
         },
         {
           label: 'Self-hosting',
+          collapsed: true,
           items: [
             'self-hosting/requirements',
             'self-hosting/docker-compose',
@@ -87,6 +92,7 @@ export default defineConfig({
         },
         {
           label: 'Using CirCI',
+          collapsed: true,
           items: [
             'using/reviewing-a-build',
             'using/comments-and-regions',
@@ -105,11 +111,13 @@ export default defineConfig({
           ],
         },
         {
-          label: 'CI integration',
+          label: 'Upload from CI',
+          collapsed: true,
           items: ['ci/cli', 'ci/vitest', 'ci/ci-examples', 'ci/argos-compatible-api'],
         },
         {
-          label: 'Integrations',
+          label: 'Connect other tools',
+          collapsed: true,
           items: [
             'integrations/overview',
             'integrations/github',
@@ -124,6 +132,7 @@ export default defineConfig({
         },
         {
           label: 'Reference',
+          collapsed: true,
           items: [
             'reference/http-api',
             'reference/admin-cli',
@@ -133,6 +142,7 @@ export default defineConfig({
         },
         {
           label: 'Contributing',
+          collapsed: true,
           items: [
             'contributing/repo-layout',
             'contributing/local-development',

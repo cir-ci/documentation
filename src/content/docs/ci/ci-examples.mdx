@@ -7,7 +7,7 @@ description: GitHub Actions, GitLab CI, Bitbucket Pipelines, Gitea, Jenkins, sha
 import { Aside, Tabs, TabItem } from '@astrojs/starlight/components'
 import StatusChip from '../../../components/StatusChip.astro'
 
-Every example uploads a directory of PNG screenshots with `circi upload`. Put the Project's token in your CI's secret store as `CIRCI_TOKEN`, and your CirCI address in `CIRCI_API_URL`. The CLI reads the commit, branch and pull request from the CI's environment. It also needs enough git history to find the baseline. Shallow checkouts work, because it fetches the base branch and a little more, but a full fetch is faster for large repositories.
+Every example uploads a directory of PNG screenshots with `circi upload`. Put the project's token in your CI's secret store as `CIRCI_TOKEN`, and your CirCI address in `CIRCI_API_URL`. The CLI reads the commit, branch and pull request from the CI's environment. It also needs enough git history to find the baseline. Shallow checkouts work, because it fetches the base branch and a little more, but a full fetch is faster for large repositories.
 
 <Tabs>
 <TabItem label="GitHub Actions">
@@ -22,7 +22,7 @@ Every example uploads a directory of PNG screenshots with `circi upload`. Put th
     CIRCI_API_URL: https://ci.acme.io
 ```
 
-With the GitHub App linked to the repository, `--wait` exits 0 even when changes need review and the **CirCI** check is the merge gate (mark it required). Without it, the job fails until the changes are approved, then re-run it. Either way, `--wait` exits 2 for a processing error, and for screenshots that couldn't be read when the Project blocks merges (otherwise it exits 0 with a warning naming each file).
+With the GitHub App linked to the repository, `--wait` exits 0 even when changes need review and the **CirCI** check is the merge gate (mark it required). Without it, the job fails until the changes are approved, then re-run it. Either way, `--wait` exits 2 for a processing error, and for screenshots that couldn't be read when the project blocks merges (otherwise it exits 0 with a warning naming each file).
 
 </TabItem>
 <TabItem label="GitLab CI">
@@ -74,7 +74,7 @@ CircleCI, Buildkite and Azure Pipelines are detected as well; their environment 
 
 ## First build and the gate
 
-A Project's first build has no baseline, so every screenshot is <StatusChip status="added" /> and needs review before the gate opens, even on the default branch. Auto-approve applies only once there is an approved baseline, so someone approves every screenshot once. Pull requests that change only flaky screenshots can pass without review when the Workspace or Project says flaky changes don't block (see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)).
+A Project's first build has no baseline, so every screenshot is <StatusChip status="added" /> and needs review before the gate opens, even on the default branch. Auto-approve applies only once there is an approved baseline, so someone approves every screenshot once. Pull requests that change only flaky screenshots can pass without review when the workspace or project says flaky changes don't block (see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)).
 
 ## Sharded runs
 

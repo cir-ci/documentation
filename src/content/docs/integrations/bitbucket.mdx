@@ -6,7 +6,7 @@ description: Report builds to Bitbucket Cloud pull requests as a commit status a
 
 import { Steps, Aside } from '@astrojs/starlight/components'
 
-The Bitbucket integration supports Bitbucket Cloud. Each build of a linked Project shows on the pull request as a commit status named `CirCI / <build name>`, and CirCI keeps one summary comment on the pull request up to date. It's the smallest of the three git integrations: statuses and comments, with commands, but no buttons.
+The Bitbucket integration supports Bitbucket Cloud. Each build of a linked project shows on the pull request as a commit status named `CirCI / <build name>`, and CirCI keeps one summary comment on the pull request up to date. It's the smallest of the three git integrations: statuses and comments, with commands, but no buttons.
 
 | You get | Where |
 | --- | --- |
@@ -17,7 +17,7 @@ The Bitbucket integration supports Bitbucket Cloud. Each build of a linked Proje
 
 ## Set up
 
-An owner or admin of the Workspace opens **Workspace settings**, **Integrations**, **Add integration**, **Bitbucket**.
+An owner or admin of the workspace opens **Workspace settings**, **Integrations**, **Add integration**, **Bitbucket**.
 
 <Steps>
 
@@ -51,9 +51,9 @@ One per build name. The key is `circi-` plus a short hash of the build name, so 
 | Situation | Status |
 | --- | --- |
 | Processing | `INPROGRESS` |
-| No changes, approved, or the Project doesn't block merging | `SUCCESSFUL` |
+| No changes, approved, or the project doesn't block merging | `SUCCESSFUL` |
 | Changes await review and merging is blocked, or rejected | `FAILED` |
-| Some screenshots couldn't be read (`1 screenshot couldn't be read`) | `FAILED` when the Project blocks merging, `SUCCESSFUL` otherwise, until the build is uploaded again |
+| Some screenshots couldn't be read (`1 screenshot couldn't be read`) | `FAILED` when the project blocks merging, `SUCCESSFUL` otherwise, until the build is uploaded again |
 
 ### The summary comment
 
@@ -68,7 +68,7 @@ Comment `/circi approve`, `/circi reject` or `/circi rerun` on a line of its own
 - When it can't match you to an account: "I couldn't tell who you are in CirCI. Link your Bitbucket account to a CirCI account that belongs to this project's workspace (`PUBLIC_URL`), then try again."
 
 <Aside type="caution">
-CirCI has no Bitbucket sign-in provider (the sign-in providers are GitHub, GitLab, Google and OpenID Connect), so there is currently no way for a person to link a Bitbucket account to their CirCI account in the dashboard. Until that exists, `/circi` commands on Bitbucket get the "couldn't tell who you are" answer. Review in the dashboard instead. A person could use commands once CirCI can match their Bitbucket account ID to a CirCI account in the Project's Workspace.
+CirCI has no Bitbucket sign-in provider (the sign-in providers are GitHub, GitLab, Google and OpenID Connect), so there is currently no way for a person to link a Bitbucket account to their CirCI account in the dashboard. Until that exists, `/circi` commands on Bitbucket get the "couldn't tell who you are" answer. Review in the dashboard instead. A person could use commands once CirCI can match their Bitbucket account ID to a CirCI account in the project's workspace.
 </Aside>
 
 ## Settings
@@ -77,7 +77,7 @@ The **Merge gate** settings on the CirCI Project page apply as they do for GitHu
 
 ### The merge gate in CI
 
-`circi upload --wait` decides who blocks the merge: the status on Bitbucket or the CI job (see [the CLI](/ci/cli/)). The server picks the status as the gate when a Project reports to a git host, but today it only knows that when the GitHub App is configured on the instance. On an instance without it, a Bitbucket-linked Project defaults to the CI job being the gate (exit code 1 until approved). Pass `--gate status` to make Bitbucket's status the gate.
+`circi upload --wait` decides who blocks the merge: the status on Bitbucket or the CI job (see [the CLI](/ci/cli/)). The server picks the status as the gate when a project reports to a git host, but today it only knows that when the GitHub App is configured on the instance. On an instance without it, a Bitbucket-linked project defaults to the CI job being the gate (exit code 1 until approved). Pass `--gate status` to make Bitbucket's status the gate.
 
 ## Troubleshooting
 

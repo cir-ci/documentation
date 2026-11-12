@@ -6,13 +6,13 @@ description: Make a project, find its settings and its CI token.
 
 import ScreenFrame from '../../../components/ScreenFrame.astro'
 
-A Project is one thing you test. Each Project has its own CI token, baselines, review rules and settings.
+A Project is one thing you test. Each project has its own CI token, baselines, review rules and settings.
 
 ## In the dashboard
 
-Use **New project** on the Projects page. Give it a name; the address is derived from it. If a GitHub App is connected, you can also import Projects from your repositories, which links each one to its repository. You and the Workspace's owners and admins can then open the Project's **Settings** from its page.
+Use **New project** on the projects page. Give it a name; the address is derived from it. If a GitHub App is connected, you can also import projects from your repositories, which links each one to its repository. You and the workspace's owners and admins can then open the project's **Settings** from its page.
 
-<ScreenFrame name="start-projects" alt="The Projects page: Projects grouped by Workspace, each with its members, latest build and changes. New project is at the top right." caption="The Projects page." width={900} />
+<ScreenFrame name="start-projects" alt="The projects page: projects grouped by workspace, each with its members, latest build and changes. New project is at the top right." caption="The projects page." width={900} />
 
 ## From the command line
 
@@ -21,13 +21,13 @@ docker compose exec circi circi admin workspace create --name "Acme" --owner you
 docker compose exec circi circi admin project create --org acme --name "Web app"
 ```
 
-`project create` prints the project's CI token. Options: `--slug`, `--default-branch` (default `main`), `--member <email>` (repeatable; adds a Workspace member to the Project) and `--json`.
+`project create` prints the project's CI token. Options: `--slug`, `--default-branch` (default `main`), `--member <email>` (repeatable; adds a workspace member to the project) and `--json`.
 
 ## The CI token
 
-A CI token identifies one Project to the upload API. It starts with `circi_`, is shown **once** (store it in your CI's secret store), and is kept hashed. A token can only upload builds and read the status of its own Project's builds. It can't read the dashboard.
+A CI token identifies one project to the upload API. It starts with `circi_`, is shown **once** (store it in your CI's secret store), and is kept hashed. A token can only upload builds and read the status of its own project's builds. It can't read the dashboard.
 
-To replace it, open the Project's **Settings**, **CI token**, and rotate it. The old token stops working immediately. From the command line:
+To replace it, open the project's **Settings**, **CI token**, and rotate it. The old token stops working immediately. From the command line:
 
 ```sh
 circi admin project rotate-token --org acme --project web-app

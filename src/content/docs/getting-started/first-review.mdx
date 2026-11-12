@@ -9,7 +9,7 @@ import BuildFlow from '../../../components/BuildFlow.astro'
 import StatusChip from '../../../components/StatusChip.astro'
 import ScreenFrame from '../../../components/ScreenFrame.astro'
 
-Open the build from the Project page. The build page lists its screenshots grouped by state (changed, added, removed, unchanged) and shows the selected one in a viewer.
+Open the build from the project page. The build page lists its screenshots grouped by state (changed, added, removed, unchanged) and shows the selected one in a viewer.
 
 <BuildFlow current={3} />
 
@@ -29,7 +29,7 @@ Now change a screenshot and upload from a new commit. The build shows that scree
 
 ## Close the loop with your git host
 
-- Link the Project to its repository to get a **CirCI** check on pull requests with Approve and Reject buttons, and a summary comment: [GitHub](/integrations/github/), [GitLab](/integrations/gitlab/), [Bitbucket](/integrations/bitbucket/).
+- Link the project to its repository to get a **CirCI** check on pull requests with Approve and Reject buttons, and a summary comment: [GitHub](/integrations/github/), [GitLab](/integrations/gitlab/), [Bitbucket](/integrations/bitbucket/).
 - Mark that check as required in the repository's branch protection to block merges until someone reviews.
 - Add [Slack](/integrations/slack/) or a [webhook](/integrations/webhooks/) to hear about builds.
 

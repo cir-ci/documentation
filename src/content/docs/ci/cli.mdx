@@ -22,7 +22,7 @@ Uploads a directory of PNG screenshots as a build.
 | `--wait` | Wait for the result and exit non-zero when it should block the merge. |
 | `--shard <n/total>` | This job uploads shard `n` of `total` of one parallel build (for example `2/4`). The build is processed once all shards arrive. |
 | `--nonce <id>` | Ties the shards of one parallel build together. Default: the CI run's ID. |
-| `--gate <mode>` | Who blocks the merge: `status` (the git host's check; exit 0 on unreviewed changes) or `exit-code` (this job). Default: decided by the server from the Project's settings. |
+| `--gate <mode>` | Who blocks the merge: `status` (the git host's check; exit 0 on unreviewed changes) or `exit-code` (this job). Default: decided by the server from the project's settings. |
 | `--author <login>` | Who made the change. Default: the CI actor (for example `GITHUB_ACTOR`). |
 | `--timeout <seconds>` | How long `--wait` waits (default 600). |
 | `--api-url <url>` | CirCI address. Default: `CIRCI_API_URL`. |
@@ -43,7 +43,7 @@ Global: `--debug` prints the stack trace of an unexpected error (or set `DEBUG=1
 
 | Variable | Meaning |
 |---|---|
-| `CIRCI_TOKEN` | The Project's CI token. Required. |
+| `CIRCI_TOKEN` | The project's CI token. Required. |
 | `CIRCI_API_URL` | Your CirCI address, for example `https://ci.acme.io`. Required unless `--api-url`. |
 | `CIRCI_COMMIT`, `CIRCI_BRANCH`, `CIRCI_PR_NUMBER`, `CIRCI_BASE_BRANCH` | Override what is detected. |
 | `CIRCI_AUTHOR` | Same as `--author`. |
@@ -72,22 +72,22 @@ The CLI collects the commit history CirCI needs to pick the baseline, from the *
 | `1` | With `--wait`: visual changes need review and this job is the gate. Approve them in the dashboard, then re-run the job. |
 | `2` | An error: bad flags or setup, the server couldn't be reached, the build failed to process (the server's reason is printed), screenshots couldn't be read (see below), or `--wait` timed out. |
 
-A screenshot the server can't read (a file that isn't a valid PNG) is marked **Couldn't read**, and `--wait` names each file and why. It follows the Project's **Unreviewed changes block merging** setting, like a build that failed to process: in a Project that blocks merges the build can't pass and `--wait` exits `2`; otherwise it exits `0` with a warning. Either way, upload the build again with valid PNGs to clear it.
+A screenshot the server can't read (a file that isn't a valid PNG) is marked **Couldn't read**, and `--wait` names each file and why. It follows the project's **Unreviewed changes block merging** setting, like a build that failed to process: in a project that blocks merges the build can't pass and `--wait` exits `2`; otherwise it exits `0` with a warning. Either way, upload the build again with valid PNGs to clear it.
 
 Errors print one line (`error: No such directory: ./screenshotz`). API calls are retried with backoff on network errors and 5xx answers, and time out after 30 seconds each.
 
 <Aside type="caution" title="Which job is the gate?">
-With the Project linked to a git host, `--wait` waits for processing, exits 0 even with unreviewed changes and fails only on processing errors (and on unreadable screenshots, in a Project that blocks merges): the CirCI check is the gate, and approving updates it with no re-run. Without a linked repository the CI job is the gate: exit 1 until approved, then re-run. Override with `--gate`.
+With the project linked to a git host, `--wait` waits for processing, exits 0 even with unreviewed changes and fails only on processing errors (and on unreadable screenshots, in a project that blocks merges): the CirCI check is the gate, and approving updates it with no re-run. Without a linked repository the CI job is the gate: exit 1 until approved, then re-run. Override with `--gate`.
 </Aside>
 
 ## `circi site upload <dir>` and `circi storybook upload <dir>`
 
-Upload a built static site next to the screenshots (the Project must have **Host static sites** on and the server a `STATIC_SITES_HOST`; see [Hosted sites](/using/hosted-sites/)).
+Upload a built static site next to the screenshots (the project must have **Host static sites** on and the server a `STATIC_SITES_HOST`; see [Hosted sites](/using/hosted-sites/)).
 
 | Flag | Meaning |
 |---|---|
 | `<dir>` | The built site, a folder with its `index.html`. |
-| `--name <name>` | Which of the Project's sites this is (default `site`; `storybook` for the shortcut). |
+| `--name <name>` | Which of the project's sites this is (default `site`; `storybook` for the shortcut). |
 | `--kind <kind>` | `storybook`, `vitest-report`, `playwright-report`, `coverage`, `docs`, `generic` or `auto` (default). Not on `storybook upload`. |
 | `--spa` | Serve unknown paths with the entry page (single-page apps). |
 | `--api-url <url>` | CirCI address. |

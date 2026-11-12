@@ -1,5 +1,5 @@
 // Glyph geometry copied from repo/packages/ui/src/StatusIcon.tsx (14x14 viewBox), so a state looks
-// the same here and in the dashboard. The shape differs per state: colour is never the only cue.
+// the same here and in the dashboard. The shape differs per state: color is never the only cue.
 export type StatusName =
   | 'approved'
   | 'auto-approved'

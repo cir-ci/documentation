@@ -37,7 +37,7 @@ You need Node 26 (`nvm install && nvm use` reads `.nvmrc`), pnpm 12 and, for `pn
 | The server and worker | `circi all` from source under `node --watch`, so a change restarts it | Port 3000 |
 | The dashboard | Vite with hot reload. It proxies every server path to the server | Port 5173 (`PUBLIC_URL`) |
 
-On the first run it seeds `owner@example.com` and `member@example.com` (password `circi-dev-password`), the Workspace `acme`, the Project `web-app` and builds in different review states, so every screen has something to show.
+On the first run it seeds `owner@example.com` and `member@example.com` (password `circi-dev-password`), the workspace `acme`, the project `web-app` and builds in different review states, so every screen has something to show.
 
 ```sh
 pnpm dev          # Ctrl+C stops it and keeps the data

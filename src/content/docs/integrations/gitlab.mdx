@@ -7,7 +7,7 @@ description: Report builds to GitLab merge requests as a commit status and a sum
 import { Steps, Aside } from '@astrojs/starlight/components'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
-The GitLab integration works with gitlab.com and self-managed GitLab. Each build of a linked Project shows on the merge request as a commit status named `CirCI / <build name>`, and CirCI keeps one summary note on the merge request up to date. People approve, reject or rerun with `/circi` commands in a note.
+The GitLab integration works with gitlab.com and self-managed GitLab. Each build of a linked project shows on the merge request as a commit status named `CirCI / <build name>`, and CirCI keeps one summary note on the merge request up to date. People approve, reject or rerun with `/circi` commands in a note.
 
 It differs from [GitHub](/integrations/github/) in three ways: it uses an access token instead of an App, GitLab statuses have no Approve and Reject buttons, and you add the webhook on GitLab yourself.
 
@@ -20,7 +20,7 @@ It differs from [GitHub](/integrations/github/) in three ways: it uses an access
 
 ## Set up
 
-An owner or admin of the Workspace does this under **Workspace settings**, **Integrations**, **Add integration**, **GitLab**.
+An owner or admin of the workspace does this under **Workspace settings**, **Integrations**, **Add integration**, **GitLab**.
 
 <Steps>
 
@@ -32,7 +32,7 @@ An owner or admin of the Workspace does this under **Workspace settings**, **Int
 
 </Steps>
 
-A connection is identified by the token's user on that GitLab server (`host#user`), so the same GitLab user can't be connected in two Workspaces. Connecting again with a new token replaces the credentials and clears a "needs attention" flag. A self-managed address must be public unless the instance sets `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` (see [Environment variables](/reference/environment-variables/)).
+A connection is identified by the token's user on that GitLab server (`host#user`), so the same GitLab user can't be connected in two workspaces. Connecting again with a new token replaces the credentials and clears a "needs attention" flag. A self-managed address must be public unless the instance sets `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` (see [Environment variables](/reference/environment-variables/)).
 
 ### Add the webhook on GitLab
 
@@ -61,7 +61,7 @@ One status per build name, `CirCI / <build name>`. Its description is the same t
 | Situation | Status | Description |
 | --- | --- | --- |
 | Processing | `running` | Processing screenshots… |
-| No changes, approved, or the Project doesn't block merging | `success` | No visual changes; Changes approved (3 changed · 1 added); or `3 changed · 1 added: review required` |
+| No changes, approved, or the project doesn't block merging | `success` | No visual changes; Changes approved (3 changed · 1 added); or `3 changed · 1 added: review required` |
 | Changes await review and merging is blocked | `failed` | `3 changed · 1 added: review required` |
 | Rejected | `failed` | Changes rejected (3 changed · 1 added) |
 | Some screenshots couldn't be read | `failed`, or `success` when merging isn't blocked | `1 screenshot couldn't be read`, until the build is uploaded again |
@@ -87,11 +87,11 @@ CirCI puts a thumbs-up reaction on the note when it acted. When it didn't, it re
 
 The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read follows **Unreviewed changes block merging** too: it fails when that is on and passes, with the count in the description, when it is off.
 
-A person may use commands when they have linked their GitLab login in the **Signed in with** section of their CirCI **Profile** and can see the Project (a member, or an owner or admin of its Workspace). CirCI matches the GitLab user ID, never the email.
+A person may use commands when they have linked their GitLab login in the **Signed in with** section of their CirCI **Profile** and can see the project (a member, or an owner or admin of its workspace). CirCI matches the GitLab user ID, never the email.
 
 ### The merge gate in CI
 
-`circi upload --wait` decides who blocks the merge: the status on GitLab, or the CI job (see [the CLI](/ci/cli/)). The server picks the status as the gate when a Project reports to a git host, but today it only knows that when the GitHub App is configured on the instance. On an instance without a GitHub App, a GitLab-linked Project defaults to the CI job being the gate (exit code 1 until approved). To make GitLab's status the gate there, pass `--gate status`.
+`circi upload --wait` decides who blocks the merge: the status on GitLab, or the CI job (see [the CLI](/ci/cli/)). The server picks the status as the gate when a project reports to a git host, but today it only knows that when the GitHub App is configured on the instance. On an instance without a GitHub App, a GitLab-linked project defaults to the CI job being the gate (exit code 1 until approved). To make GitLab's status the gate there, pass `--gate status`.
 
 ## Troubleshooting
 
@@ -112,7 +112,7 @@ A person may use commands when they have linked their GitLab login in the **Sign
 
 - Approve and Reject buttons on the status (GitLab has none).
 - GitLab events beyond merge request open, reopen and notes. For example, closing a merge request does nothing (GitHub closes its review requests).
-- Reporting a Project to more than one GitLab project.
+- Reporting a project to more than one GitLab project.
 
 <Aside type="caution" title="Tested against fakes only">
 The GitLab edge is faked in the repository's tests. It hasn't been run against gitlab.com or a self-managed server.

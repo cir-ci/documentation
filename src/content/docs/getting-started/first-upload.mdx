@@ -9,11 +9,11 @@ import BuildFlow from '../../../components/BuildFlow.astro'
 import CopyCommand from '../../../components/CopyCommand.tsx'
 import StatusChip from '../../../components/StatusChip.astro'
 
-You need three things: a folder of PNG screenshots (any test tool will do; Playwright's `page.screenshot({ path: 'screenshots/home.png' })` is enough), your CirCI address and the Project's CI token.
+You need three things: a folder of PNG screenshots (any test tool will do; Playwright's `page.screenshot({ path: 'screenshots/home.png' })` is enough), your CirCI address and the project's CI token.
 
 <Steps>
 
-1. Set your address and token. The Project's **Settings**, **CI token** page shows this snippet with your address filled in.
+1. Set your address and token. The project's **Settings**, **CI token** page shows this snippet with your address filled in.
 
    ```sh
    export CIRCI_API_URL=http://localhost:3000
@@ -24,7 +24,7 @@ You need three things: a folder of PNG screenshots (any test tool will do; Playw
 
    <CopyCommand client:visible command="npx circi upload ./screenshots --wait" />
 
-3. Open the Project in the dashboard. The build is there, with its screenshots counted by state.
+3. Open the project in the dashboard. The build is there, with its screenshots counted by state.
 
 </Steps>
 
@@ -44,7 +44,7 @@ With `--wait` it then waits for the result and exits `0` (passed), `1` (changes 
 
 ## What you see
 
-The first build of a Project has nothing to compare with, so every screenshot is <StatusChip status="added" /> and the build waits for review. With no git host linked, `--wait` exits `1` until you approve.
+The first build of a project has nothing to compare with, so every screenshot is <StatusChip status="added" /> and the build waits for review. With no git host linked, `--wait` exits `1` until you approve.
 
 <BuildFlow current={1} />
 

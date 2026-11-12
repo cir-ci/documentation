@@ -12,7 +12,7 @@ The `circi` command inside the Docker image is the **server** command. It reads 
 docker compose exec circi circi admin doctor
 ```
 
-It is not the upload CLI (see [CLI reference](/ci/cli/)). Commands that act inside a Workspace take `--org <slug>`; the flag keeps its name from when Workspaces were called organizations. Expected failures print one line and exit 1. `--debug` (or `DEBUG=1`) prints a stack trace.
+It is not the upload CLI (see [CLI reference](/ci/cli/)). Commands that act inside a workspace take `--org <slug>`; the flag keeps its name from when workspaces were called organizations. Expected failures print one line and exit 1. `--debug` (or `DEBUG=1`) prints a stack trace.
 
 ## Processes
 

@@ -1,17 +1,17 @@
 ---
 title: Slack
-description: Post review requested, overdue, rejected and approved notices to a Slack channel for each Project.
+description: Post review requested, overdue, rejected and approved notices to a Slack channel for each project.
 ---
 {/* Source: packages/integrations/src/kinds/slack (definition.ts, client.ts, messages.ts), packages/core/src/integrations/events.ts, packages/config/src/load.ts, apps/server/src/http/routes/dashboard/integrations/oauth.ts */}
 
 import { Steps, Aside } from '@astrojs/starlight/components'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
-The Slack integration installs a CirCI Slack app into your Slack workspace. Each Project then sends the notices it chooses to one channel. It's one-way: CirCI posts messages, and nothing in Slack acts on builds.
+The Slack integration installs a CirCI Slack app into your Slack workspace. Each project then sends the notices it chooses to one channel. It's one-way: CirCI posts messages, and nothing in Slack acts on builds.
 
 | You get | Where |
 | --- | --- |
-| Review requested, review overdue, build rejected and build approved notices | One Slack channel per Project |
+| Review requested, review overdue, build rejected and build approved notices | One Slack channel per project |
 | An **Open build** button on every notice | The message itself |
 
 ## Set up
@@ -42,7 +42,7 @@ If Slack later rejects the token (the app was uninstalled or the token revoked),
 
 ### Choose a channel and events for each Project
 
-On the Slack integration's page, each Project has a **Channel** and a list of **Events**. A Project without a channel sends nothing.
+On the Slack integration's page, each project has a **Channel** and a list of **Events**. A Project without a channel sends nothing.
 
 The channel list comes from Slack: public channels as `#name` and private channels as `name (private)`. The bot can post to public channels without joining (the `chat:write.public` scope). For a private channel, invite the CirCI app to the channel in Slack first.
 
@@ -59,8 +59,8 @@ Approvals are opt-in because they're the notices that don't need anyone to act. 
 
 Every message is a short Slack block message with an **Open build** button that links to the build page. The plain text of each message is also set, so Slack notifications and screen readers have something readable.
 
-- **Review requested** (an eyes emoji): "Asked **Reviewer** to review Project #12 on `branch`", prefixed with who asked when a person did, and with "Due" and a date shown in each reader's own time zone. A repeat request says "Review requested again".
-- **Review overdue** (an hourglass): "**Reviewer**'s review of Project #12 on `branch` is overdue", with when it was due.
+- **Review requested** (an eyes emoji): "Asked **Reviewer** to review project #12 on `branch`", prefixed with who asked when a person did, and with "Due" and a date shown in each reader's own time zone. A repeat request says "Review requested again".
+- **Review overdue** (an hourglass): "**Reviewer**'s review of project #12 on `branch` is overdue", with when it was due.
 - **Changes rejected** (a red cross): who rejected the changes, and the reason as a quote, cut at 500 characters. The full reason stays in CirCI.
 - **Changes approved** (a green check): who approved the changes.
 
@@ -72,14 +72,14 @@ Names, branches and reasons that come from people are escaped so they can't crea
 | --- | --- |
 | The Slack tile says **Not set up on this server** | The instance has no Slack app yet. An instance admin sets the client ID and secret |
 | The server won't start after adding Slack settings | Only one of `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` is set. Set both or neither |
-| Nothing arrives for a Project | The Project has no **Channel**, or the event is off. A private channel also needs the CirCI app invited to it in Slack |
+| Nothing arrives for a project | The project has no **Channel**, or the event is off. A private channel also needs the CirCI app invited to it in Slack |
 | The integration shows **needs attention** with **Reinstall** | Slack rejected the token (the app was uninstalled or the token revoked). Press **Reinstall**; no notices go out until then |
-| Approvals don't show | **Build approved** is off by default. Turn it on for the Project |
+| Approvals don't show | **Build approved** is off by default. Turn it on for the project |
 
 ## Not built
 
 - Slack as a place to approve or reject: there are no interactive buttons beyond the link to the build.
-- Per-user Slack notifications or direct messages. Messages go to the Project's channel only.
+- Per-user Slack notifications or direct messages. Messages go to the project's channel only.
 - The `build.completed` event isn't offered for Slack.
 
 <Aside type="caution" title="Tested against fakes only">

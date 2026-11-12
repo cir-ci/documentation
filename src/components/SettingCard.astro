@@ -30,7 +30,7 @@ const { name, defaultValue, required = false, type } = Astro.props
 
 <style>
   .setting-card {
-    margin-block: 0.75rem;
+    margin-block: 0.5rem;
     border: 1px solid var(--circi-line-strong);
     border-radius: var(--circi-radius-panel);
     background: var(--circi-surface-raised);
@@ -41,7 +41,7 @@ const { name, defaultValue, required = false, type } = Astro.props
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 0.75rem;
-    padding: 0.625rem 0.875rem;
+    padding: 0.4375rem 0.75rem;
     border-block-end: 1px solid var(--circi-line-subtle);
     background: var(--circi-surface-overlay);
   }
@@ -49,6 +49,7 @@ const { name, defaultValue, required = false, type } = Astro.props
     border: 0;
     background: none;
     padding: 0;
+    margin-inline-end: auto;
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--circi-text-primary);
@@ -62,12 +63,17 @@ const { name, defaultValue, required = false, type } = Astro.props
     font-size: 0.95em;
   }
   .meta--required {
+    padding: 0 6px;
+    border: 1px solid color-mix(in srgb, var(--circi-state-review) 40%, transparent);
+    border-radius: var(--circi-radius-inline);
+    background: color-mix(in srgb, var(--circi-state-review) 8%, transparent);
     color: var(--circi-state-review-text);
     font-weight: 600;
   }
   .body {
-    padding: 0.625rem 0.875rem;
+    padding: 0.5rem 0.75rem;
     font-size: var(--sl-text-sm);
+    line-height: 1.5;
   }
   .body :global(> :first-child) {
     margin-top: 0;

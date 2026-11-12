@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * The landing page's centrepiece: one real changed screenshot from the dashboard (build #22,
+ * The landing page's centerpiece: one real changed screenshot from the dashboard (build #22,
  * "contact": 18.2% of pixels changed), as the build page shows it. Drag or use the arrow keys on
  * the slider to move between the baseline and this build, or switch to the diff. The slider
  * sweeps once on load (not with reduced motion) and stops at the first touch.
@@ -93,10 +93,21 @@ export default function ReviewCompare(props: {
           <img className="rc-diff" src={diff} alt="Changed pixels in red where two cards were added." width={width} height={height} />
         )}
       </div>
-      <div className="rc-foot">
-        <span>Baseline</span>
-        <span>This build</span>
-      </div>
+      {mode === 'diff' ? (
+        <div className="rc-foot rc-legend">
+          <span>
+            <i className="rc-swatch rc-swatch--changed" aria-hidden="true" /> Changed pixels
+          </span>
+          <span>
+            <i className="rc-swatch" aria-hidden="true" /> Unchanged
+          </span>
+        </div>
+      ) : (
+        <div className="rc-foot">
+          <span>Baseline</span>
+          <span>This build</span>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 /*
  * Component-level touches on top of Starlight: radii, header, sidebar, code, tables, callouts.
- * Colours come only from the --sl-* / --circi-* variables in circi-theme.css; no hex here.
+ * Colors come only from the --sl-* / --circi-* variables in circi-theme.css; no hex here.
  */
 body {
   -webkit-font-smoothing: antialiased;
@@ -9,21 +9,37 @@ body {
 /* The app's content sits on a panel with a hairline; the docs page follows. */
 /* Type scale: restrained, as the app's; body is 15px because docs are read, not scanned. */
 :root {
-  --sl-text-base: 0.9375rem;
+  --sl-text-base: 1rem;
   --sl-text-h1: 1.875rem;
-  --sl-text-h2: 1.375rem;
-  --sl-text-h3: 1.125rem;
+  --sl-text-h2: 1.5rem;
+  --sl-text-h3: 1.0625rem;
   --sl-text-h4: 1rem;
 }
-/* Lines stay under 80 characters; tables, code and figures use the full column. */
+/* Body is 16px, line-height 1.6; at 62ch a line holds about 70 characters. Tables, code and figures use the full column. */
+.sl-markdown-content {
+  font-size: var(--sl-text-base);
+  line-height: 1.6;
+}
 .sl-markdown-content :is(p, ul, ol, dl, blockquote) {
-  max-width: 60ch;
+  max-width: 62ch;
 }
 .sl-markdown-content :is(.starlight-aside, .sl-steps) :is(p, ul, ol) {
   max-width: none;
 }
 .sl-markdown-content h2 {
   font-weight: 650;
+}
+.sl-markdown-content .sl-heading-wrapper:has(> h2) {
+  margin-block-start: 3rem;
+  padding-block-start: 1.25rem;
+  border-block-start: 1px solid var(--circi-line-subtle);
+  max-width: none;
+}
+.sl-markdown-content .sl-heading-wrapper > h2 {
+  margin-block-start: 0;
+}
+.sl-markdown-content h3 {
+  font-size: var(--sl-text-h3);
 }
 .sl-markdown-content h3,
 .sl-markdown-content h4 {
@@ -45,16 +61,75 @@ body {
   gap: 0.75rem;
 }
 
+/* The app's shell: chrome all round, the page an inset panel (AppFrame.module.css .panel). */
+body {
+  background: var(--circi-surface-chrome);
+}
 header.header {
-  border-bottom: 1px solid var(--circi-line-subtle);
+  border-bottom: 0;
 }
 .sidebar-pane {
-  border-inline-end: 1px solid var(--circi-line-subtle);
+  border-inline-end: 0;
+}
+@media (min-width: 50rem) {
+  .main-frame {
+    padding-inline-end: 8px;
+    padding-bottom: 8px;
+  }
+  [data-has-sidebar] .main-pane {
+    min-height: calc(100vh - var(--sl-nav-height) - 8px);
+    border: 1px solid var(--circi-line-subtle);
+    border-radius: var(--circi-radius-panel);
+    background: var(--circi-surface-panel);
+  }
+}
+@media (max-width: 49.99rem) {
+  .main-pane {
+    background: var(--circi-surface-panel);
+  }
+}
+
+/* Scrollbars as the app's (global.css), the sidebar's narrower and shown on hover (AppFrame.module.css). */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--circi-scrollbar-thumb) padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--circi-scrollbar-thumb-hover);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+@supports not selector(::-webkit-scrollbar) {
+  :root {
+    scrollbar-color: var(--circi-scrollbar-thumb) transparent;
+    scrollbar-width: thin;
+  }
+}
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-content::-webkit-scrollbar-thumb {
+  border-width: 1px;
+  background-color: transparent;
+}
+.sidebar-content:hover::-webkit-scrollbar-thumb,
+.sidebar-content:has(:focus-visible)::-webkit-scrollbar-thumb {
+  background-color: var(--circi-scrollbar-thumb);
 }
 .sidebar-content details > summary .large {
-  font-size: var(--sl-text-sm);
+  font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--circi-text-primary);
+  color: var(--circi-text-tertiary);
+}
+.sidebar-content details[open] > summary .large {
+  color: var(--circi-text-secondary);
 }
 .sidebar-content details > summary {
   border-radius: var(--circi-radius-control);
@@ -97,9 +172,23 @@ starlight-toc nav > .sl-container > h2,
   color: var(--circi-text-secondary);
   font-size: var(--sl-text-sm);
 }
+.right-sidebar-panel ul {
+  border-inline-start: 1px solid var(--circi-line-subtle);
+}
+.right-sidebar-panel a {
+  border-radius: 0;
+  margin-inline-start: -1px;
+  border-inline-start: 2px solid transparent;
+  padding-inline-start: 0.75rem;
+}
+.right-sidebar-panel a:hover {
+  color: var(--circi-text-primary);
+}
 .right-sidebar-panel a[aria-current='true'] {
   color: var(--circi-accent-text);
   font-weight: 600;
+  border-inline-start-color: var(--circi-accent-main);
+  background: transparent;
 }
 
 /* Pagination */
@@ -115,21 +204,33 @@ starlight-toc nav > .sl-container > h2,
 }
 .pagination-links .link-title {
   font-size: var(--sl-text-base);
+  font-weight: 600;
   color: var(--circi-text-primary);
 }
-.pagination-links span {
-  color: var(--circi-text-secondary);
+.pagination-links span:not(.link-title) {
+  font-size: var(--sl-text-xs);
+  color: var(--circi-text-tertiary);
 }
 
 /* Content */
 .sl-markdown-content :not(a):not(pre) > code {
-  border: 1px solid var(--circi-line-subtle);
+  border: 0;
   border-radius: var(--circi-radius-inline);
+  background: var(--circi-action-selected);
+  padding: 0.1em 0.35em;
   font-size: 0.85em;
 }
-.sl-markdown-content a:not(.sl-link-button):not([class]) {
+/* Links are underlined in prose only; tables, lists of links and components keep them plain. */
+.sl-markdown-content :is(p, li) > a:not(.sl-link-button):not([class]) {
+  text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.18em;
+}
+.sl-markdown-content :is(table, .screen-frame, .l-paths) a:not([class]) {
+  text-decoration: none;
+}
+.sl-markdown-content :is(table, .screen-frame) a:not([class]):hover {
+  text-decoration: underline;
 }
 .sl-markdown-content h1,
 .sl-markdown-content h2,
@@ -172,11 +273,36 @@ kbd {
   --ec-codeFontSize: 0.8125rem;
 }
 
-/* Callouts and cards */
+/* Callouts as the app's Banner: a 1px border at 40% of the status color over an 8% tint. */
 .starlight-aside {
-  border-radius: var(--circi-radius-popup);
-  border-inline-start-width: 3px;
+  --banner-color: var(--circi-state-processing);
+  border: 1px solid color-mix(in srgb, var(--banner-color) 40%, transparent);
+  border-radius: var(--circi-radius-control);
+  background: color-mix(in srgb, var(--banner-color) 8%, transparent);
+  padding: 0.625rem 0.75rem;
 }
+.starlight-aside--tip {
+  --banner-color: var(--circi-state-approved);
+}
+.starlight-aside--caution {
+  --banner-color: var(--circi-state-review);
+}
+.starlight-aside--danger {
+  --banner-color: var(--circi-state-failed);
+}
+.starlight-aside .starlight-aside__title {
+  color: var(--circi-text-primary);
+  font-size: var(--sl-text-sm);
+  font-weight: 600;
+}
+.starlight-aside .starlight-aside__title svg {
+  color: var(--banner-color);
+}
+.starlight-aside__content {
+  font-size: var(--sl-text-sm);
+}
+
+/* Cards */
 .card {
   border-radius: var(--circi-radius-panel);
   border-color: var(--circi-line-strong);
@@ -200,13 +326,22 @@ kbd {
   outline: 2px solid var(--circi-accent-text);
   outline-offset: 2px;
 }
+/* Keys as the app's Kbd: action-selected fill, a subtle border, 11px mono. */
 kbd:not(.key):not(.keys) {
-  border: 1px solid var(--circi-line-strong);
+  display: inline-block;
+  border: 1px solid var(--circi-line-subtle);
   border-radius: var(--circi-radius-inline);
-  background: var(--circi-surface-raised);
-  padding: 0 0.35em;
+  background: var(--circi-action-selected);
+  color: var(--circi-text-secondary);
+  padding: 0.15em 0.4em;
   font-family: var(--circi-font-mono);
-  font-size: 0.8em;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+/* Flags and commands in tables never wrap. */
+.sl-markdown-content td > code {
+  white-space: nowrap;
 }
 
 /* Steps: the dashboard's numbered circles on a hairline (Starlight's <Steps>) */
@@ -284,4 +419,27 @@ kbd:not(.key):not(.keys) {
     animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* A row of links to the parts of a long page, as chips (the app's filter chips). */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+.chip-row a {
+  display: inline-flex;
+  align-items: center;
+  height: 1.75rem;
+  padding-inline: 0.75rem;
+  border: 1px solid var(--circi-line-strong);
+  border-radius: 999px;
+  color: var(--circi-text-secondary);
+  font-size: var(--sl-text-sm);
+  text-decoration: none;
+}
+.chip-row a:hover {
+  background: var(--circi-action-hover);
+  color: var(--circi-text-primary);
 }

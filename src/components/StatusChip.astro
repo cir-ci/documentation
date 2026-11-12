@@ -107,13 +107,13 @@ const decorative = !glyph
     align-items: center;
     gap: 0.375rem;
     box-sizing: border-box;
-    height: 1.4em;
-    padding-inline: 0.5rem;
+    height: 22px;
+    padding-inline: 8px;
     border: 1px solid var(--circi-line-subtle);
     border-radius: 999px;
-    background: var(--circi-surface-raised);
+    background: none;
     font-family: var(--circi-font-sans);
-    font-size: 0.8125em;
+    font-size: 12px;
     font-weight: 500;
     line-height: 1;
     white-space: nowrap;
@@ -141,7 +141,7 @@ const decorative = !glyph
   [data-status='added'] .status-glyph { color: var(--circi-state-added); }
   [data-status='removed'] .status-glyph { color: var(--circi-state-removed); }
   [data-status='flaky'] .status-glyph { color: var(--circi-state-flaky); }
-  /* Words use the text variants of the state colours (4.5:1 in both schemes). */
+  /* Words use the text variants of the state colors (4.5:1 in both schemes). */
   [data-status='approved']:not(.status-chip--glyph) { color: var(--circi-state-approved-text); }
   [data-status='needs-review']:not(.status-chip--glyph) { color: var(--circi-state-review-text); }
   [data-status='processing']:not(.status-chip--glyph) { color: var(--circi-state-processing); }

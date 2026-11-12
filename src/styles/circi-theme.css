@@ -1,11 +1,11 @@
 /*
- * CirCI design tokens and the Starlight mapping. This is the ONE place colours, fonts and radii
+ * CirCI design tokens and the Starlight mapping. This is the ONE place colors, fonts and radii
  * are defined (DESIGN.md explains the mapping).
  *
  * Source of truth: repo/packages/ui/src/theme.ts (palettes) and repo/packages/ui/tokens-css.ts
  * (radii, fonts). The `--circi-*` names are the app's own, copied with their values, so a token
  * means the same thing here and in the dashboard. Starlight's `--sl-*` variables below are
- * derived from them: change a colour in the first block, not in the mapping.
+ * derived from them: change a color in the first block, not in the mapping.
  *
  * Dark is the reference scheme (Starlight's `:root` default); light is `:root[data-theme='light']`.
  * Starlight sets `data-theme` from the reader's choice (Auto follows the system).
@@ -15,6 +15,8 @@
 
 /* ---------- 1. CirCI tokens ---------- */
 :root {
+  --circi-scrollbar-thumb: color-mix(in srgb, var(--circi-text-tertiary) 45%, transparent);
+  --circi-scrollbar-thumb-hover: color-mix(in srgb, var(--circi-text-tertiary) 75%, transparent);
   /* brand (the logo's tones, same in both schemes) */
   --circi-brand-maroon: #724039;
   --circi-brand-blush: #e4b1a7;
@@ -55,6 +57,7 @@
   --circi-line-strong: rgba(255, 255, 255, 0.12);
   --circi-action-hover: rgba(255, 255, 255, 0.045);
   --circi-action-selected: rgba(255, 255, 255, 0.075);
+  --circi-glow: color-mix(in srgb, var(--circi-brand-maroon) 55%, transparent);
   --circi-shadow-popup: none;
   --circi-scrim: rgba(0, 0, 0, 0.5);
 
@@ -102,6 +105,9 @@
   --circi-line-strong: rgba(28, 15, 12, 0.18);
   --circi-action-hover: rgba(28, 15, 12, 0.05);
   --circi-action-selected: rgba(28, 15, 12, 0.085);
+  --circi-glow: color-mix(in srgb, var(--circi-brand-maroon) 14%, transparent);
+  --circi-scrollbar-thumb: color-mix(in srgb, var(--circi-text-tertiary) 45%, transparent);
+  --circi-scrollbar-thumb-hover: color-mix(in srgb, var(--circi-text-tertiary) 75%, transparent);
   --circi-shadow-popup: 0 8px 24px rgba(28, 15, 12, 0.14);
   --circi-scrim: rgba(0, 0, 0, 0.3);
 }

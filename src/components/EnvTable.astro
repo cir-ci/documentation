@@ -17,7 +17,7 @@ const code = (text: string) => text.replace(/`([^`]+)`/g, '<code>$1</code>')
 {
   groups.map((g) => (
     <section class="env-group">
-      {headings && <h3 id={g.id}>{g.title}</h3>}
+      {headings && <h2 id={g.id}>{g.title}</h2>}
       {g.intro && <p set:html={code(g.intro)} />}
       <table>
         <thead>

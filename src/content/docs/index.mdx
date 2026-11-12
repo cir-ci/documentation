@@ -1,21 +1,34 @@
 ---
-title: CirCI documentation
+title: Documentation
 description: Self-hosted visual regression testing. Upload screenshots from CI, review the changes, gate the merge.
 template: splash
 ---
 
-{/* Source: README.md (intro), PLAN.md section 1; the screenshots are build #22 of the seeded dev Workspace */}
+{/* Source: README.md (intro), PLAN.md section 1; the screenshots are build #22 of the seeded dev workspace */}
 
 import ReviewCompare from '../../components/ReviewCompare.astro'
 import BuildFlow from '../../components/BuildFlow.astro'
 import ScreenFrame from '../../components/ScreenFrame.astro'
 import Kbd from '../../components/Kbd.astro'
+import CopyCommand from '../../components/CopyCommand.tsx'
+import StatusChip from '../../components/StatusChip.astro'
+import ThemeSelect from '../../components/overrides/ThemeSelect.astro'
 
 <div class="landing">
 
+<nav class="l-mobile-nav" aria-label="Sections">
+  <a href="/getting-started/run-it-locally/">Getting started</a>
+  <a href="/self-hosting/requirements/">Self-hosting</a>
+  <a href="/using/reviewing-a-build/">Using CirCI</a>
+  <a href="/ci/cli/">Upload from CI</a>
+  <a href="/integrations/overview/">Integrations</a>
+  <a href="/reference/http-api/">Reference</a>
+  <ThemeSelect />
+</nav>
+
 <section class="l-hero" aria-labelledby="hero-title">
   <div>
-    <h2 id="hero-title" class="l-title">Review every visual change before it merges</h2>
+    <h1 id="hero-title" class="l-title">Review every visual change before it merges</h1>
     <p class="l-lead">CirCI is visual regression testing you run yourself. CI uploads screenshots, CirCI compares them with the baseline, and your team approves or rejects what changed.</p>
     <div class="l-actions">
       <a class="primary" href="/getting-started/run-it-locally/">Run it locally</a>
@@ -30,8 +43,8 @@ import Kbd from '../../components/Kbd.astro'
   <div class="l-paths">
     <div class="l-path">
       <h3><a href="/getting-started/run-it-locally/">Run it locally</a></h3>
-      <p>Start the app and Postgres with Docker Compose, create a Project and upload a first build.</p>
-      <code>docker compose up -d --build</code>
+      <p>Start the app and Postgres with Docker Compose, create a project and upload a first build.</p>
+      <CopyCommand client:visible command="docker compose up -d --build" />
     </div>
     <div class="l-path">
       <h3><a href="/self-hosting/requirements/">Self-host</a></h3>
@@ -41,7 +54,7 @@ import Kbd from '../../components/Kbd.astro'
     <div class="l-path">
       <h3><a href="/ci/cli/">Set up CI</a></h3>
       <p>Upload from any CI with the <code>circi</code> CLI or the Vitest plugin. Shallow checkouts work.</p>
-      <code>npx circi upload ./screenshots --wait</code>
+      <CopyCommand client:visible command="npx circi upload ./screenshots --wait" />
     </div>
     <div class="l-path">
       <h3><a href="/using/reviewing-a-build/">Review builds</a></h3>
@@ -60,7 +73,16 @@ import Kbd from '../../components/Kbd.astro'
 <section class="l-section" aria-labelledby="review">
   <h2 id="review">What a reviewer sees</h2>
   <p>The build page puts the baseline and the new screenshot side by side, with a diff and a slider one click away.</p>
-  <ScreenFrame name="build-review" alt="The CirCI build page for build #22 with one changed screenshot, shown as baseline and this build side by side." caption="Build #22 in the dashboard, in your theme." />
+  <ScreenFrame name="build-review" alt="The build page for build #22: one changed screenshot, shown as baseline and this build side by side." caption="Build #22 in the dashboard." />
+</section>
+
+<section class="l-closing" aria-labelledby="next">
+  <h2 id="next">Ready to try it?</h2>
+  <p>Run CirCI on your machine, upload a first build and review it.</p>
+  <div class="l-actions">
+    <a class="primary" href="/getting-started/run-it-locally/">Run it locally</a>
+    <a href="/getting-started/first-upload/">Upload a first build</a>
+  </div>
 </section>
 
 </div>

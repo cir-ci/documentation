@@ -53,12 +53,12 @@ Most of the page waits for **Save changes**, with **Discard** to revert. The sin
 | Section | What you set | Variable that locks it |
 |---|---|---|
 | Dashboard address | Read-only: the address every outgoing link uses, and old addresses that redirect to it | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` |
-| Sign-in methods allowed | Password, email code and single sign-on: the outer limit, which each Workspace can only narrow. Saving refuses a change that leaves nobody able to sign in | `AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED` |
-| Single sign-on providers | GitHub, Google, GitLab and OpenID Connect providers for every Workspace, added, changed and removed in a dialog. Providers set by `AUTH_*` variables are listed read-only | `AUTH_*` |
+| Sign-in methods allowed | Password, email code and single sign-on: the outer limit, which each workspace can only narrow. Saving refuses a change that leaves nobody able to sign in | `AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED` |
+| Single sign-on providers | GitHub, Google, GitLab and OpenID Connect providers for every workspace, added, changed and removed in a dialog. Providers set by `AUTH_*` variables are listed read-only | `AUTH_*` |
 | Who can create workspaces | Instance admins only, or every signed-in account | `WORKSPACE_CREATION` |
 | Mail server | The SMTP server and sender, and **Send a test mail to your own address** | `SMTP_HOST` and the other `SMTP_*` |
 | Slack app | The client ID and secret of the instance's Slack app | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET` |
-| Storage and limits | The storage driver (read-only), then the retention new Projects start with (30 days, no variable), the grace period for unused files, the upload timeout, job retention and webhook timeout | `STORAGE_DRIVER`, `GC_GRACE_HOURS`, `UPLOAD_TIMEOUT_MINUTES`, `JOB_RETENTION_DAYS`, `WEBHOOK_TIMEOUT_SECONDS` |
+| Storage and limits | The storage driver (read-only), then the retention new projects start with (30 days, no variable), the grace period for unused files, the upload timeout, job retention and webhook timeout | `STORAGE_DRIVER`, `GC_GRACE_HOURS`, `UPLOAD_TIMEOUT_MINUTES`, `JOB_RETENTION_DAYS`, `WEBHOOK_TIMEOUT_SECONDS` |
 | Hosted sites | The sites domain (read-only) or "Not set up", and the largest site | `STATIC_SITES_HOST`, `STATIC_SITES_MAX_MB` |
 
 Without mail, nobody gets sign-in codes or invitations by email. See [Configuration](/self-hosting/configuration/) and [Environment variables](/reference/environment-variables/).

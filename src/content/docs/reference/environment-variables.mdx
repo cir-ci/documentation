@@ -10,11 +10,50 @@ import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 Values are read once at start. Booleans accept `true`, `false`, `1`, `0`, `yes` and `no`. An empty value counts as unset. A bad value stops the process with a list of problems. Guidance is in [Configuration](/self-hosting/configuration/).
 
 <InstanceSettingNote setting="Instance settings badge">
-A variable with the **Instance settings** badge is also editable in the dashboard: who can create workspaces, sign-in methods and providers, the five limits (grace period, upload timeout, job retention, largest site, webhook timeout), the mail server and the Slack app. When the variable is set it wins and locks the setting ("Set by VARIABLE"); otherwise the saved value applies, otherwise the default. Saved changes apply within about 30 seconds, with no restart. The default retention of new Projects is a dashboard setting with no variable. See [Instance settings](/self-hosting/instance-settings/).
+A variable with the **Instance settings** badge is also editable in the dashboard: who can create workspaces, sign-in methods and providers, the five limits (grace period, upload timeout, job retention, largest site, webhook timeout), the mail server and the Slack app. When the variable is set it wins and locks the setting ("Set by VARIABLE"); otherwise the saved value applies, otherwise the default. Saved changes apply within about 30 seconds, with no restart. The default retention of new projects is a dashboard setting with no variable. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 
 The Docker Compose file only passes through the variables it lists: see [Docker Compose](/self-hosting/docker-compose/).
 
-Jump to: [Core](#core), [Storage](#storage), [Sign-in and workspaces](#sign-in), [Email (SMTP)](#mail), [GitHub App and Slack](#git-hosts), [Hosted sites](#sites), [Build processing and background jobs](#processing), [Webhooks and web push](#webhooks-push).
+<nav class="chip-row" aria-label="Jump to a group">
+  <a href="#core">Core</a>
+  <a href="#storage">Storage</a>
+  <a href="#sign-in">Sign-in and workspaces</a>
+  <a href="#mail">Email (SMTP)</a>
+  <a href="#git-hosts">GitHub App and Slack</a>
+  <a href="#sites">Hosted sites</a>
+  <a href="#processing">Build processing and background jobs</a>
+  <a href="#webhooks-push">Webhooks and web push</a>
+</nav>
 
-<EnvTable />
+## Core
+
+<EnvTable group="core" headings={false} />
+
+## Storage
+
+<EnvTable group="storage" headings={false} />
+
+## Sign-in and workspaces
+
+<EnvTable group="sign-in" headings={false} />
+
+## Email (SMTP)
+
+<EnvTable group="mail" headings={false} />
+
+## GitHub App and Slack
+
+<EnvTable group="git-hosts" headings={false} />
+
+## Hosted sites
+
+<EnvTable group="sites" headings={false} />
+
+## Build processing and background jobs
+
+<EnvTable group="processing" headings={false} />
+
+## Webhooks and web push
+
+<EnvTable group="webhooks-push" headings={false} />

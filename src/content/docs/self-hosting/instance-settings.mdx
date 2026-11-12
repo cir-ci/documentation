@@ -38,20 +38,20 @@ Each section of the page saves with **Save changes**, and **Discard** reverts it
 ### Who can create workspaces
 
 <SettingCard name="Let every signed-in account create workspaces" defaultValue="off (instance admins only)" type="WORKSPACE_CREATION">
-Off, only instance admins create Workspaces, and everyone else joins through an invitation or a verified email domain. On, every signed-in account can.
+Off, only instance admins create workspaces, and everyone else joins through an invitation or a verified email domain. On, every signed-in account can.
 </SettingCard>
 
 ### Sign-in methods
 
 <SettingCard name="Password, Email code, Single sign-on" defaultValue="all on" type="AUTH_PASSWORD_ENABLED, AUTH_EMAIL_ENABLED, AUTH_SSO_ENABLED">
-The outer limit. Each Workspace can turn methods off for its own people, never on beyond this. Email codes need a mail server, and single sign-on needs at least one provider.
+The outer limit. Each workspace can turn methods off for its own people, never on beyond this. Email codes need a mail server, and single sign-on needs at least one provider.
 </SettingCard>
 
 Saving refuses a change that would leave nobody able to sign in, for example turning the password off while email codes have no mail server. The message says which method to keep.
 
 ### Single sign-on providers
 
-GitHub, Google, GitLab and OpenID Connect providers for every Workspace. **Add provider** opens a dialog with the provider, the **Name on the sign-in button**, the **Client ID**, the **Client secret**, an **Issuer** for OpenID Connect or a **GitLab address** for a self-managed GitLab, and whether the provider only reports addresses its people own. The dialog shows the redirect address to register at the provider.
+GitHub, Google, GitLab and OpenID Connect providers for every workspace. **Add provider** opens a dialog with the provider, the **Name on the sign-in button**, the **Client ID**, the **Client secret**, an **Issuer** for OpenID Connect or a **GitLab address** for a self-managed GitLab, and whether the provider only reports addresses its people own. The dialog shows the redirect address to register at the provider.
 
 A provider set by the `AUTH_*` variables is listed as **Set by AUTH_GITHUB_*** (or the provider's own name), and can't be edited or removed here.
 
@@ -76,7 +76,7 @@ The **Client ID** and **Client secret** of the Slack app CirCI posts as, and **R
 
 <ScreenFrame name="host-instance-limits" aspect="16 / 10" alt="The Storage and limits section: Local disk with its variable, then number fields for new project retention, unused files, upload timeout, job retention and webhook timeout, and the Hosted sites section saying Not set up." caption="Storage and limits and Hosted sites. A limit set by its variable shows the variable and a disabled field." width={760} />
 
-**New projects keep builds for** is the retention a new Project starts with. It is a real setting with no environment variable: each Project then changes its own in its settings, and the instance value doesn't touch existing Projects. See [Retention and garbage collection](/self-hosting/retention-and-gc/).
+**New projects keep builds for** is the retention a new project starts with. It is a real setting with no environment variable: each project then changes its own in its settings, and the instance value doesn't touch existing projects. See [Retention and garbage collection](/self-hosting/retention-and-gc/).
 
 ## Read-only on this page
 
@@ -96,7 +96,7 @@ Deployment values that don't appear on the page at all: `DATABASE_URL`, `BETTER_
 | Page | What it does |
 |---|---|
 | **Accounts** | Every account. Change an email, ban or unban. |
-| **Workspaces** | Every Workspace on the instance, deleted ones too, and creating one. Instance admins see a Workspace's Projects only if they belong to it. |
+| **Workspaces** | Every workspace on the instance, deleted ones too, and creating one. Instance admins see a workspace's projects only if they belong to it. |
 | **Health** | The same checks as `circi admin doctor`, the background jobs per queue, the domains and cookies check, and the **Setup code**. |
 | **GitHub App** | Create the GitHub App with the manifest flow, or see the one configured. See [GitHub](/integrations/github/). |
 

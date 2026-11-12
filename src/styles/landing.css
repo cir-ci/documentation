@@ -1,6 +1,6 @@
 /*
  * The landing page (content/docs/index.mdx, template: splash). Wide column, no sidebar; every
- * colour is a token. Section pages never use these classes.
+ * color is a token. Section pages never use these classes.
  */
 :root:not([data-has-sidebar]) {
   --sl-content-width: 74rem;
@@ -10,9 +10,56 @@
   margin-block-start: 0;
 }
 /* The empty title panel of a splash page (its h1 is for assistive tech only). */
-.content-panel:has(> .sl-container > h1.sr-only) {
+.content-panel:has(> .sl-container > span#_top:only-child) {
   padding: 0;
   border: 0;
+}
+.content-panel:has(> .sl-container > span#_top:only-child) > .sl-container {
+  display: none;
+}
+/* The brand glow, once, behind the hero (AuthPage.module.css). */
+[data-has-hero],
+:root:not([data-has-sidebar]) .main-pane {
+  background: radial-gradient(800px 480px at 50% -10%, var(--circi-glow), transparent 70%) no-repeat, var(--circi-surface-panel);
+}
+:root:not([data-has-sidebar]) .main-pane {
+  background-size: 100% 560px, auto;
+  min-height: 100vh;
+}
+/* Below 50rem the header has no menu on a splash page: the sections and the theme sit in the page. */
+.l-mobile-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.l-mobile-nav a {
+  display: inline-flex;
+  align-items: center;
+  height: 1.75rem;
+  padding-inline: 0.75rem;
+  border: 1px solid var(--circi-line-strong);
+  border-radius: 999px;
+  color: var(--circi-text-secondary);
+  font-size: var(--sl-text-sm);
+  text-decoration: none;
+}
+@media (min-width: 50rem) {
+  .l-mobile-nav {
+    display: none;
+  }
+}
+.l-closing {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  padding: 2rem;
+  border: 1px solid var(--circi-line-strong);
+  border-radius: var(--circi-radius-panel);
+  background: var(--circi-surface-raised);
+}
+.l-closing p {
+  color: var(--circi-text-secondary);
 }
 .landing {
   display: grid;
@@ -37,7 +84,7 @@
     gap: 3.5rem;
   }
 }
-.l-hero h2.l-title {
+.l-hero h1.l-title {
   font-size: clamp(2rem, 1.4rem + 2.4vw, 3.125rem);
   font-weight: 700;
   line-height: 1.06;
@@ -139,7 +186,7 @@
   font-size: var(--sl-text-base);
   max-width: 52ch;
 }
-.l-path > code {
+.l-path > code:not(.x) {
   display: block;
   overflow-x: auto;
   padding: 0.5rem 0.75rem;
@@ -148,6 +195,11 @@
   background: var(--circi-surface-panel);
   font-size: 0.8125rem;
   white-space: nowrap;
+}
+.l-path .copy-command {
+  position: relative;
+  z-index: 1;
+  margin-block: 0;
 }
 .l-path .hint {
   font-size: var(--sl-text-sm);
