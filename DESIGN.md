@@ -91,7 +91,7 @@ In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a
   Put a `CopyCommand` or a fenced block inside a step.
 - Callouts: Starlight's `<Aside type="note|tip|caution|danger">`, mapped to processing, approved, needs review and failed.
   Note is information, tip is good news, caution needs a decision, danger breaks something.
-- `ScreenFrame.astro` (a window title strip, and a click opens the image large in a native dialog: `title="…"` sets the strip's text): `<ScreenFrame name="build-review" alt="..." caption="..." width={760} />`. `aspect="16 / 10"` crops to a fixed ratio
+- `ScreenFrame.astro` (a window title strip, and a click opens the image large in a native dialog: `title="…"` sets the strip's text): `<ScreenFrame name="build-review" alt="..." caption="..." width={760} />`. The frame takes the capture's own ratio; `aspect="16 / 7"` crops a tall capture shorter (never taller than the image)
   (keeps the top of the capture) so a run of captures lines up; images are lazy and reserve their box (`loading="eager"` for the first one on a page). Reads
   `src/assets/screens/<name>-dark.jpg` and `<name>-light.jpg` and shows the one for the reader's theme. Capture both from the running
   dashboard (`pnpm dev` in the repo) at 1440px wide. Alt text says what the screenshot shows, not "screenshot of".

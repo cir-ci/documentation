@@ -72,7 +72,7 @@ Signs sessions. 32 characters or more.
 
 <ScreenFrame name="build-review" alt="The build page for build #101." caption="A real dashboard screenshot, in the reader's theme." width={760} />
 
-Crop captures to one ratio with `aspect` so a run of them lines up (it keeps the top of the page); images load lazily and reserve their box, so long pages don't jump.
+The frame takes the capture's own ratio, so it always fits the image. `aspect` crops a tall capture to a shorter box (it keeps the top of the page) and is ignored when it would be taller than the image; images load lazily and reserve their box, so long pages don't jump.
 
 <ScreenFrame name="build-review" aspect="16 / 7" alt="The top of the build page, cropped." caption="aspect=&quot;16 / 7&quot; keeps the top of the capture." width={760} />
 

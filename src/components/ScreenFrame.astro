@@ -10,7 +10,7 @@ interface Props {
   caption?: string
   /** Max width in px of the framed image (default: the full column). */
   width?: number
-  /** The box's aspect ratio (default `"16 / 10"`), so captures of different pages line up. The image fills the width and keeps the top of the page; a taller one is cut off at the bottom (click it to see all). */
+  /** Crops the capture to this ratio, keeping its top (click it to see all). Default: the capture's own ratio, so the frame always matches the image. A ratio taller than the capture is ignored: the frame never shows empty space under it. */
   aspect?: string
   /** `lazy` (default) for anything below the first screen; `eager` for the first image of a page. */
   loading?: 'lazy' | 'eager'
@@ -26,8 +26,14 @@ const find = (scheme: string) => {
 }
 const dark = find('dark')
 const light = find('light')
-// The box is reserved before the captures load, and is the same for every page.
-const ratio = aspect ?? '16 / 10'
+// The box is reserved before the captures load. Both themes are captured at one size, so one box
+// fits either; a crop may only make it shorter than the image, never taller.
+const natural = dark.width / dark.height
+const asked = aspect
+  ?.split('/')
+  .map(Number)
+  .reduce((w, h) => w / h)
+const ratio = asked !== undefined && Number.isFinite(asked) && asked > natural ? aspect : `${dark.width} / ${dark.height}`
 ---
 
 <figure class="screen-frame" style={width ? `max-width:${width}px` : undefined}>
