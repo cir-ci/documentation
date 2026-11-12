@@ -4,20 +4,32 @@ description: Upload a folder of screenshots with the CLI and see the build appea
 ---
 {/* Source: README.md (Uploading from CI), packages/cli/src/main.ts, packages/cli/src/files.ts, docs/reference/ci-examples.md, apps/web/src/features/project-settings/CiTokenPage.tsx */}
 
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, Steps } from '@astrojs/starlight/components'
+import BuildFlow from '../../../components/BuildFlow.astro'
+import CopyCommand from '../../../components/CopyCommand.tsx'
+import StatusChip from '../../../components/StatusChip.astro'
 
-You need a folder of PNG screenshots (any test tool will do; Playwright's `page.screenshot({ path: 'screenshots/home.png' })` is enough), your CirCI address and the project's CI token.
+You need three things: a folder of PNG screenshots (any test tool will do; Playwright's `page.screenshot({ path: 'screenshots/home.png' })` is enough), your CirCI address and the Project's CI token.
 
-```sh
-export CIRCI_API_URL=http://localhost:3000
-export CIRCI_TOKEN=circi_…
-npx circi upload ./screenshots --wait
-```
+<Steps>
 
-The same snippet is on the project's **Settings**, **CI token** page, with your address filled in.
+1. Set your address and token. The Project's **Settings**, **CI token** page shows this snippet with your address filled in.
+
+   ```sh
+   export CIRCI_API_URL=http://localhost:3000
+   export CIRCI_TOKEN=circi_…
+   ```
+
+2. Upload the folder and wait for the result.
+
+   <CopyCommand client:visible command="npx circi upload ./screenshots --wait" />
+
+3. Open the Project in the dashboard. The build is there, with its screenshots counted by state.
+
+</Steps>
 
 <Aside type="note">
-`npx circi` needs the CLI package (`@circi/cli`) to be installable from where you run it. If your organization hasn't published it to a registry yet, build it from the repository (`pnpm build`, then run `packages/cli/dist/main.mjs`).
+`npx circi` needs the CLI package (`@circi/cli`) to be installable from where you run it. If it isn't published to a registry yet, build it from the repository (`pnpm build`, then run `packages/cli/dist/main.mjs`).
 </Aside>
 
 ## What the CLI does
@@ -26,13 +38,15 @@ The same snippet is on the project's **Settings**, **CI token** page, with your 
 - An optional `<file>.png.json` next to a screenshot adds metadata (browser, viewport, test name).
 - A screenshot can be at most 25 MB.
 - On a CI it recognizes, it reads the commit, branch and pull request itself. Locally it uses git. Override with `CIRCI_COMMIT`, `CIRCI_BRANCH`, `CIRCI_PR_NUMBER` and `CIRCI_BASE_BRANCH`.
-- It retries transient errors with backoff, and prints how many screenshots it found.
+- It retries transient errors with backoff and prints how many screenshots it found.
 
-With `--wait` it then waits for the result and exits with `0` (passed), `1` (changes need review) or `2` (error). The full list of flags is in the [CLI reference](/ci/cli/).
+With `--wait` it then waits for the result and exits `0` (passed), `1` (changes need review) or `2` (error). Every flag is in the [CLI reference](/ci/cli/).
 
 ## What you see
 
-The first build of a project has nothing to compare with, so every screenshot is **added** and the build waits for review. Open the project in the dashboard: the build is there, with a count of screenshots by state. Locally, with no git host linked, `--wait` exits `1` until you approve.
+The first build of a Project has nothing to compare with, so every screenshot is <StatusChip status="added" /> and the build waits for review. With no git host linked, `--wait` exits `1` until you approve.
+
+<BuildFlow current={1} />
 
 <Aside type="caution" title="On a real CI">
 Check out with enough history (`fetch-depth: 0` on GitHub Actions is the simple choice), or let the CLI fetch what it needs (the default). See the [CI examples](/ci/ci-examples/).

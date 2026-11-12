@@ -4,7 +4,9 @@ description: The words the dashboard and the docs use.
 ---
 {/* Source: CLAUDE.md (vocabulary), PLAN.md section 6, README.md, packages/core/src, apps/web/src/features */}
 
-The same terms appear in the dashboard, the CLI and the API. There is a shorter alphabetical list in the [glossary](/reference/glossary/).
+import StatusChip from '../../../components/StatusChip.astro'
+
+The dashboard, the CLI and the API use the same terms. For a quick alphabetical lookup, see the [glossary](/reference/glossary/).
 
 ## Workspaces and projects
 
@@ -18,7 +20,7 @@ The same terms appear in the dashboard, the CLI and the API. There is a shorter 
 
 **Build.** One upload for one commit. A project can have several kinds of build per commit, each with a **build name** (`--name chromium`, `--name mobile`), and each kind has its own baselines.
 
-**Screenshot.** One PNG in a build, named by its path (`settings/profile`). In a build every screenshot has a state: *added*, *removed*, *changed* or *unchanged*.
+**Screenshot.** One PNG in a build, named by its path (`settings/profile`). In a build, each screenshot is <StatusChip status="added" />, <StatusChip status="removed" />, changed or <StatusChip status="unchanged" />.
 
 **Baseline.** The approved screenshot a new one is compared with. Each screenshot name has its own baseline, taken from the nearest approved build in the commit history.
 
@@ -38,7 +40,7 @@ The same terms appear in the dashboard, the CLI and the API. There is a shorter 
 
 **Triage.** The list of things in a project that need a decision beyond a normal review: flaky screenshots, screenshots with no baseline, and builds that failed. Items can be snoozed (until the next push, tomorrow, next week or a date).
 
-**Flaky.** A screenshot whose image keeps coming back to one it already had on the default branch (by default 3 times in the last 10 commits, settable from 2 to 8), or that came out different on two runs of the same commit. A screenshot that was redesigned (A, then B, then C) is not flaky.
+**Flaky** <StatusChip status="flaky" glyph />**.** A screenshot whose image keeps coming back to one it already had on the default branch (by default 3 times in the last 10 commits, settable from 2 to 8), or that came out different on two runs of the same commit. A screenshot that was redesigned (A, then B, then C) is not flaky.
 
 ## Gates and sites
 

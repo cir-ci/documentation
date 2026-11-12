@@ -34,7 +34,7 @@ You need Docker with Compose v2, and a clone of the CirCI repository (the image 
 
    The first build compiles the server, the dashboard and the native diff engine, and takes a few minutes. Later builds use the layer cache.
 
-4. Open `http://localhost:3000`. A fresh install shows a **Set up CirCI** page. It asks for a setup code, which the server prints in its log and which you can also print on demand:
+4. Open `http://localhost:3000`. A fresh install shows a **Set up CirCI** page. It asks for a setup code. Find it in the server log, or print it:
 
    ```sh
    docker compose logs circi
@@ -51,6 +51,8 @@ Next: [Sign in and set up](/getting-started/sign-in-and-set-up/).
 curl http://localhost:3000/healthz   # liveness: the process serves
 curl http://localhost:3000/readyz    # readiness: Postgres and storage answer
 ```
+
+If `readyz` fails, `docker compose exec circi circi admin doctor` names the check that did.
 
 <Aside type="note" title="Two commands named circi">
 Inside the image, `circi` is the **server** command (`circi all`, `circi migrate`, `circi admin …`). The command you run in CI to upload screenshots is also called `circi`, but it is a different program, the CLI from the `@circi/cli` package. See [the CLI reference](/ci/cli/).
