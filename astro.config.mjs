@@ -19,9 +19,30 @@ export default defineConfig({
         { tag: 'meta', attrs: { name: 'theme-color', content: '#0c0a09', media: '(prefers-color-scheme: dark)' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#e9e2de', media: '(prefers-color-scheme: light)' } },
       ],
-      customCss: ['./src/styles/circi-theme.css', './src/styles/docs.css'],
+      customCss: ['./src/styles/circi-theme.css', './src/styles/docs.css', './src/styles/landing.css'],
       components: {
-        // Add overrides here (Header, Sidebar, ...) as `Name: './src/components/overrides/Name.astro'`.
+        SiteTitle: './src/components/overrides/SiteTitle.astro',
+        ThemeSelect: './src/components/overrides/ThemeSelect.astro',
+        PageTitle: './src/components/overrides/PageTitle.astro',
+        Footer: './src/components/overrides/Footer.astro',
+      },
+      expressiveCode: {
+        themes: ['vitesse-dark', 'vitesse-light'],
+        styleOverrides: {
+          borderRadius: 'var(--circi-radius-popup)',
+          borderColor: 'var(--circi-line-strong)',
+          codeBackground: 'var(--circi-surface-raised)',
+          codeFontFamily: 'var(--circi-font-mono)',
+          codeFontSize: '0.8125rem',
+          codeLineHeight: '1.6',
+          frames: {
+            editorTabBarBackground: 'var(--circi-surface-overlay)',
+            editorActiveTabBackground: 'var(--circi-surface-raised)',
+            terminalTitlebarBackground: 'var(--circi-surface-overlay)',
+            terminalBackground: 'var(--circi-surface-raised)',
+            frameBoxShadowCssValue: 'none',
+          },
+        },
       },
       lastUpdated: false,
       pagination: true,

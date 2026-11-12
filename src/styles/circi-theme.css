@@ -156,9 +156,10 @@
   --sl-color-red-low: color-mix(in srgb, var(--circi-state-failed) 14%, var(--circi-surface-panel));
   --sl-color-red: var(--circi-state-failed);
   --sl-color-red-high: var(--circi-state-failed-text);
-  --sl-color-purple-low: color-mix(in srgb, var(--circi-state-flaky) 14%, var(--circi-surface-panel));
-  --sl-color-purple: var(--circi-state-flaky);
-  --sl-color-purple-high: var(--circi-state-flaky);
+  /* Starlight's tip callout is its purple: it takes the approved teal, like the dashboard's good news. */
+  --sl-color-purple-low: color-mix(in srgb, var(--circi-state-approved) 14%, var(--circi-surface-panel));
+  --sl-color-purple: var(--circi-state-approved);
+  --sl-color-purple-high: var(--circi-state-approved-text);
 
   --sl-nav-height: 3.25rem;
   --sl-sidebar-width: 17rem;

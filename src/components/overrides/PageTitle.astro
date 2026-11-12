@@ -1,0 +1,56 @@
+---
+// The page title area: the section the page belongs to (the sidebar group, like the app's
+// breadcrumbs), the title, and the page description as a short lead. On the landing page the
+// h1 stays for assistive tech and search, and the page draws its own headline.
+type SidebarEntry = { type: 'link'; isCurrent: boolean } | { type: 'group'; label: string; entries: SidebarEntry[] }
+
+const { entry, sidebar } = Astro.locals.starlightRoute
+const isSplash = entry.data.template === 'splash'
+const description = entry.data.description
+
+function groupOf(entries: SidebarEntry[]): string | undefined {
+  for (const e of entries) {
+    if (e.type === 'group') {
+      if (e.entries.some((c) => c.type === 'link' && c.isCurrent)) return e.label
+      const nested = groupOf(e.entries)
+      if (nested) return nested
+    }
+  }
+  return undefined
+}
+const section = isSplash ? undefined : groupOf(sidebar as SidebarEntry[])
+---
+
+{
+  isSplash ? (
+    <h1 id="_top" class="sr-only">{entry.data.title}</h1>
+  ) : (
+    <div class="page-title">
+      {section && <p class="section">{section}</p>}
+      <h1 id="_top">{entry.data.title}</h1>
+      {description && <p class="lead">{description}</p>}
+    </div>
+  )
+}
+
+<style>
+  .section {
+    margin: 0 0 0.375rem;
+    font-size: var(--sl-text-sm);
+    color: var(--circi-text-tertiary);
+  }
+  h1 {
+    margin: 0;
+    font-size: var(--sl-text-h1);
+    font-weight: 650;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .lead {
+    margin: 0.625rem 0 0;
+    max-width: 60ch;
+    font-size: var(--sl-text-base);
+    line-height: 1.5;
+    color: var(--circi-text-secondary);
+  }
+</style>

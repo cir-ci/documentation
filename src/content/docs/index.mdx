@@ -2,47 +2,65 @@
 title: CirCI documentation
 description: Self-hosted visual regression testing. Upload screenshots from CI, review the changes, gate the merge.
 template: splash
-hero:
-  tagline: Self-hosted visual regression testing. CI uploads screenshots, CirCI compares them with the baseline, and your team reviews what changed.
-  image:
-    file: ../../assets/logo.svg
-  actions:
-    - text: Run it locally
-      link: /getting-started/run-it-locally/
-      icon: right-arrow
-    - text: What is CirCI?
-      link: /introduction/what-is-circi/
-      variant: minimal
 ---
 
-{/* Source: README.md (intro, status), PLAN.md section 1 and 2 */}
+{/* Source: README.md (intro), PLAN.md section 1; the screenshots are build #22 of the seeded dev Workspace */}
 
-import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components'
+import ReviewCompare from '../../components/ReviewCompare.astro'
+import BuildFlow from '../../components/BuildFlow.astro'
+import ScreenFrame from '../../components/ScreenFrame.astro'
+import Kbd from '../../components/Kbd.astro'
 
-## Start here
+<div class="landing">
 
-<CardGrid>
-  <Card title="Getting started" icon="rocket">
-    Start the stack with Docker Compose, create a project, upload your first build and review it. About ten minutes.
-    [Open the quick start](/getting-started/run-it-locally/)
-  </Card>
-  <Card title="CI integration" icon="seti:pipeline">
-    Upload from any CI with the `circi` CLI or the Vitest plugin, and point Argos SDKs at CirCI by changing two variables.
-    [CLI reference](/ci/cli/)
-  </Card>
-  <Card title="Self-hosting" icon="setting">
-    Requirements, Docker Compose, Caddy and TLS, storage, upgrades, backups and the full list of environment variables.
-    [Self-hosting guide](/self-hosting/requirements/)
-  </Card>
-  <Card title="Integrations" icon="puzzle">
-    GitHub checks and the merge gate, GitLab, Bitbucket, Slack, Linear, Jira, Figma and signed webhooks.
-    [All integrations](/integrations/overview/)
-  </Card>
-</CardGrid>
+<section class="l-hero" aria-labelledby="hero-title">
+  <div>
+    <h2 id="hero-title" class="l-title">Review every visual change before it merges</h2>
+    <p class="l-lead">CirCI is visual regression testing you run yourself. CI uploads screenshots, CirCI compares them with the baseline, and your team approves or rejects what changed.</p>
+    <div class="l-actions">
+      <a class="primary" href="/getting-started/run-it-locally/">Run it locally</a>
+      <a href="/self-hosting/requirements/">Self-host it</a>
+    </div>
+  </div>
+  <ReviewCompare />
+</section>
 
-## Find your way
+<section class="l-section" aria-labelledby="paths">
+  <h2 id="paths">Where do you want to start?</h2>
+  <div class="l-paths">
+    <div class="l-path">
+      <h3><a href="/getting-started/run-it-locally/">Run it locally</a></h3>
+      <p>Start the app and Postgres with Docker Compose, create a Project and upload a first build.</p>
+      <code>docker compose up -d --build</code>
+    </div>
+    <div class="l-path">
+      <h3><a href="/self-hosting/requirements/">Self-host</a></h3>
+      <p>Requirements, TLS, storage, upgrades, backups and every environment variable.</p>
+      <span class="hint">One image: server, worker and dashboard.</span>
+    </div>
+    <div class="l-path">
+      <h3><a href="/ci/cli/">Set up CI</a></h3>
+      <p>Upload from any CI with the <code>circi</code> CLI or the Vitest plugin. Shallow checkouts work.</p>
+      <code>npx circi upload ./screenshots --wait</code>
+    </div>
+    <div class="l-path">
+      <h3><a href="/using/reviewing-a-build/">Review builds</a></h3>
+      <p>Approve or reject each screenshot, comment on a region, and ask for reviews.</p>
+      <span class="hint">In a build, <Kbd keys="Shift+A" /> approves everything.</span>
+    </div>
+  </div>
+</section>
 
-<LinkCard title="How a build flows" description="Upload, compare, review, merge gate: the whole path in one page." href="/introduction/how-a-build-flows/" />
-<LinkCard title="Reviewing a build" description="Approve, reject, comment on regions, and request reviews." href="/using/reviewing-a-build/" />
-<LinkCard title="Environment variables" description="Every variable, its default and what it does." href="/reference/environment-variables/" />
-<LinkCard title="Contributing" description="Repo layout, layers, pnpm dev and pnpm gate." href="/contributing/repo-layout/" />
+<section class="l-section" aria-labelledby="flow">
+  <h2 id="flow">The path of a build</h2>
+  <p>A build is one upload of screenshots for one commit. It moves through four stages, and the last one decides whether the pull request can merge. <a href="/introduction/how-a-build-flows/">How a build flows</a> follows one in detail.</p>
+  <BuildFlow />
+</section>
+
+<section class="l-section" aria-labelledby="review">
+  <h2 id="review">What a reviewer sees</h2>
+  <p>The build page puts the baseline and the new screenshot side by side, with a diff and a slider one click away.</p>
+  <ScreenFrame name="build-review" alt="The CirCI build page for build #22 with one changed screenshot, shown as baseline and this build side by side." caption="Build #22 in the dashboard, in your theme." />
+</section>
+
+</div>

@@ -7,12 +7,42 @@ body {
 }
 
 /* The app's content sits on a panel with a hairline; the docs page follows. */
-.site-title {
-  font-weight: 600;
-  letter-spacing: -0.01em;
+/* Type scale: restrained, as the app's; body is 15px because docs are read, not scanned. */
+:root {
+  --sl-text-base: 0.9375rem;
+  --sl-text-h1: 1.875rem;
+  --sl-text-h2: 1.375rem;
+  --sl-text-h3: 1.125rem;
+  --sl-text-h4: 1rem;
 }
-.site-title img {
-  border-radius: var(--circi-radius-control);
+/* Lines stay under 80 characters; tables, code and figures use the full column. */
+.sl-markdown-content :is(p, ul, ol, dl, blockquote) {
+  max-width: 60ch;
+}
+.sl-markdown-content :is(.starlight-aside, .sl-steps) :is(p, ul, ol) {
+  max-width: none;
+}
+.sl-markdown-content h2 {
+  font-weight: 650;
+}
+.sl-markdown-content h3,
+.sl-markdown-content h4 {
+  font-weight: 600;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* No repository to link to: the header has no social icons, so no divider for them either. */
+.social-icons {
+  display: none !important;
+}
+.header .right-group {
+  gap: 0.75rem;
 }
 
 header.header {
@@ -24,17 +54,71 @@ header.header {
 .sidebar-content details > summary .large {
   font-size: var(--sl-text-sm);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  color: var(--circi-text-primary);
+}
+.sidebar-content details > summary {
+  border-radius: var(--circi-radius-control);
+  padding-block: 0.375rem;
+}
+.sidebar-content details > summary:hover {
+  background: var(--circi-action-hover);
+}
+/* A group's pages hang off a hairline, like the app's nav sections; the current one has an accent rail. */
+.sidebar-content details > ul {
+  margin-inline-start: 0.75rem;
+  border-inline-start: 1px solid var(--circi-line-subtle);
+  padding-inline-start: 0.25rem;
 }
 .sidebar-content a {
   border-radius: var(--circi-radius-control);
+  padding-block: 0.3rem;
+  font-size: var(--sl-text-sm);
+  color: var(--circi-text-secondary);
 }
 .sidebar-content a:hover {
   background: var(--circi-action-hover);
+  color: var(--circi-text-primary);
 }
 .sidebar-content a[aria-current='page'] {
   background: var(--circi-accent-subtle);
   color: var(--circi-accent-text);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--circi-accent-main);
+}
+
+/* On this page */
+starlight-toc nav > .sl-container > h2,
+.right-sidebar h2 {
+  font-size: var(--sl-text-sm);
+  font-weight: 600;
+  color: var(--circi-text-primary);
+}
+.right-sidebar-panel a {
+  color: var(--circi-text-secondary);
+  font-size: var(--sl-text-sm);
+}
+.right-sidebar-panel a[aria-current='true'] {
+  color: var(--circi-accent-text);
+  font-weight: 600;
+}
+
+/* Pagination */
+.pagination-links a {
+  border: 1px solid var(--circi-line-strong);
+  border-radius: var(--circi-radius-panel);
+  background: var(--circi-surface-raised);
+  box-shadow: none;
+  transition: border-color 120ms ease-out;
+}
+.pagination-links a:hover {
+  border-color: var(--circi-accent-main);
+}
+.pagination-links .link-title {
+  font-size: var(--sl-text-base);
+  color: var(--circi-text-primary);
+}
+.pagination-links span {
+  color: var(--circi-text-secondary);
 }
 
 /* Content */
@@ -75,7 +159,13 @@ header.header {
   border-block-end: 0;
 }
 
-/* Code blocks (Expressive Code reads these variables) */
+/* Code blocks (Expressive Code reads these variables). No ligatures: `--flag` must read as typed. */
+code,
+pre,
+kbd {
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
+}
 :root {
   --ec-brdRad: var(--circi-radius-popup);
   --ec-codeFontFml: var(--circi-font-mono);
@@ -110,13 +200,33 @@ header.header {
   outline: 2px solid var(--circi-accent-text);
   outline-offset: 2px;
 }
-kbd {
+kbd:not(.key):not(.keys) {
   border: 1px solid var(--circi-line-strong);
   border-radius: var(--circi-radius-inline);
   background: var(--circi-surface-raised);
   padding: 0 0.35em;
   font-family: var(--circi-font-mono);
   font-size: 0.8em;
+}
+
+/* Steps: the dashboard's numbered circles on a hairline (Starlight's <Steps>) */
+.sl-steps {
+  --bullet-size: 1.625rem;
+}
+.sl-steps > li::before {
+  background: var(--circi-surface-overlay);
+  color: var(--circi-text-primary);
+  border: 1px solid var(--circi-line-strong);
+  box-shadow: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.sl-steps > li::after {
+  background: var(--circi-line-strong);
+}
+.sl-steps > li > :first-child {
+  font-weight: 450;
 }
 
 /* CopyCommand island */
@@ -146,6 +256,32 @@ kbd {
   font-weight: 500;
   cursor: pointer;
 }
+.copy-command code {
+  min-width: 0;
+  overflow-x: auto;
+  border: 0;
+  background: none;
+  padding: 0;
+  white-space: nowrap;
+}
+.copy-command .prompt {
+  color: var(--circi-text-tertiary);
+  user-select: none;
+}
+.copy-command button {
+  flex-shrink: 0;
+}
 .copy-command button:hover {
   background: var(--circi-action-selected);
+}
+
+/* Motion: only what answers a click; none when the reader asks for less. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

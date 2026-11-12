@@ -1,0 +1,33 @@
+---
+// Pagination (Starlight's), then a quiet footer with the places people look things up.
+import Default from '@astrojs/starlight/components/Footer.astro'
+---
+
+<Default {...Astro.props}><slot /></Default>
+
+<nav class="more" aria-label="Look things up">
+  <a href="/reference/glossary/">Glossary</a>
+  <a href="/reference/environment-variables/">Environment variables</a>
+  <a href="/reference/http-api/">HTTP API</a>
+  <a href="/ci/cli/">CLI</a>
+</nav>
+
+<style>
+  .more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    margin-block-start: 1.5rem;
+    padding-block-start: 1rem;
+    border-block-start: 1px solid var(--circi-line-subtle);
+    font-size: var(--sl-text-sm);
+  }
+  a {
+    color: var(--circi-text-secondary);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--circi-text-primary);
+    text-decoration: underline;
+  }
+</style>

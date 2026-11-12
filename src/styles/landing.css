@@ -1,0 +1,168 @@
+/*
+ * The landing page (content/docs/index.mdx, template: splash). Wide column, no sidebar; every
+ * colour is a token. Section pages never use these classes.
+ */
+:root:not([data-has-sidebar]) {
+  --sl-content-width: 74rem;
+}
+/* Starlight spaces siblings in prose; the landing page spaces its own sections. */
+.landing * {
+  margin-block-start: 0;
+}
+/* The empty title panel of a splash page (its h1 is for assistive tech only). */
+.content-panel:has(> .sl-container > h1.sr-only) {
+  padding: 0;
+  border: 0;
+}
+.landing {
+  display: grid;
+  gap: 4.5rem;
+  padding-block: 1.5rem 3rem;
+}
+.landing h2 {
+  margin: 0;
+  font-size: var(--sl-text-h2);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.l-hero {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+@media (min-width: 62rem) {
+  .l-hero {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 3.5rem;
+  }
+}
+.l-hero h2.l-title {
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.125rem);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.l-lead {
+  margin-block-start: 1.25rem !important;
+  max-width: 34rem;
+  font-size: var(--sl-text-lg);
+  line-height: 1.55;
+  color: var(--circi-text-secondary);
+}
+.l-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block-start: 1.75rem;
+}
+.l-actions a {
+  display: inline-flex;
+  align-items: center;
+  height: 2.5rem;
+  padding-inline: 1.125rem;
+  border: 1px solid var(--circi-line-strong);
+  border-radius: var(--circi-radius-control);
+  color: var(--circi-text-primary);
+  font-weight: 550;
+  text-decoration: none;
+}
+.l-actions a:hover {
+  background: var(--circi-action-hover);
+}
+.l-actions a.primary {
+  border-color: transparent;
+  background: var(--circi-accent-main);
+  color: var(--circi-accent-on-accent);
+}
+.l-actions a.primary:hover {
+  background: var(--circi-accent-hover);
+}
+.landing .l-states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block-start: 1.75rem;
+}
+
+/* Paths */
+.l-paths {
+  display: grid;
+  gap: 1rem;
+}
+@media (min-width: 48rem) {
+  .l-paths {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.l-path {
+  position: relative;
+  display: grid;
+  gap: 0.625rem;
+  align-content: start;
+  padding: 1.125rem 1.25rem;
+  border: 1px solid var(--circi-line-strong);
+  border-radius: var(--circi-radius-panel);
+  background: var(--circi-surface-raised);
+  transition: border-color 120ms ease-out;
+}
+.l-path:hover,
+.l-path:focus-within {
+  border-color: var(--circi-accent-main);
+}
+.l-path h3 {
+  margin: 0;
+  font-size: var(--sl-text-h3);
+  font-weight: 650;
+}
+.l-path h3 a {
+  color: var(--circi-text-primary);
+  text-decoration: none;
+}
+/* The whole panel is the link: its title stretches over it. */
+.l-path h3 a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.l-path h3 a:focus-visible {
+  outline: none;
+}
+.l-path:has(h3 a:focus-visible) {
+  outline: 2px solid var(--circi-accent-text);
+  outline-offset: 2px;
+}
+.l-path p {
+  color: var(--circi-text-secondary);
+  font-size: var(--sl-text-base);
+  max-width: 52ch;
+}
+.l-path > code {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--circi-line-subtle);
+  border-radius: var(--circi-radius-control);
+  background: var(--circi-surface-panel);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.l-path .hint {
+  font-size: var(--sl-text-sm);
+  color: var(--circi-text-secondary);
+}
+
+/* Flow and screenshot sections */
+.l-section {
+  display: grid;
+  gap: 1rem;
+}
+.l-section > p {
+  max-width: 60ch;
+  color: var(--circi-text-secondary);
+}
+.l-section a {
+  color: var(--circi-accent-text);
+}

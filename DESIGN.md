@@ -48,13 +48,57 @@ status chips in prose; light-scheme values are darkened for 4.5:1 contrast.
 
 Body text is 15px (`--sl-text-body`) where the app uses 13px: documentation is read, not scanned.
 
+## Overrides (Starlight `components:` in `astro.config.mjs`)
+
+All in `src/components/overrides/`: `SiteTitle` (rounded logo mark, "CirCI", "Docs"), `ThemeSelect` (a System / Light / Dark
+segmented control like the app's, same storage key as Starlight), `PageTitle` (the sidebar group as a quiet breadcrumb line, the
+title, the page `description` as a lead; on a splash page the h1 is visually hidden), `Footer` (Starlight's pagination, then links to
+the glossary, environment variables, HTTP API and CLI). The sidebar, table of contents and pagination are CSS in `docs.css`. There is
+no repository to link to, so the header has no social icons. Code blocks use Expressive Code with the vitesse themes and the app's
+surfaces (`expressiveCode.styleOverrides`).
+
+Line length: paragraphs and lists are capped at `60ch` (about 70 characters at 15px); tables, code and figures use the full column.
+Type scale: body 15px (`--sl-text-base`), h1 30px, h2 22px, h3 18px.
+
 ## Components
 
-- `EnvTable.astro`: `<EnvTable />` (all groups) or `<EnvTable group="mail" />`. Reads `src/data/env.ts`.
-- `InstanceSettingNote.astro`: the dashed callout marking passages about settings that are moving into
-  Instance settings. Searching for `instance-setting` and `InstanceSettingNote` finds every spot to update.
-- `CopyCommand.tsx`: a React island (`client:visible`), the template for later islands.
-- Starlight's own `Steps`, `Tabs`, `Aside`, `Card`, `FileTree`, `Badge` are used on pages.
+Every component is shown on `/design-kit/` (hidden from the sidebar and search). Import with
+`import X from '../../../components/X.astro'` (depth depends on the page folder; MDX does not take the `#` aliases in content).
+In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a>` there.
+
+- `StatusChip.astro`: the app's status glyphs (geometry copied from `StatusIcon.tsx`). Statuses: `approved`, `auto-approved`,
+  `needs-review`, `processing`, `failed`, `rejected`, `unchanged`, `added`, `removed`, `flaky`.
+  `<StatusChip status="needs-review" />`, `<StatusChip status="approved">3 approved</StatusChip>` (own words),
+  `<StatusChip status="flaky" glyph />` (glyph only, named for assistive tech). Use it when the page talks about a state, once per
+  state in a paragraph, not on every mention.
+- `BuildFlow.astro`: upload, compare, review, merge gate, inline SVG (a row on wide screens, a column on narrow), with a title and
+  description. `<BuildFlow />`, `<BuildFlow current={3} />` highlights a stage (1 to 4).
+- `<Steps>` (Starlight's, restyled in `docs.css`): a numbered list for setup guides. One action per step, the first line is the action.
+  Put a `CopyCommand` or a fenced block inside a step.
+- Callouts: Starlight's `<Aside type="note|tip|caution|danger">`, mapped to processing, approved, needs review and failed.
+  Note is information, tip is good news, caution needs a decision, danger breaks something.
+- `ScreenFrame.astro`: `<ScreenFrame name="build-review" alt="..." caption="..." width={760} />`. Reads
+  `src/assets/screens/<name>-dark.jpg` and `<name>-light.jpg` and shows the one for the reader's theme. Capture both from the running
+  dashboard (`pnpm dev` in the repo) at 1440px wide. Alt text says what the screenshot shows, not "screenshot of".
+- `Kbd.astro`: `<Kbd keys="Shift+A" />`, `<Kbd keys="Mod+K" />` (Mod is Command; Shift, Alt, Ctrl, Enter, Esc also map to symbols).
+- `SettingCard.astro`: one variable or setting. `<SettingCard name="PUBLIC_URL" defaultValue="http://localhost:3000" type="URL">`
+  description `</SettingCard>`; `required` for required ones. For the full reference keep using `EnvTable`.
+- `CopyCommand.tsx`: one command with a Copy button, `<CopyCommand client:visible command="npx circi upload ./screenshots --wait" />`.
+  For several lines use a fenced `sh` block (Expressive Code adds its own copy button).
+- `ReviewCompare.astro` / `.tsx`: the landing page's before / after / diff slider (React island). Landing page only.
+- `EnvTable.astro`: `<EnvTable />` or `<EnvTable group="mail" />`. Reads `src/data/env.ts`.
+- `InstanceSettingNote.astro`: the dashed callout marking passages about settings that are moving into Instance settings.
+  Searching for `instance-setting` and `InstanceSettingNote` finds every spot to update.
+
+Screenshots on disk (`src/assets/screens/`): `build-review-{dark,light}.jpg` (build #22 of the seeded dev Workspace, side by side),
+`hero-before.jpg`, `hero-after.jpg`, `hero-diff.jpg` (the same screenshot's baseline, new version and diff, for the landing page).
+The `.jpg` files are Chrome captures of the dashboard, so they are 1x; add more by the same naming.
+
+## Landing page
+
+`src/content/docs/index.mdx` (template `splash`) with `src/styles/landing.css` (classes `.landing`, `.l-*`, used only there):
+the headline and a live before / after / diff of a real changed screenshot, four paths (run it locally, self-host, set up CI, review
+builds), the build flow, and a screenshot of the build page.
 
 ## Page conventions
 
@@ -75,7 +119,6 @@ with `client:visible`. Its tokens use the same `--circi-*` names as `circi-theme
 
 ## Open items for design
 
-- Splash page (`index.mdx`): Starlight's hero is default; a product-like hero (build screen) is next.
-- Header and sidebar overrides to match the app's chrome; a theme control styled like `ColorSchemeControl`.
-- Screenshots of the dashboard on `using/` pages (take them from `pnpm dev`).
-- Status chips and diff illustrations as components.
+- Reusing real `@circi/ui` components in islands (see above).
+- More dashboard screenshots (Baselines, Triage, Insights, settings) for the `using/` pages, both themes.
+- A diagram for the Self-hosting topology (Caddy, app, Postgres, storage) in the style of `BuildFlow`.

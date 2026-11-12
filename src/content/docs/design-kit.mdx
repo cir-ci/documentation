@@ -1,0 +1,75 @@
+---
+title: Design kit
+description: The components section pages use. Not in the sidebar or the search index.
+pagefind: false
+sidebar:
+  hidden: true
+---
+
+{/* Source: this site's own components, see DESIGN.md */}
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+import StatusChip from '../../components/StatusChip.astro'
+import BuildFlow from '../../components/BuildFlow.astro'
+import ScreenFrame from '../../components/ScreenFrame.astro'
+import Kbd from '../../components/Kbd.astro'
+import SettingCard from '../../components/SettingCard.astro'
+import CopyCommand from '../../components/CopyCommand.tsx'
+
+## Status chips
+
+<StatusChip status="needs-review" /> <StatusChip status="approved" /> <StatusChip status="rejected" /> <StatusChip status="flaky" /> <StatusChip status="failed" /> <StatusChip status="processing" /> <StatusChip status="auto-approved" /> <StatusChip status="added" /> <StatusChip status="removed" /> <StatusChip status="unchanged" />
+
+A glyph alone, inline: a <StatusChip status="flaky" glyph /> screenshot passes and fails on the same commit. With your own words: <StatusChip status="approved">3 approved</StatusChip>.
+
+## Build flow
+
+<BuildFlow />
+
+Highlighting a stage:
+
+<BuildFlow current={3} />
+
+## Steps
+
+<Steps>
+
+1. Create a Project in the dashboard.
+
+2. Copy its token into your CI secrets as <code>CIRCI_TOKEN</code>.
+
+3. Run the upload.
+
+   <CopyCommand client:visible command="npx circi upload ./screenshots --wait" />
+
+</Steps>
+
+## Callouts
+
+<Aside type="note">A note is information, in the processing colour.</Aside>
+<Aside type="tip">A tip is something that went right, in the approved colour.</Aside>
+<Aside type="caution">A caution needs a decision, in the needs review colour.</Aside>
+<Aside type="danger">A danger breaks something, in the failed colour.</Aside>
+
+## Keys and settings
+
+Press <Kbd keys="Shift+A" /> to approve everything, or <Kbd keys="Mod+K" /> for the command menu.
+
+<SettingCard name="PUBLIC_URL" defaultValue="http://localhost:3000" type="URL">
+The address people open in the browser. It is also the base of every link CirCI sends.
+</SettingCard>
+
+<SettingCard name="BETTER_AUTH_SECRET" required>
+Signs sessions. 32 characters or more.
+</SettingCard>
+
+## Screenshot frame
+
+<ScreenFrame name="build-review" alt="The build page for build #22." caption="A real dashboard screenshot, in the reader's theme." width={760} />
+
+## Code
+
+```sh title="Terminal"
+docker compose up -d --build
+circi upload ./screenshots --wait
+```

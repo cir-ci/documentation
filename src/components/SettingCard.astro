@@ -1,0 +1,78 @@
+---
+// One environment variable or setting. The slot is the description (markdown works).
+// <SettingCard name="PUBLIC_URL" defaultValue="http://localhost:3000">The address people open.</SettingCard>
+interface Props {
+  name: string
+  /** Shown as "Default" next to the name. */
+  defaultValue?: string
+  required?: boolean
+  /** A short type, e.g. "number" or "URL". */
+  type?: string
+}
+const { name, defaultValue, required = false, type } = Astro.props
+---
+
+<div class="setting-card">
+  <div class="head">
+    <code class="name">{name}</code>
+    {required && <span class="meta meta--required">Required</span>}
+    {type && <span class="meta">{type}</span>}
+    {
+      defaultValue !== undefined && (
+        <span class="meta">
+          Default <code>{defaultValue}</code>
+        </span>
+      )
+    }
+  </div>
+  <div class="body"><slot /></div>
+</div>
+
+<style>
+  .setting-card {
+    margin-block: 0.75rem;
+    border: 1px solid var(--circi-line-strong);
+    border-radius: var(--circi-radius-panel);
+    background: var(--circi-surface-raised);
+    overflow: clip;
+  }
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-block-end: 1px solid var(--circi-line-subtle);
+    background: var(--circi-surface-overlay);
+  }
+  .name {
+    border: 0;
+    background: none;
+    padding: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--circi-text-primary);
+    overflow-wrap: anywhere;
+  }
+  .meta {
+    font-size: var(--sl-text-xs);
+    color: var(--circi-text-secondary);
+  }
+  .meta code {
+    font-size: 0.95em;
+  }
+  .meta--required {
+    color: var(--circi-state-review-text);
+    font-weight: 600;
+  }
+  .body {
+    padding: 0.625rem 0.875rem;
+    font-size: var(--sl-text-sm);
+  }
+  .body :global(> :first-child) {
+    margin-top: 0;
+  }
+  .body :global(> :last-child) {
+    margin-bottom: 0;
+  }
+</style>

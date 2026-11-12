@@ -1,0 +1,159 @@
+---
+// The path of a build: upload, compare, review, merge gate. Inline SVG, themed with the --circi-*
+// tokens, with two layouts (a row on wide screens, a column on narrow ones). `current` marks one
+// stage (1 to 4) so a page can say "you are here".
+// <BuildFlow />   <BuildFlow current={3} />
+interface Props {
+  current?: 1 | 2 | 3 | 4
+}
+const { current } = Astro.props
+
+const stages = [
+  { name: 'Upload', note: 'CI sends screenshots', cmd: 'circi upload' },
+  { name: 'Compare', note: 'The worker diffs each one', cmd: 'against the baseline' },
+  { name: 'Review', note: 'People approve or reject', cmd: 'in the dashboard' },
+  { name: 'Merge gate', note: 'The check decides', cmd: 'green when approved' },
+]
+const title = 'How a build flows'
+const desc =
+  'Four stages in order. Upload: CI sends screenshots with circi upload. Compare: the worker diffs each screenshot against the baseline. Review: people approve or reject changes in the dashboard. Merge gate: the check on the pull request turns green when everything is approved.'
+const uid = Math.random().toString(36).slice(2, 8)
+---
+
+<figure class="build-flow">
+  <svg class="wide" viewBox="0 0 960 150" role="img" aria-labelledby={`bf-t-${uid} bf-d-${uid}`}>
+    <title id={`bf-t-${uid}`}>{title}</title>
+    <desc id={`bf-d-${uid}`}>{desc}</desc>
+    {
+      stages.map((s, i) => {
+        const x = i * 250
+        return (
+          <g transform={`translate(${x} 0)`} class:list={['stage', { current: current === i + 1 }]}>
+            <rect x="1" y="1" width="208" height="148" rx="10" class="box" />
+            <g transform="translate(18 20)">
+              {i === 0 && <path d="M7 12V2M2.5 6.5L7 2l4.5 4.5M1 13h12" class="icon" />}
+              {i === 1 && <path d="M1 1h7v7H1zM6 6h7v7H6z" class="icon" />}
+              {i === 2 && (<><circle cx="7" cy="7" r="6.25" class="icon" /><path d="M7 .75a6.25 6.25 0 0 1 0 12.5z" class="fill" /></>)}
+              {i === 3 && (<><circle cx="7" cy="7" r="7" class="fill" /><path d="M4 7.3l2 2 4-4.3" class="ink" /></>)}
+            </g>
+            <text x="44" y="33" class="name">{s.name}</text>
+            <text x="18" y="76" class="note">{s.note}</text>
+            <text x="18" y="118" class="cmd">{s.cmd}</text>
+          </g>
+        )
+      })
+    }
+    {
+      [0, 1, 2].map((i) => (
+        <path d={`M${215 + i * 250} 75h30m-6 -6l6 6l-6 6`} class="arrow" />
+      ))
+    }
+  </svg>
+
+  <svg class="tall" viewBox="0 0 320 520" role="img" aria-labelledby={`bf-t2-${uid} bf-d2-${uid}`}>
+    <title id={`bf-t2-${uid}`}>{title}</title>
+    <desc id={`bf-d2-${uid}`}>{desc}</desc>
+    {
+      stages.map((s, i) => {
+        const y = i * 130
+        return (
+          <g transform={`translate(0 ${y})`} class:list={['stage', { current: current === i + 1 }]}>
+            <rect x="1" y="1" width="318" height="96" rx="10" class="box" />
+            <g transform="translate(18 18)">
+              {i === 0 && <path d="M7 12V2M2.5 6.5L7 2l4.5 4.5M1 13h12" class="icon" />}
+              {i === 1 && <path d="M1 1h7v7H1zM6 6h7v7H6z" class="icon" />}
+              {i === 2 && (<><circle cx="7" cy="7" r="6.25" class="icon" /><path d="M7 .75a6.25 6.25 0 0 1 0 12.5z" class="fill" /></>)}
+              {i === 3 && (<><circle cx="7" cy="7" r="7" class="fill" /><path d="M4 7.3l2 2 4-4.3" class="ink" /></>)}
+            </g>
+            <text x="44" y="31" class="name">{s.name}</text>
+            <text x="18" y="62" class="note">{s.note}</text>
+            <text x="18" y="83" class="cmd">{s.cmd}</text>
+          </g>
+        )
+      })
+    }
+    {[0, 1, 2].map((i) => <path d={`M160 ${101 + i * 130}v20m-6 -6l6 6l6 -6`} class="arrow" />)}
+  </svg>
+</figure>
+
+<style>
+  .build-flow {
+    margin-block: 1.5rem;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .tall {
+    display: none;
+    max-width: 22rem;
+    margin-inline: auto;
+  }
+  @media (max-width: 40rem) {
+    .wide {
+      display: none;
+    }
+    .tall {
+      display: block;
+    }
+  }
+  .box {
+    fill: var(--circi-surface-raised);
+    stroke: var(--circi-line-strong);
+    stroke-width: 1;
+  }
+  .current .box {
+    stroke: var(--circi-accent-main);
+    stroke-width: 2;
+    fill: var(--circi-accent-subtle);
+  }
+  .icon {
+    fill: none;
+    stroke: var(--circi-text-secondary);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .fill {
+    fill: var(--circi-text-secondary);
+  }
+  .ink {
+    fill: none;
+    stroke: var(--circi-surface-raised);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* The review and gate stages carry their state colours, as the dashboard's glyphs do. */
+  .stage:nth-of-type(3) :is(.icon, .fill) {
+    stroke: var(--circi-state-review);
+  }
+  .stage:nth-of-type(3) .fill {
+    fill: var(--circi-state-review);
+    stroke: none;
+  }
+  .stage:nth-of-type(4) .fill {
+    fill: var(--circi-state-approved);
+  }
+  .name {
+    fill: var(--circi-text-primary);
+    font: 600 17px var(--circi-font-sans);
+  }
+  .note {
+    fill: var(--circi-text-secondary);
+    font: 400 14px var(--circi-font-sans);
+  }
+  .cmd {
+    fill: var(--circi-text-tertiary);
+    font: 500 13px var(--circi-font-mono);
+  }
+  .arrow {
+    fill: none;
+    stroke: var(--circi-text-tertiary);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+</style>

@@ -1,0 +1,62 @@
+---
+// A real dashboard screenshot in a frame, light and dark. Files live in src/assets/screens/ as
+// `<name>-dark.jpg` and `<name>-light.jpg`; the one matching the reader's theme shows.
+// <ScreenFrame name="build-review" alt="The build page with one changed screenshot." caption="Reviewing build #22." />
+import { Image } from 'astro:assets'
+
+interface Props {
+  name: string
+  alt: string
+  caption?: string
+  /** Max width in px of the framed image (default: the full column). */
+  width?: number
+}
+const { name, alt, caption, width } = Astro.props
+const shots = import.meta.glob<{ default: ImageMetadata }>('/src/assets/screens/*.{jpg,png}', { eager: true })
+const find = (scheme: string) => {
+  const key = Object.keys(shots).find((k) => k.includes(`/${name}-${scheme}.`))
+  if (!key) throw new Error(`ScreenFrame: missing src/assets/screens/${name}-${scheme}.jpg`)
+  return shots[key]!.default
+}
+const dark = find('dark')
+const light = find('light')
+---
+
+<figure class="screen-frame" style={width ? `max-width:${width}px` : undefined}>
+  <div class="shot">
+    <Image src={dark} alt={alt} class="shot-dark" widths={[720, 1080, 1440]} sizes="(min-width: 50rem) 46rem, 100vw" />
+    <Image src={light} alt={alt} class="shot-light" widths={[720, 1080, 1440]} sizes="(min-width: 50rem) 46rem, 100vw" aria-hidden="true" />
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .screen-frame {
+    margin-block: 1.5rem;
+  }
+  .shot {
+    border: 1px solid var(--circi-line-strong);
+    border-radius: var(--circi-radius-panel);
+    overflow: clip;
+    background: var(--circi-surface-chrome);
+  }
+  .shot :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .shot-light {
+    display: none !important;
+  }
+  :global(:root[data-theme='light']) .shot-dark {
+    display: none !important;
+  }
+  :global(:root[data-theme='light']) .shot-light {
+    display: block !important;
+  }
+  figcaption {
+    margin-block-start: 0.5rem;
+    font-size: var(--sl-text-sm);
+    color: var(--circi-text-secondary);
+  }
+</style>

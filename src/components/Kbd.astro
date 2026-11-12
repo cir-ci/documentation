@@ -1,0 +1,65 @@
+---
+// A keyboard key, styled like the app's Kbd. <Kbd keys="Shift+A" />  <Kbd keys="Mod+K" />
+// Mod is Command (the app's shortcut key); the screen-reader text spells the keys out.
+interface Props {
+  keys: string
+}
+const SYMBOL: Record<string, [string, string]> = {
+  mod: ['⌘', 'Command'],
+  cmd: ['⌘', 'Command'],
+  shift: ['⇧', 'Shift'],
+  alt: ['⌥', 'Option'],
+  option: ['⌥', 'Option'],
+  ctrl: ['⌃', 'Control'],
+  enter: ['↵', 'Enter'],
+  esc: ['Esc', 'Escape'],
+}
+const parts = Astro.props.keys.split('+').map((k) => {
+  const hit = SYMBOL[k.toLowerCase()]
+  return { text: hit ? hit[0] : k, name: hit ? hit[1] : k, symbol: Boolean(hit && hit[0].length === 1) }
+})
+---
+
+<kbd class="keys"
+  >{
+    parts.map((p) => (
+      <kbd class="key">
+        <span aria-hidden="true" class:list={{ symbol: p.symbol }}>{p.text}</span>
+        <span class="sr-only">{p.name}</span>
+      </kbd>
+    ))
+  }</kbd
+>
+
+<style>
+  .keys {
+    display: inline-flex;
+    gap: 2px;
+    vertical-align: 0.05em;
+    border: 0;
+    background: none;
+    padding: 0;
+  }
+  .keys > .key {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 1.5em;
+    height: 1.5em;
+    padding-inline: 0.4em;
+    border: 1px solid var(--circi-line-subtle);
+    border-radius: var(--circi-radius-inline);
+    background: var(--circi-action-selected);
+    color: var(--circi-text-secondary);
+    font-family: var(--circi-font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .symbol {
+    font-family: var(--circi-font-sans);
+    font-size: 0.875rem;
+  }
+</style>

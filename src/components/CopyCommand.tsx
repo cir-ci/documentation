@@ -1,16 +1,22 @@
 import { useState } from 'react'
 
 /**
- * A React island example (use `client:visible`). Later pages can embed real islands, e.g. components
- * from `@circi/ui`: see DESIGN.md, "Reusing @circi/ui".
+ * A command with a Copy button (use `client:visible`). The prompt character is not selectable, so
+ * a triple-click copies only the command. For several lines, use a fenced `sh` block instead.
  */
 export default function CopyCommand({ command }: { command: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <div className="copy-command">
-      <code>{command}</code>
+      <code>
+        <span className="prompt" aria-hidden="true">
+          ${' '}
+        </span>
+        {command}
+      </code>
       <button
         type="button"
+        aria-label={`Copy command: ${command}`}
         onClick={() => {
           void navigator.clipboard?.writeText(command).then(() => {
             setCopied(true)
@@ -20,6 +26,9 @@ export default function CopyCommand({ command }: { command: string }) {
       >
         {copied ? 'Copied' : 'Copy'}
       </button>
+      <span className="sr-only" role="status">
+        {copied ? 'Copied to the clipboard' : ''}
+      </span>
     </div>
   )
 }

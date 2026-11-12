@@ -1,0 +1,150 @@
+---
+// The app's StatusChip / StatusIcon for prose: a state glyph, optionally with its word.
+// <StatusChip status="needs-review" />   <StatusChip status="approved">3 approved</StatusChip>
+// <StatusChip status="flaky" glyph />    (glyph only, named for assistive tech)
+import { PROCESSING_ARCS, STATUS_LABEL } from './status-glyphs'
+import type { StatusName } from './status-glyphs'
+
+interface Props {
+  status: StatusName
+  /** Show only the glyph (it keeps an accessible name). */
+  glyph?: boolean
+  /** Glyph size in px. */
+  size?: number
+}
+const { status, glyph = false, size = 12 } = Astro.props
+const label = STATUS_LABEL[status]
+const hasText = Astro.slots.has('default')
+const decorative = !glyph
+---
+
+<span class:list={['status-chip', { 'status-chip--glyph': glyph }]} data-status={status}>
+  <svg
+    viewBox="0 0 14 14"
+    width={size}
+    height={size}
+    role={decorative ? undefined : 'img'}
+    aria-label={decorative ? undefined : label}
+    aria-hidden={decorative ? 'true' : undefined}
+    class="status-glyph"
+  >
+    {
+      status === 'approved' && (
+        <>
+          <circle cx="7" cy="7" r="7" fill="currentColor" />
+          <path class="ink" d="M4 7.3l2 2 4-4.3" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </>
+      )
+    }
+    {
+      status === 'auto-approved' && (
+        <>
+          <circle cx="7" cy="7" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 2.1" />
+          <path d="M4.3 7.3l1.9 1.9 3.5-3.9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </>
+      )
+    }
+    {
+      status === 'needs-review' && (
+        <>
+          <circle cx="7" cy="7" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path d="M7 .75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor" />
+        </>
+      )
+    }
+    {
+      status === 'processing' &&
+        PROCESSING_ARCS.map((d) => <path d={d} fill="none" stroke="currentColor" stroke-width="1.5" />)
+    }
+    {
+      status === 'failed' && (
+        <>
+          <circle cx="7" cy="7" r="7" fill="currentColor" />
+          <path class="ink" d="M4.7 4.7l4.6 4.6M9.3 4.7l-4.6 4.6" stroke-width="1.5" stroke-linecap="round" />
+        </>
+      )
+    }
+    {
+      status === 'rejected' && (
+        <>
+          <circle cx="7" cy="7" r="7" fill="currentColor" />
+          <path class="ink" d="M3.9 7h6.2" stroke-width="1.8" stroke-linecap="round" transform="rotate(-45 7 7)" />
+        </>
+      )
+    }
+    {status === 'unchanged' && <circle cx="7" cy="7" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" />}
+    {
+      status === 'added' && (
+        <>
+          <circle cx="7" cy="7" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path d="M7 4.2v5.6M4.2 7h5.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </>
+      )
+    }
+    {
+      status === 'removed' && (
+        <>
+          <circle cx="7" cy="7" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path d="M4.2 7h5.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </>
+      )
+    }
+    {
+      status === 'flaky' && (
+        <>
+          <circle cx="7" cy="7" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path d="M4 7.6c1-1.9 2-1.9 3 0s2 1.9 3 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+        </>
+      )
+    }
+  </svg>
+  {!glyph && (hasText ? <slot /> : label)}
+</span>
+
+<style>
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    box-sizing: border-box;
+    height: 1.4em;
+    padding-inline: 0.5rem;
+    border: 1px solid var(--circi-line-subtle);
+    border-radius: 999px;
+    background: var(--circi-surface-raised);
+    font-family: var(--circi-font-sans);
+    font-size: 0.8125em;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    vertical-align: 0.05em;
+    color: var(--circi-text-primary);
+  }
+  .status-chip--glyph {
+    padding: 0;
+    border: 0;
+    background: none;
+    height: auto;
+  }
+  .status-glyph {
+    flex-shrink: 0;
+    color: var(--circi-text-tertiary);
+  }
+  .ink {
+    stroke: var(--circi-surface-chrome);
+  }
+  [data-status='approved'] .status-glyph { color: var(--circi-state-approved); }
+  [data-status='needs-review'] .status-glyph { color: var(--circi-state-review); }
+  [data-status='processing'] .status-glyph { color: var(--circi-state-processing); }
+  [data-status='failed'] .status-glyph { color: var(--circi-state-failed); }
+  [data-status='rejected'] .status-glyph { color: var(--circi-state-rejected); }
+  [data-status='added'] .status-glyph { color: var(--circi-state-added); }
+  [data-status='removed'] .status-glyph { color: var(--circi-state-removed); }
+  [data-status='flaky'] .status-glyph { color: var(--circi-state-flaky); }
+  /* Words use the text variants of the state colours (4.5:1 in both schemes). */
+  [data-status='approved']:not(.status-chip--glyph) { color: var(--circi-state-approved-text); }
+  [data-status='needs-review']:not(.status-chip--glyph) { color: var(--circi-state-review-text); }
+  [data-status='processing']:not(.status-chip--glyph) { color: var(--circi-state-processing); }
+  [data-status='failed']:not(.status-chip--glyph) { color: var(--circi-state-failed-text); }
+  [data-status='rejected']:not(.status-chip--glyph) { color: var(--circi-state-rejected-text); }
+</style>
