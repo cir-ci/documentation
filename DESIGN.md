@@ -48,6 +48,18 @@ status chips in prose; light-scheme values are darkened for 4.5:1 contrast.
 
 Body text is 16px with a 1.6 line height (`--sl-text-base`, set on `.sl-markdown-content`) where the app uses 13px: documentation is read, not scanned. Paragraphs are capped at 62ch.
 
+## Navigation
+
+Pages change with Astro's client router (`<ClientRouter />` in the `Head` override): a link swaps the content instead of loading a
+document. `Header` (logo, search, theme control) and `Sidebar` are wrapped in `transition:persist`, so the same DOM is kept
+between pages; the `Sidebar` override's script moves `aria-current` and opens the groups of the new page on `astro:after-swap` and
+carries the sidebar's scroll over. The `Head` override's inline script sets `data-theme` (what Starlight's CSS reads) and
+`data-theme-pref` (auto, light, dark: the theme control draws its selected button from it in CSS) before first paint and again
+after every swap, because a swap resets the root's attributes. The logo is inlined in `SiteTitle`; Inter and JetBrains Mono (latin)
+are preloaded. A script that must run on every page uses `astro:page-load`, never a bare top-level script; custom elements
+(`screen-zoom`, `starlight-tabs`) are upgraded when the new content arrives. The page fade is 120ms and off for reduced motion
+(`docs.css`).
+
 ## Overrides (Starlight `components:` in `astro.config.mjs`)
 
 All in `src/components/overrides/`: `SiteTitle` (rounded logo mark, "CirCI", "Docs"), `ThemeSelect` (a System / Light / Dark
