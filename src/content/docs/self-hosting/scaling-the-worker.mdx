@@ -1,0 +1,41 @@
+---
+title: Scaling the worker
+description: One process, or the server and workers split apart.
+---
+{/* Source: apps/server/src/cli/server.ts, apps/worker/src (runner.ts, claim-loop.ts, sweeps.ts), packages/config/src/schema.ts, docs/perf/2026-11-11-diff-engines.md, docs/reference/running-costs.md */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+The worker takes jobs from a queue in Postgres: processing a build (compare and thumbnails), webhook deliveries, git checks and comments, email and Slack, and integration events. It also runs the periodic sweeps (retention, stalled uploads, overdue review requests, triage assignment, job pruning).
+
+## One process
+
+`circi all` runs the HTTP server and the worker together. It is right for a small install, and a single container is enough.
+
+## Split
+
+```sh
+circi serve      # HTTP API and dashboard
+circi worker     # background jobs
+```
+
+Run any number of each from the same image against the same Postgres and storage. Workers claim jobs with `FOR UPDATE SKIP LOCKED`, so several never take the same job, and the sweeps take an exclusive lock, so running them in every worker is safe. Run extra workers when the queue stays above zero (Instance settings, Health shows it).
+
+## How a worker spends its time
+
+- Two lanes take builds first and one extra "light" lane never takes a build, so a webhook or an email doesn't wait behind image work. These counts are built in; there is no environment variable for them.
+- A queued job wakes the worker through Postgres `LISTEN/NOTIFY`. When the notification connection is down, or for a missed one, polling finds jobs (every 5 seconds with a listener, 1 second without).
+- A failed job is retried with a doubling wait, `JOB_RETRY_BASE_SECONDS` (2) up to `JOB_RETRY_MAX_SECONDS` (300).
+
+## What to tune
+
+| Goal | Setting |
+|---|---|
+| Use all cores for comparisons | `CIRCI_DIFF_ENGINE=native` (the default) |
+| No native module, still off the event loop | `CIRCI_DIFF_ENGINE=js-workers`, and `CIRCI_DIFF_THREADS` to cap threads and memory |
+| Fewer retries piling up | `WEBHOOK_TIMEOUT_SECONDS`, `GITHUB_API_TIMEOUT_SECONDS`, `S3_*_TIMEOUT_SECONDS` |
+| Keep the job table small | `JOB_RETENTION_DAYS` |
+
+<Aside type="note">
+The native engine spreads each comparison across the machine's cores (rayon). On a host short of cores, the gain is smaller. See [Performance](/self-hosting/performance/).
+</Aside>

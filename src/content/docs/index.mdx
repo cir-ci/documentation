@@ -1,0 +1,48 @@
+---
+title: CirCI documentation
+description: Self-hosted visual regression testing. Upload screenshots from CI, review the changes, gate the merge.
+template: splash
+hero:
+  tagline: Self-hosted visual regression testing. CI uploads screenshots, CirCI compares them with the baseline, and your team reviews what changed.
+  image:
+    file: ../../assets/logo.svg
+  actions:
+    - text: Run it locally
+      link: /getting-started/run-it-locally/
+      icon: right-arrow
+    - text: What is CirCI?
+      link: /introduction/what-is-circi/
+      variant: minimal
+---
+
+{/* Source: README.md (intro, status), PLAN.md section 1 and 2 */}
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+## Start here
+
+<CardGrid>
+  <Card title="Getting started" icon="rocket">
+    Start the stack with Docker Compose, create a project, upload your first build and review it. About ten minutes.
+    [Open the quick start](/getting-started/run-it-locally/)
+  </Card>
+  <Card title="CI integration" icon="seti:pipeline">
+    Upload from any CI with the `circi` CLI or the Vitest plugin, and point Argos SDKs at CirCI by changing two variables.
+    [CLI reference](/ci/cli/)
+  </Card>
+  <Card title="Self-hosting" icon="setting">
+    Requirements, Docker Compose, Caddy and TLS, storage, upgrades, backups and the full list of environment variables.
+    [Self-hosting guide](/self-hosting/requirements/)
+  </Card>
+  <Card title="Integrations" icon="puzzle">
+    GitHub checks and the merge gate, GitLab, Bitbucket, Slack, Linear, Jira, Figma and signed webhooks.
+    [All integrations](/integrations/overview/)
+  </Card>
+</CardGrid>
+
+## Find your way
+
+<LinkCard title="How a build flows" description="Upload, compare, review, merge gate: the whole path in one page." href="/introduction/how-a-build-flows/" />
+<LinkCard title="Reviewing a build" description="Approve, reject, comment on regions, and request reviews." href="/using/reviewing-a-build/" />
+<LinkCard title="Environment variables" description="Every variable, its default and what it does." href="/reference/environment-variables/" />
+<LinkCard title="Contributing" description="Repo layout, layers, pnpm dev and pnpm gate." href="/contributing/repo-layout/" />

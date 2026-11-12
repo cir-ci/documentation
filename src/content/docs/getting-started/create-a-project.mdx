@@ -1,0 +1,44 @@
+---
+title: Create a project
+description: Make a project, find its settings and its CI token.
+---
+{/* Source: apps/web/src/features/projects, apps/web/src/features/project-settings, apps/server/src/cli/commands/project.ts, packages/core/src/builds/limits.ts */}
+
+A project is one thing you test. Each project has its own CI token, baselines, review rules and settings.
+
+## In the dashboard
+
+Use **New project** on the Projects page. You give it a name; the address is derived from it. If a GitHub App is connected, you can also import projects from your repositories, which links each project to its repository. You and the workspace's owners and admins can then open the project's **Settings** from its page.
+
+## From the command line
+
+```sh
+docker compose exec circi circi admin workspace create --name "Acme" --owner you@acme.io
+docker compose exec circi circi admin project create --org acme --name "Web app"
+```
+
+`project create` prints the project's CI token. Options: `--slug`, `--default-branch` (default `main`), `--member <email>` (repeatable; adds a workspace member to the project) and `--json`.
+
+## The CI token
+
+A CI token identifies one project to the upload API. It starts with `circi_`, is shown **once** (store it in your CI's secret store), and is kept hashed. A token can only upload builds and read the status of its own project's builds. It can't read the dashboard.
+
+To replace it, open the project's **Settings**, **CI token**, and rotate it. The old token stops working immediately. From the command line:
+
+```sh
+circi admin project rotate-token --org acme --project web-app
+```
+
+## Project defaults worth knowing
+
+| Setting | Default | What it does |
+|---|---|---|
+| Default branch | `main` | Builds on this branch become baselines. |
+| Retention | 30 days | Builds and sites older than this expire. Files nothing uses are deleted after a grace period. |
+| Diff threshold | 0% | The share of changed pixels (a percentage) at or below which a same-size screenshot counts as unchanged. At 0% every pixel change counts. |
+| Auto-approve on default branch | on | Builds on the default branch are approved when they have a baseline. |
+| Block merge on changes | on | Unreviewed changes keep the check red. |
+
+See [Project settings](/using/project-settings/) for all of them.
+
+Next: [First upload](/getting-started/first-upload/).

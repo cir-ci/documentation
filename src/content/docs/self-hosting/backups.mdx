@@ -1,0 +1,31 @@
+---
+title: Backups
+description: What to back up and how to restore.
+---
+{/* Source: PLAN.md section 8 (Backups), deploy/docker-compose.yml, packages/db/src/schema/instance.ts, apps/server/src/cli/commands/storage.ts */}
+
+Two things hold your data, plus one secret.
+
+| What | Where | How |
+|---|---|---|
+| **The database** | Postgres | `pg_dump` on a schedule, or your managed Postgres' snapshots and point-in-time recovery. |
+| **The files** | The `files` volume (local disk) or the S3 bucket | Snapshot the volume, or turn on bucket versioning, or replicate the bucket. |
+| **The secret** | `BETTER_AUTH_SECRET` | Keep it in your secret manager. Without it a restored instance signs everyone out. |
+
+## Database
+
+```sh
+docker compose exec -T postgres pg_dump -U circi -Fc circi > circi-$(date +%F).dump
+```
+
+Restore into an empty database with `pg_restore`, then start the app. The database holds accounts, builds, reviews and comments, integration credentials (encrypted at rest), webhooks and the generated web push keys (unless you set `VAPID_*`), and the GitHub App credentials if you created the app from the dashboard.
+
+## Files
+
+Files are content-addressed and verified. The database and the files must be restored **to about the same moment**: a restored database pointing at files that are missing shows broken images; files without their database rows are collected as unused by the next [retention pass](/self-hosting/retention-and-gc/) after the grace period. For local disk, snapshot the volume right after the dump. For S3, versioning protects against deletes.
+
+If a few files were lost, builds that reference them fail to load images, and a new upload of the same screenshot restores them (uploads are deduplicated only against verified files).
+
+## Test a restore
+
+Restore into a scratch stack, point `PUBLIC_URL` at it, and run `circi admin doctor`. A backup you haven't restored is a guess.

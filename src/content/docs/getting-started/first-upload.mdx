@@ -1,0 +1,41 @@
+---
+title: First upload
+description: Upload a folder of screenshots with the CLI and see the build appear.
+---
+{/* Source: README.md (Uploading from CI), packages/cli/src/main.ts, packages/cli/src/files.ts, docs/reference/ci-examples.md, apps/web/src/features/project-settings/CiTokenPage.tsx */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+You need a folder of PNG screenshots (any test tool will do; Playwright's `page.screenshot({ path: 'screenshots/home.png' })` is enough), your CirCI address and the project's CI token.
+
+```sh
+export CIRCI_API_URL=http://localhost:3000
+export CIRCI_TOKEN=circi_…
+npx circi upload ./screenshots --wait
+```
+
+The same snippet is on the project's **Settings**, **CI token** page, with your address filled in.
+
+<Aside type="note">
+`npx circi` needs the CLI package (`@circi/cli`) to be installable from where you run it. If your organization hasn't published it to a registry yet, build it from the repository (`pnpm build`, then run `packages/cli/dist/main.mjs`).
+</Aside>
+
+## What the CLI does
+
+- Every `*.png` under the folder is a screenshot, named by its path: `settings/profile.png` becomes `settings/profile`. Hidden folders and `node_modules` are skipped; symbolic links are followed.
+- An optional `<file>.png.json` next to a screenshot adds metadata (browser, viewport, test name).
+- A screenshot can be at most 25 MB.
+- On a CI it recognizes, it reads the commit, branch and pull request itself. Locally it uses git. Override with `CIRCI_COMMIT`, `CIRCI_BRANCH`, `CIRCI_PR_NUMBER` and `CIRCI_BASE_BRANCH`.
+- It retries transient errors with backoff, and prints how many screenshots it found.
+
+With `--wait` it then waits for the result and exits with `0` (passed), `1` (changes need review) or `2` (error). The full list of flags is in the [CLI reference](/ci/cli/).
+
+## What you see
+
+The first build of a project has nothing to compare with, so every screenshot is **added** and the build waits for review. Open the project in the dashboard: the build is there, with a count of screenshots by state. Locally, with no git host linked, `--wait` exits `1` until you approve.
+
+<Aside type="caution" title="On a real CI">
+Check out with enough history (`fetch-depth: 0` on GitHub Actions is the simple choice), or let the CLI fetch what it needs (the default). See the [CI examples](/ci/ci-examples/).
+</Aside>
+
+Next: [First review](/getting-started/first-review/).

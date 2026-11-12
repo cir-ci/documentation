@@ -1,0 +1,91 @@
+---
+title: Inbox and reviews
+description: "Work through what needs you: notifications in the Inbox, and review requests in a workspace's Reviews page."
+---
+{/* Source: apps/web/src/features/inbox (InboxPage.tsx, InboxPane.tsx, api.ts), apps/web/src/features/reviews (ReviewsPage.tsx, ReviewList.tsx, ReviewDetail.tsx, api.ts), apps/web/src/lib/snooze.ts, apps/web/src/lib/shortcuts.ts, packages/core/src/reviews/snooze.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+Two pages answer "what do I need to do?". The **Inbox** is every notification you get, across all your workspaces. **Reviews** is the list of review requests in one workspace, Linear style: the list on the left, the selected review on the right. Both are in the sidebar with a count of what is waiting.
+
+## Inbox
+
+Open it with `g` then `i`. It has three tabs:
+
+| Tab | Shows |
+|---|---|
+| For you | Notifications that need you |
+| Everything | Every notification you've had |
+| Snoozed | Notifications you put off, with their count beside the name |
+
+What lands here, and why:
+
+- **Review requested** or asked again: someone, or a review rule, asks you to review a build.
+- **Mentioned**: someone @mentioned you in a comment. The notification shows the start of the comment and a reply box.
+- **Your build was approved or rejected**: a build you pushed was reviewed. A rejection shows the reviewer's reason.
+- **Review overdue**: a request to you has waited past the project's review target. Sent once. Someone else's overdue review can also reach you if you are the person the project tells when it's missed.
+- **Connection needs attention**: an integration stopped working, for example the GitHub App was uninstalled. Owners and admins only.
+- **Flaky screenshots found**, and **Assigned to you as the person on triage**: see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+
+Which of these also arrive by email or push is set in [Account settings](/using/account-settings/). Everything in the Inbox is always on; you handle a single item instead of switching a kind off.
+
+A row shows an unread dot, who did it, what happened, the project, and the age. Select a row to read it in the pane on the right. The pane's buttons are:
+
+| Button | Key | Does |
+|---|---|---|
+| Mark read / Mark unread | `u` | Toggles |
+| Delete | `Backspace` | Removes the notification (with Undo) |
+| Snooze | `h` | Tomorrow, Next week or a Custom date |
+| Open review, Open build, Open thread, Open project | `Enter` | Goes to where it happened |
+| Approve all | `Shift` + `a` | Only when the notification is a request on a build that still waits: approves the whole build |
+
+**Mark all read** in the header clears the unread count. Opening or selecting a notification marks it read.
+
+<Aside type="note">
+An inbox snooze is a time, not an event: it has no "Until next push". Tomorrow and Next week wake at 09:00 UTC, a custom date at 09:00 your local time. A snoozed notification comes back to For you when it wakes.
+</Aside>
+
+On a phone the selected notification opens as a sheet over the list. If your browser can install the dashboard as an app, an install banner shows after your second visit or first approval; see [Account settings](/using/account-settings/).
+
+## Reviews
+
+Open it from the sidebar, or with `g` then `r`. It lists the review requests of the current workspace in five tabs:
+
+| Tab | Shows |
+|---|---|
+| Requested from you | Open requests addressed to you. Grouped as Needs your review, Re-requested (a new build or a nudge asked again), and Still processing |
+| Reviewed | Requests you answered |
+| Created by you | Requests you made, waiting on the reviewers |
+| All open | Every open request in the workspace, as Requested from you, Requested from others and Still processing |
+| Snoozed | Requests you put off |
+
+A build that is still being compared is under "Still processing" because there is nothing to review yet.
+
+The selection is kept in the address, so a link points at one review. `j` and `k` move through the list and `Enter` opens the build. The find field filters the list.
+
+The right side shows the request: the status, the build number, the project, the pull request and commit, who asked and when, the review target with an **Overdue** note when it has passed, what the build was compared with, and the changed screenshots as thumbnails grouped by size of change (Large, Medium, Small, Not measured) with their pixel percentage. A **Flaky** chip appears when some changed screenshots are known to be flaky. **Go to review** opens the build screen. See [Reviewing a build](/using/reviewing-a-build/).
+
+Other actions:
+
+- **Snooze** (`h`) puts a request away. Choose Until next push (it wakes when a newer build closes the request), Tomorrow, Next week or a Custom date. **Unsnooze** on the Snoozed tab brings it back.
+- **Dismiss** removes a request from your list. It isn't offered on Reviewed requests, or on requests that wait on someone else.
+- **Nudge** appears when you asked someone and they haven't answered. It sends them a "review again" notice, once per 24 hours.
+- **Request review** (`Shift` + `r`) asks another member about the same build.
+- Approve is in the row's right-click menu, for requests addressed to you on a build that has finished processing.
+
+Snoozing and approving can be undone from the toast. Bringing a request back and dismissing it can't.
+
+When you aren't looking at the page, a push notification can tell you a review landed. The page offers to turn it on after a review arrives or after your first approval ("Not now" asks again after 14 days, at most three times). See [Account settings](/using/account-settings/).
+
+## Keyboard shortcuts
+
+| Key | Does |
+|---|---|
+| `g` `i` / `g` `r` | Open Inbox / Reviews |
+| `j` / `k` | Next / previous item |
+| `Enter` | Open |
+| `Cmd` + `Enter` | Open in a new tab |
+| `h` | Snooze |
+| `f` | Filter the list |
+
+`?` lists all of them.

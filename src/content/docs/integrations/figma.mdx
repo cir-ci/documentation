@@ -1,0 +1,60 @@
+---
+title: Figma
+description: Link screenshots to Figma frames so the build review shows the design a screenshot implements.
+---
+{/* Source: packages/integrations/src/kinds/figma (definition.ts, client.ts), packages/core/src/integrations/figma.ts, packages/services/src/integration-admin/links.ts, apps/web/src/features/integrations/ProjectLinks.tsx, apps/web/src/features/builds/DiffViewer.tsx, docs/plans/next-steps-plan.md */}
+
+import { Steps, Aside } from '@astrojs/starlight/components'
+
+The Figma integration links screenshots to the Figma frames they implement. In the build review, a screenshot with a linked frame shows a **Figma frame** chip that opens the frame in Figma.
+
+<Aside type="caution" title="Only linking is built">
+The plans for the Figma integration also describe a **Design** compare mode (a screenshot beside its frame, with differences marked), frames as first baselines, and comments posted on frames when a build is approved or rejected. None of that is built. The Design compare mode is switched off in the dashboard, and CirCI never writes to Figma. See "Not built" below.
+</Aside>
+
+## Connect Figma
+
+An owner or admin of the Workspace opens **Workspace settings**, **Integrations**, **Add integration**, **Figma**.
+
+<Steps>
+
+1. In Figma, create a personal access token: **Settings**, **Security**. It must be able to read your files.
+2. In CirCI, paste it into **Access token** (`figd_…`) and connect. CirCI checks it with Figma and names the connection after the Figma handle.
+
+</Steps>
+
+The token is stored encrypted. A Figma account can be connected in one CirCI Workspace of the instance, but a Workspace can connect several Figma accounts. If Figma rejects the token later, the integration is flagged as needing attention and asks you to remove it and connect again with a new token.
+
+## Choose a file for each Project
+
+On the Figma integration's page, give each Project the Figma **File** it's designed in. Paste the file's address (`https://www.figma.com/design/…`) or just the file key. CirCI reads the file with your token and saves its key and name. It tells you when Figma can't find the file or the token has no access to it. Branch addresses count as their own file. A Project without a file doesn't use Figma.
+
+## Link screenshots to frames
+
+Under each mapped Project the page shows a **Frame links** table (screenshot name or pattern, the frame, whether the link is **Auto** or **Manual**, and **Remove**). There are two ways to fill it.
+
+**Manually.** Enter a **Screenshot name** and a **Frame address**, then **Add link**. In Figma, select the frame and choose **Copy link to selection** to get the address; it must include a frame (`node-id`), not just the file. The screenshot name can be a pattern: `*` matches within a folder and `**` across folders, as in `checkout/*`. CirCI looks up the frame's name for the table. If Figma is down at that moment, the link is still saved without a name.
+
+**Automatically.** **Link automatically** matches the Project's screenshot names to the names of the frames in the file:
+
+1. First, whole names that are equal once case, spaces, slashes, dashes and underscores are ignored (`Checkout / Cart` matches `checkout-cart`).
+2. Then, for screenshots left over, a frame named like the last path part of the screenshot name (`Cart` for `checkout/cart`).
+
+It never guesses. A screenshot that fits two frames gets no link, a frame that several screenshots claim by their last part is skipped, and existing links are never replaced. Automatic links show as **Auto**.
+
+If you change the Project's file, the automatic links made for the old file are dropped. Clearing the file drops them all. Manual links stay.
+
+## What you see in a build
+
+A screenshot whose name matches a link shows the **Figma frame** chip in the review view, with the frame's name when CirCI has it.
+
+## Not built
+
+- **Design compare mode**, the fifth view mode (key 5). The view exists in the code but is disabled, and shows "No design linked" if it were opened.
+- **Frames as first baselines**: comparing a new screenshot with its frame when no baseline exists.
+- **Posting results on frames**: the client method for comments exists, but nothing calls it.
+- Penpot is a **Planned** tile and has no backend.
+
+<Aside type="note">
+Only fake-tested so far: the Figma edge is faked in the repository's tests.
+</Aside>

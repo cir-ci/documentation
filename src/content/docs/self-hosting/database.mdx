@@ -1,0 +1,35 @@
+---
+title: Database
+description: Postgres requirements, connections, migrations and what lives in it.
+---
+{/* Source: deploy/docker-compose.yml, packages/config/src/schema.ts, packages/db, apps/server/src/cli/server.ts, apps/worker/src/runner.ts, README.md */}
+
+CirCI needs one Postgres database. The compose file runs `postgres:18-alpine` with data in the `pgdata` volume (Postgres 18 images keep data under `/var/lib/postgresql/<major>/`, so mount the volume at `/var/lib/postgresql`). A managed Postgres works as well: set `DATABASE_URL`.
+
+```sh
+DATABASE_URL=postgres://circi:password@db.internal:5432/circi
+DATABASE_POOL_MAX=10        # connections per process (default 10)
+```
+
+## Connection rules
+
+- **Direct or session pooling only.** The worker wakes on `LISTEN/NOTIFY`, which a transaction pooler (PgBouncer in transaction mode) doesn't support. Without a live notification connection the worker falls back to polling every second, so a pooler makes builds slower, not wrong, but don't rely on it.
+- Each process (server, worker) opens up to `DATABASE_POOL_MAX` connections. A dropped connection no longer crashes the process (fixed in the load-test work).
+
+## What is stored
+
+Accounts, workspaces, projects, builds and screenshot records, reviews and comments, review requests and rules, integration connections (credentials are encrypted at rest), webhooks and their delivery history, the job queue (a transactional outbox, so a webhook delivery or check run exists exactly when the change is committed), and instance settings. Screenshots themselves are in [storage](/self-hosting/storage/), not in the database.
+
+## Migrations
+
+SQL migrations live in `packages/db/migrations` (`/app/migrations` in the image). `circi serve`, `circi worker` and `circi all` apply pending migrations on start unless you pass `--no-migrate`. To apply them on their own:
+
+```sh
+docker compose exec circi circi migrate
+```
+
+See [Upgrades and migrations](/self-hosting/upgrades-and-migrations/) for the order to follow when upgrading.
+
+## Health
+
+`circi admin doctor` reports whether the database is reachable and how many migrations are applied. Instance settings, Health shows the queue depth.

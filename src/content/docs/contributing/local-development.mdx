@@ -1,0 +1,58 @@
+---
+title: Local development
+description: pnpm dev, the QA environment, and pnpm gate.
+---
+{/* Source: README.md (Development), CLAUDE.md (Commands), dev/, package.json scripts, turbo.json */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+## Prerequisites
+
+Node 26 (`nvm install && nvm use`, from `.nvmrc`) and pnpm 12.
+
+```sh
+pnpm install
+pnpm exec playwright install chromium   # once: component tests run in headless Chromium
+```
+
+## `pnpm dev`
+
+A local QA environment (needs Docker): Postgres and Mailpit in containers, the server from source under `node --watch`, and Vite for the dashboard on port 5173 (it proxies every server path to the server on 3000). On the first run it seeds `owner@example.com` and `member@example.com` (password `circi-dev-password`), the workspace `acme`, the project `web-app` and four builds in different review states.
+
+```sh
+pnpm dev          # Ctrl+C stops it and keeps the data
+pnpm dev:reset    # delete the dev database and files; the next pnpm dev seeds again
+```
+
+To run the server from source against your own Postgres:
+
+```sh
+DATABASE_URL=postgres://… BETTER_AUTH_SECRET=$(openssl rand -base64 32) STORAGE_PATH=./data pnpm circi all
+```
+
+## Before committing
+
+```sh
+pnpm format       # oxfmt
+pnpm gate         # Turborepo: format check, lint, typecheck, tests and build, cached by inputs
+```
+
+`pnpm gate` runs format check, lint (oxlint, type-aware), typecheck, the Node, UI and web browser tests and the build, in parallel where independent. A second run on an unchanged tree is instant. `pnpm gate:full` adds the end-to-end groups (needs Docker and Chromium). The old chain `pnpm lint && pnpm typecheck && pnpm test && pnpm build` still works.
+
+What emits what: `tsc` only type-checks. `pnpm build` runs tsdown for `@circi/ui`, `@circi/cli`, `@circi/vitest` and the server bundle, then Vite for the dashboard. Other packages have no build; their `exports` point at `src/*.ts`.
+
+## Database changes
+
+Edit the table files in `packages/db/src/schema/`, then `pnpm db:generate` writes a SQL migration to `packages/db/migrations/`. Commit both. After changing better-auth's plugins run `pnpm db:auth-schema`, then `pnpm db:generate`.
+
+## Performance suite
+
+`pnpm perf` runs the k6 suite against a fresh stack (`pnpm perf:down` tears it down; `pnpm perf:bench` runs the diff microbenchmark). Results are in `docs/perf`.
+
+## Commits
+
+Commit messages end with the project's `Co-Authored-By` line (see `CLAUDE.md`).
+
+<Aside type="tip">
+`pnpm test:visual` screenshots every `@circi/ui` component in light and dark with `@circi/vitest`, and uploads to a CirCI when `CIRCI_API_URL` and `CIRCI_TOKEN` are set: CirCI tests its own design system with itself.
+</Aside>

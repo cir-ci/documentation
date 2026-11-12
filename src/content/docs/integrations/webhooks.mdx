@@ -1,0 +1,169 @@
+---
+title: Outgoing webhooks
+description: Send a Project's build events as signed JSON to your own services, and verify each delivery.
+---
+{/* Source: packages/core/src/node/webhook.ts, packages/core/src/node/webhook-url.ts, packages/db/src/queue/webhooks.ts, packages/services/src/jobs/deliver-webhook.ts, packages/services/src/projects/webhooks.ts, apps/server/src/cli/commands/webhook.ts, apps/server/src/http/routes/dashboard/projects/settings.ts, apps/web/src/features/project-settings (WebhooksPage.tsx, DeliveriesTable.tsx, webhook-events.ts), README.md */}
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components'
+
+An outgoing webhook makes CirCI send a signed JSON request to an address you choose whenever something happens to a build in a Project. Use it to feed your own tools when there's no ready-made [integration](/integrations/overview/). Webhooks belong to a Project, not to the Workspace.
+
+## Events
+
+A webhook says which events it wants, and needs at least one. There is no "all events" shortcut.
+
+| Event | Sent when |
+| --- | --- |
+| `build.completed` | A build finished processing, with its conclusion |
+| `build.reviewed` | Someone approved or rejected a build |
+
+A webhook can also receive a `webhook.test` event, sent by **Send test**. Nobody subscribes to it.
+
+## Add a webhook
+
+Owners and admins of the Project's Workspace can add, test, regenerate and remove webhooks. Every member can look. Webhooks are on the Project's **Settings**, **Webhooks** page.
+
+<Tabs>
+<TabItem label="Dashboard">
+
+<Steps>
+
+1. Press **Add webhook**.
+2. Enter the **Address** and tick the events. The address must be public (see [Address rules](#address-rules)).
+3. Add it. The dialog shows the **Signing secret** once (`whsec_…`). Copy it now: CirCI can't show it again.
+
+</Steps>
+
+Each webhook in the list has **Send test**, **Regenerate secret** and **Remove**, and a table of recent deliveries.
+
+</TabItem>
+<TabItem label="Command line">
+
+On the server:
+
+```sh
+circi admin webhook add --org acme --project web \
+  --url https://hooks.example.com/circi --events build.completed,build.reviewed
+circi admin webhook list --org acme --project web
+circi admin webhook remove --org acme --project web --id <webhook id>
+```
+
+`add` prints the signing secret once (or in the JSON with `--json`). `list` prints each webhook's ID, address and events.
+
+</TabItem>
+</Tabs>
+
+## What CirCI sends
+
+A `POST` with a JSON body and these headers:
+
+| Header | Value |
+| --- | --- |
+| `Content-Type` | `application/json` |
+| `User-Agent` | `CirCI-Webhook` |
+| `CirCI-Event` | The event name, for example `build.completed` |
+| `CirCI-Delivery` | A unique ID for this delivery, the same across retries |
+| `CirCI-Signature` | `t=<unix seconds>,v1=<hex>` |
+
+A `build.reviewed` body looks like this:
+
+```json
+{
+  "id": "6f1c0d0e-3a51-4f0e-9f6a-0c2d7a9b1e11",
+  "event": "build.reviewed",
+  "createdAt": "2026-11-12T09:30:00.000Z",
+  "url": "https://circi.example.com/acme/web-app/builds/42",
+  "workspace": { "slug": "acme" },
+  "project": { "id": "…", "slug": "web-app", "name": "Web app" },
+  "build": {
+    "id": "…",
+    "number": 42,
+    "name": "default",
+    "status": "complete",
+    "conclusion": "changes_detected",
+    "reviewStatus": "approved",
+    "commitSha": "3f2a9c1…",
+    "branch": "feature/new-header",
+    "prNumber": 118
+  },
+  "review": { "state": "approved", "source": "ui", "reviewer": "Ada Lovelace" }
+}
+```
+
+The fields:
+
+| Field | Meaning |
+| --- | --- |
+| `id` | The delivery ID, equal to `CirCI-Delivery` |
+| `event` | The event name |
+| `createdAt` | When the event was queued, an ISO date |
+| `url` | The build's page in the dashboard |
+| `workspace.slug`, `project.id`, `project.slug`, `project.name` | Where the build lives |
+| `build.id`, `build.number`, `build.name` | The build, its number in the Project and its build name |
+| `build.status` | The processing status, such as `complete` or `error` |
+| `build.conclusion` | `no_changes`, `changes_detected`, or `null` when there is none |
+| `build.reviewStatus` | `pending`, `approved` or `rejected` |
+| `build.commitSha`, `build.branch`, `build.prNumber` | Where it came from. `branch` and `prNumber` can be `null` |
+| `review` | Only on `build.reviewed`: `state` (`approved` or `rejected`), `source` and the reviewer's name (`null` for no name) |
+
+`review.source` says how the decision was made: `ui`, `github-check`, `github-comment`, `gitlab-comment`, `gitlab-status`, `bitbucket-comment`, `bitbucket-status`, `auto` or `rerun`.
+
+A `webhook.test` body has `"test": true` and no `build` or `url`.
+
+The body is built when the job runs, so `url` reflects the instance's address at that moment.
+
+## Verify the signature
+
+`CirCI-Signature` is `t=<unix seconds>,v1=<hex>`, where `v1` is the HMAC-SHA256 of the string `<t>.<raw body>` with the webhook's signing secret as the key. The timestamp is signed, so a captured request can't be replayed later. Reject signatures older than 5 minutes, and compute the HMAC over the raw bytes of the body, not over re-serialized JSON.
+
+```js
+import { createHmac, timingSafeEqual } from 'node:crypto'
+
+export function verifyCirciSignature(secret, rawBody, header, toleranceSeconds = 300) {
+  const parts = Object.fromEntries(header.split(',').map((p) => p.trim().split('=')))
+  const t = Number(parts.t)
+  if (!Number.isInteger(t) || !parts.v1) return false
+  if (Math.abs(Date.now() / 1000 - t) > toleranceSeconds) return false
+
+  const expected = createHmac('sha256', secret).update(`${t}.${rawBody}`).digest('hex')
+  const given = Buffer.from(parts.v1, 'hex')
+  const wanted = Buffer.from(expected, 'hex')
+  return given.length === wanted.length && timingSafeEqual(given, wanted)
+}
+```
+
+With Express, read the raw body (`express.raw({ type: 'application/json' })`) and pass `req.body.toString('utf8')`. Answer with any `2xx` status once the signature checks out.
+
+## Delivery and retries
+
+- The receiver must answer `2xx` within the request timeout (10 seconds by default, `WEBHOOK_TIMEOUT_SECONDS`).
+- Any other answer, a timeout or a network error counts as a failure and is retried. A build event is tried up to **8 times**, waiting 2, 4, 8 seconds and so on, doubling up to a cap of 5 minutes between attempts.
+- **Redirects aren't followed.** A `3xx` answer is a failure, so the signed body can never be sent somewhere you didn't configure. Put the final address in the webhook.
+- A **Send test** event is tried once.
+- A retried delivery repeats the same `CirCI-Delivery` value, so use it to ignore duplicates.
+- A webhook that was removed or disabled is skipped.
+
+## Delivery history
+
+Each webhook's page lists its recent deliveries: time, event, attempt, and the status code or the error (such as a timeout). The dashboard shows the newest 20. CirCI keeps the newest 50 attempts per webhook and prunes older ones.
+
+## Address rules
+
+An address must be an `http` or `https` URL with no username or password in it. By default it must be public: `localhost`, private networks (such as `10.x` and `192.168.x`), link-local and cloud metadata addresses, and names that stay inside a network (`.local`, `.internal`, `.lan`, `.home.arpa`, or no dot at all) are refused. A name is checked again at delivery time, because it can start pointing somewhere else later; a delivery to a name that now resolves to a private address is skipped and recorded as "The address is on a private network".
+
+If your receivers live on your own network, set `WEBHOOK_ALLOW_PRIVATE_ADDRESSES=true` on the server (see [Environment variables](/reference/environment-variables/)). That lifts the rule for every webhook on the instance.
+
+## Regenerate a signing secret
+
+If a secret leaks, or you lost it, open the webhook and press **Regenerate secret**. A confirmation dialog asks first, because the old secret **stops signing right away**: the receiver rejects every delivery until you give it the new one. Confirm, and a **New signing secret** dialog shows the new `whsec_…` value once. Copy it into the receiver, then press **Done**.
+
+To rotate without a gap, update the receiver to accept either secret first, regenerate, then drop the old one.
+
+<Aside type="caution">
+There is no way to read a secret again later. If you didn't copy it, regenerate it. The command-line tool has no regenerate command yet; use the dashboard.
+</Aside>
+
+## See also
+
+- [Integrations overview](/integrations/overview/): ready-made integrations for git hosts, Slack, trackers and Figma.
+- [Project settings](/using/project-settings/): the rest of a Project's settings.

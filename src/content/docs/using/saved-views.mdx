@@ -1,0 +1,60 @@
+---
+title: Saved views
+description: "Filter a project's builds list, save the filters as a view, and keep views and pinned projects in your sidebar."
+---
+{/* Source: apps/web/src/features/views (ViewPage.tsx, SaveViewDialog.tsx, api.ts), apps/web/src/features/builds/list (BuildsBrowser.tsx, BuildFilterBar.tsx, builds-filters.ts, display-options.ts), apps/web/src/app/Sidebar.tsx, apps/web/src/app/shell-model.ts, apps/server/src/http/routes/dashboard/inbox/views.ts, packages/services/src/views/views.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+A project's builds page can be narrowed with filters. A **saved view** keeps a set of filters under a name, so "Rejected builds on release branches" is one click in the sidebar instead of four chips every time. Views are yours alone: nobody else in the workspace sees them.
+
+## Filter the builds list
+
+Open a project from the sidebar to see its builds, newest first. The find field in the page header filters by free text: a build number, a pull request, a commit, a build name, a branch or an author.
+
+Below the header, a row of chips filters by:
+
+| Chip | Choices |
+|---|---|
+| Status | Needs review, Approved, Rejected, Processing, Failed, Expired |
+| Branch | Pick from the branches builds were made on, or type part of a name |
+| Author | Text |
+| Reviewer | Text |
+| Build name | Text |
+| Date | From and To dates (whole UTC days) |
+
+Each chip fills in once it is set and has a small clear button. **Clear filters** removes them all. The filters are kept in the address, so you can send a filtered list to someone.
+
+**Display options** (`Shift` + `v`) change how the list looks without changing which builds it holds:
+
+- **Group by**: No grouping, Status, Branch, Author or Day.
+- **Order**: Newest first, Oldest first, Most changes, or Needs attention first.
+- **Show**: Branch and commit, Author, Time and Change counts.
+
+These are remembered in your browser. `j` and `k` move through the list, `x` selects a build, `Space` peeks at it, `f` focuses the filters, and `Enter` opens it. With several builds selected, a bar offers Approve, Reject and Request review; see [Reviewing a build](/using/reviewing-a-build/).
+
+## Save a view
+
+1. Set at least one filter. The **Save view** button appears next to **Clear filters**.
+2. Click it. The dialog lists the filters it will save and asks for a **Name** (up to 80 characters).
+3. Click **Save view**. A toast says "Saved view" with the name.
+
+The view is tied to the project whose list you filtered, and it appears in the sidebar under **Your views**. When the current filters already match a saved view, the button gives way to "Saved as" and its name.
+
+## Open and use a view
+
+Choose it under **Your views** in the sidebar, or search for it with `Cmd` + `K` (saved views are listed under Go to). It opens the project's builds list with the view's filters applied. You can change the filters on that page to look around, but those changes last only for the visit: a view isn't edited by browsing it. To keep a variation, set the filters on the project's own list and save again under a new name.
+
+If a view is deleted, or belongs to someone else, its address shows "This view doesn't exist".
+
+<Aside type="note">
+The dashboard can save a view, and lists the pinned ones in your sidebar in the order you keep them, but it has no screen yet to rename, reorder or delete one. The server supports all three (`PATCH` and `DELETE` on a workspace's `views`, and `PUT` on `views/order`).
+</Aside>
+
+## Pinned projects
+
+The sidebar also keeps **Pinned** projects above the rest. Right-click a project in the sidebar and choose **Pin project** or **Unpin project**. Pinned projects are per person and per workspace, like views. The same menu has Builds, Triage, Baselines, Sites (when the project has some), **Project settings** (owners and admins) and **Leave project**.
+
+## Where this lives
+
+Views and pinned projects are specific to one workspace: switch workspace in the sidebar and you see that workspace's own. They belong to your account, so they follow you across browsers and devices, unlike the display options above, which are stored in the browser. See [Account settings](/using/account-settings/) for the other things that are yours.

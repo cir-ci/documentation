@@ -1,0 +1,42 @@
+---
+// Marks a passage about a setting that is moving from the environment into Instance settings
+// in the dashboard. Search the docs for "instance-setting" to find every marker when the move is
+// done (see DESIGN.md). Slot: what the page says about this setting.
+interface Props {
+  /** Short name of the setting, shown in the callout title. */
+  setting?: string
+}
+const { setting } = Astro.props
+---
+
+<aside class="instance-setting" data-instance-setting={setting ?? ''} aria-label="Instance setting">
+  <p class="instance-setting__title">
+    {setting ? `${setting}: ` : ''}set in Instance settings
+  </p>
+  <div class="instance-setting__body">
+    <slot>
+      Set in <strong>Instance settings</strong>, or by the environment variable as the initial value.
+    </slot>
+  </div>
+</aside>
+
+<style>
+  .instance-setting {
+    margin-block: 1.25rem;
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--circi-line-strong);
+    border-radius: var(--circi-radius-popup);
+    background: var(--circi-accent-subtle);
+  }
+  .instance-setting__title {
+    margin: 0 0 0.25rem;
+    color: var(--sl-color-text-accent);
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .instance-setting__body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

@@ -1,0 +1,73 @@
+---
+title: Baselines and ignore regions
+description: "What a baseline is, how CirCI picks the one a build is compared with, and how to leave parts of a screenshot out of comparisons."
+---
+{/* Source: apps/web/src/features/baselines (BaselinesPage.tsx, BaselinePage.tsx, api.ts), apps/web/src/features/regions (IgnoreRegionsEditor.tsx, IgnoreRegionsPanel.tsx, IgnoreRegionsPage.tsx), packages/core/src/baselines (baseline.ts, pairing.ts), packages/services/src/pipeline/process.ts, apps/server/src/http/routes/dashboard/projects/ignore-regions.ts, apps/server/src/cli/commands/ignore-region.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+A **baseline** is the approved screenshot a new one is compared with. Every screenshot has a name, and a build's screenshot is compared with the baseline of the same name. This page covers how baselines are chosen, the Baselines page of a project, and **ignore regions**, the rectangles that are blanked out before comparing.
+
+## How a build gets its baseline
+
+For each build, CirCI picks one earlier build of the same project and the same build name to compare against:
+
+1. Only a finished build can be a baseline, and only one that was **approved** (by a person or automatically), or had **no changes** against its own approved baseline and wasn't rejected.
+2. CirCI walks the build's git ancestors, nearest first: from where the branch started for a pull request, or from the previous commit on the default branch. The first ancestor that has an eligible build is the baseline. If a commit was built several times (CI re-runs), the newest build wins.
+3. If no ancestor has one, the newest eligible build on the **default branch** is used. The build screen then shows a warning that the history wasn't available.
+4. If there is nothing at all, the build has **No baseline** and every screenshot is new.
+
+Within the build, screenshots are paired by name:
+
+| Result | When |
+|---|---|
+| Added | The name has no baseline |
+| Removed | The baseline has a name the build didn't upload |
+| Unchanged | Byte-identical files, with no pixel comparison needed |
+| Compared | Same name, different bytes: a pixel diff decides changed or unchanged, using the project's diff threshold. A change of size is always a change |
+
+The default branch is a project setting (`main` unless changed). On it, approving a screenshot makes it the baseline that every other branch is compared with. With **Approve default-branch builds automatically** on, a default-branch build is approved without review once there is an approved baseline to compare with, so a project's first build is always reviewed. See [Project settings](/using/project-settings/) and [Reviewing a build](/using/reviewing-a-build/).
+
+A rejected screenshot never becomes a baseline.
+
+## The Baselines page
+
+Open a project in the sidebar and choose **Baselines**. It lists the current baseline of every screenshot name, grouped by the part of the name before the first `/` ("checkout/cart.png" is in **checkout**; names without a slash are under **Ungrouped**). The header counts them ("12 on main") and has a find field. Each row shows the name, the build it comes from (and the build name when it isn't `default`), when it was approved, and a **Flaky** chip when it is flaky. Until a build of the default branch finishes, the page says "No baselines yet".
+
+Press `j` and `k` to move, and right-click a row for Open, Open build, Open in Triage (when flaky), Open in new tab, Copy link and Copy name. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+
+### One baseline
+
+Open a row to see the screenshot's page: the baseline image, which build it is from and who approved it, **Open build**, and **History on main**: the recent builds where this screenshot changed, each with its status, newest first. If the screenshot is flaky, it says why.
+
+The page also holds the screenshot's ignore regions.
+
+## Ignore regions
+
+An **ignore region** is a rectangle, in whole pixels measured from the top left, that is blanked out on **both** images before they are compared. Use it for a clock, a rotating banner, an ad or a cursor: something that changes without meaning anything.
+
+- A region belongs to a **screenshot name**. It applies to every build of that screenshot, until it is removed.
+- A region on its own is just a rectangle. There is no pattern or per-branch setting.
+- Insights shows how many diffs the regions kept unchanged. See [Insights](/using/insights/).
+
+### Who can change them
+
+Owners and admins add, move, edit and remove regions. Other members see them. A phone shows regions but doesn't edit them: draw them on a larger screen.
+
+### Add a region
+
+1. Open the screenshot's baseline page, or open the screenshot in a build and choose **Ignore regions** under **Dragging draws** in View options.
+2. Drag a rectangle over the baseline image. It is saved at once, with a toast ("Ignore region added").
+3. To place it precisely, use the keyboard tool (the crosshair button): arrow keys move, `Shift` + arrows resize, `Enter` confirms.
+
+Drag a region's handles to move or resize it ("Ignore region saved"). In the list under the image, **Edit** opens fields for **Left**, **Top**, **Width** and **Height** in pixels, and **Remove** deletes the rectangle after a confirmation: the area is compared again from the next build. Each region shows its size and position (`300 x 40 at 120, 16`) and who added it.
+
+A region can also be added from a server shell with `circi admin ignore add --org <workspace> --project <project> --name <screenshot> --region x,y,width,height`, with `circi admin ignore list` and `circi admin ignore remove <id>` beside it. See [Admin CLI](/reference/admin-cli/).
+
+<Aside type="note">
+A region applies to builds processed from the moment it is added. A build that was already processed keeps its result until it is processed again (the `/circi rerun` command redoes one).
+</Aside>
+
+### In project settings
+
+**Project settings, Ignore regions** lists every screenshot that has regions, with a count. Choosing one opens its baseline page inside settings, where the regions are edited. Members of the project can read this page too. Settings is a closed area, so this view doesn't link out to builds. See [Project settings](/using/project-settings/).

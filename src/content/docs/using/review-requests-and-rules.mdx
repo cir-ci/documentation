@@ -1,0 +1,69 @@
+---
+title: Review requests and rules
+description: "How people get asked to review a build, by hand or by rules, and how targets, overdue reminders and automation work."
+---
+{/* Source: apps/web/src/features/reviews/settings (RulesSection.tsx, ReviewsForm.tsx, ReviewTargetSection.tsx, AutomationSection.tsx, NotifySection.tsx), apps/web/src/features/builds/RequestReviewPicker.tsx, packages/core/src/reviews (rules.ts, review-target.ts, rotation.ts), packages/services/src/builds/lifecycle.ts, packages/services/src/reviews/reviews.ts, packages/services/src/rules/review-rules.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+A **review request** says "this build is waiting for you". It appears in the reviewer's Reviews page and Inbox, and it closes when the build is decided. Requests are made by a person or, automatically, by the project's review rules.
+
+## Ask someone by hand
+
+On a build, press `Shift` + `r` or choose **Request review**. The popover lists the project's members; you can't pick yourself. Choosing a person asks them, and the toast says "Asked Maya to review" with **Undo**. Asking someone who already has an open request shows "Requested" and does nothing.
+
+On a builds list, select several builds with `x` and choose **Request review** in the bar to ask the same people about all of them. A single request covers at most 50 builds, and at most 20 reviewers.
+
+The person who asked can **Nudge** the reviewer from the Reviews page. A nudge is a "review again" notice; it is allowed once per 24 hours, counting the original request. Only whoever asked can nudge.
+
+Requests close on their own:
+
+- when the build is approved or rejected (the request is answered);
+- when a newer build on the same branch arrives, if **Close review requests when a newer build arrives on the same branch** is on (see below), in which case the old request shows as replaced by a new push.
+
+## Review rules
+
+Rules ask people automatically, like CODEOWNERS for screenshots. Owners and admins manage them in **Project settings, Reviews and triage**. See [Project settings](/using/project-settings/) for how to get there.
+
+Each rule has:
+
+- **Matches**: **Screenshot name** or **Build name**.
+- **Pattern**: a glob. `*` matches any run of characters except `/`, `**` matches across folders (so `checkout/**` matches everything under `checkout/`), and `?` matches one character. The whole name must match, case matters, and there are no character classes or braces. Examples: `checkout/**`, `Button*`, `release/*`.
+- **Reviewers**: one or more members of the project, up to 20.
+
+When a build finishes with changes, every rule that matches asks its reviewers. A **Screenshot name** rule matches when any screenshot of the build matches; a **Build name** rule matches the build's own name. A person named by several rules is asked once. If no rule matches, the build goes to whoever is on the triage rotation that week, when the project has a rotation (see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)); with neither, nobody is asked automatically.
+
+<Aside type="note">
+The description above the rules list in the dashboard says "the first matching rule's people". The code asks every matching rule's reviewers, once each, which is what this page describes. The order of the rules (set with **Move up** and **Move down** in a rule's menu) is the order reviewers are listed in, not a priority.
+</Aside>
+
+Automatic requests are made by nobody in particular: the reviewer sees "Assigned automatically".
+
+Rules apply as soon as they are confirmed, each in its own dialog: **Add rule** in the page header, then **Edit**, **Move up**, **Move down** or **Delete** in a rule's menu. Deleting a rule asks first and means it no longer asks anyone to review; a toast confirms "Rule deleted".
+
+## Review target and overdue reminders
+
+**Review target** is how long a request may wait, in whole hours from 1 to 720, counting working days only: Saturday and Sunday (UTC) don't count. A request made on Friday 16:00 with a 24-hour target is due on Monday 16:00. The page shows this example as you type. Leave the field empty for no target; requests then never become overdue.
+
+A request that waits past its target (strictly after the due time) gets:
+
+- an **Overdue** badge in Reviews, and the build's header shows "Overdue 2h";
+- one reminder in the reviewer's Inbox, and by email if they turned **Review overdue** email on;
+- a copy to the member chosen under **When it's missed, also tell**, if any.
+
+A request that is answered, closed or snoozed is never overdue. The reviewer can snooze a request in Reviews; see [Inbox and reviews](/using/inbox-and-reviews/).
+
+## Automation
+
+These are four checkboxes on the same page, saved together with **Save changes** (with **Discard** to revert).
+
+| Setting | Effect |
+|---|---|
+| Close review requests when a newer build arrives on the same branch | The old request is closed as replaced; nobody reviews a stale build. |
+| Re-request the same reviewers on the newer build | The people someone asked (not those a rule picked) are asked again, by the same person. Needs the setting above. A person who wrote the build, or who has left the project, isn't asked again. |
+| Approve builds with no changes automatically | A build with no changes passes without a review request. Off: it waits for approval. |
+| Ask for a reason when someone rejects | Rejecting in the dashboard needs a reason. Approve and reject buttons on a git host's check have nowhere to write one and are exempt. |
+
+## Where review news goes
+
+Review requests, overdue reviews and rejections can post to chat channels. Channels, issue trackers and Figma are connected per project in the workspace's integrations, and anything else can use [webhooks](/integrations/webhooks/). See [Slack](/integrations/slack/).

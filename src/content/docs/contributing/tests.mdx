@@ -1,0 +1,44 @@
+---
+title: Tests
+description: The test projects, how to run them and the testing rules.
+---
+{/* Source: CLAUDE.md (Tests), e2e/README.md, vitest.config.ts, package.json, turbo.json */}
+
+## Kinds of tests
+
+| Kind | Where | Runs in |
+|---|---|---|
+| Node logic and server tests | `apps/{server,worker}/test`, `packages/*/test`, `apps/web/test` (`*.test.ts`) | Node, with real migrations on PGlite (no Docker) |
+| Component tests | `*.browser.test.tsx` | Headless Chromium through Vitest browser mode |
+| Design system visual tests | `packages/ui/visual` | `pnpm test:visual`, uploaded to a CirCI if configured |
+| End to end | `e2e/` | The real Docker stack: Postgres, LocalStack S3, Mailpit, the built image |
+
+## Commands
+
+```sh
+pnpm test                  # every Vitest project in one process
+pnpm test:node             # the Node project
+pnpm test:ui               # packages/ui
+pnpm test:web-browser      # apps/web, ui, api, core browser tests
+pnpm test:e2e              # both end-to-end groups (needs Docker and Chromium)
+pnpm test:e2e:api          # server, worker and CLI image, no browser
+pnpm test:e2e:browser      # also the dashboard and the design system
+```
+
+With Turborepo, each test project is its own cached root task (`//#test:node`, `//#test:ui`, `//#test:web-browser`, `//#e2e:api`, `//#e2e:browser`), so `pnpm gate` only reruns what its inputs changed. The two browser tasks each take a quarter of the cores, and a browser test gets one retry for the runner's own lost-frame errors; a retried test still shows in the report.
+
+## Rules
+
+- **No `@testing-library/*`.** Components get `*.browser.test.tsx` run in Chromium (`vitest-browser-react`, `page.getByRole`, `userEvent` from `vitest/browser`). Logic goes in `api.ts` or `lib/` so it is testable in Node. Page tests render through `apps/web/test/support/render.tsx`.
+- **Never import another package's `test/` folder.**
+- **Server route tests** build the app with `buildServer`, use `app.inject`, and sign in through the real `/api/auth` endpoints (`apps/server/test/support/helpers.ts`).
+- **External services** (GitHub, SMTP, OIDC) are faked at their edge. Say so when something has only been tested against a fake.
+- A bug only the real stack finds gets a regression test in its owning package.
+- A main page test calls `expectOnePrimaryPerArea()`: at most one primary button per area.
+- End-to-end files that drive Chromium are named `*.browser.e2e.test.ts` (checked by `e2e/test/fakes/e2e-groups.test.ts`).
+
+See `e2e/README.md` for the stack, debugging (`E2E_KEEP`, `E2E_HEADED`), sharding and the image build lock.
+
+## Quality gates
+
+`pnpm gate` is the check before a commit. Visual runs are never cached. See [Local development](/contributing/local-development/).

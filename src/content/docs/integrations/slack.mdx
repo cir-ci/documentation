@@ -1,0 +1,70 @@
+---
+title: Slack
+description: Post review requested, overdue, rejected and approved notices to a Slack channel for each Project.
+---
+{/* Source: packages/integrations/src/kinds/slack (definition.ts, client.ts, messages.ts), packages/core/src/integrations/events.ts, packages/config/src/load.ts, apps/server/src/http/routes/dashboard/integrations/oauth.ts */}
+
+import { Steps, Aside } from '@astrojs/starlight/components'
+import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
+
+The Slack integration installs a CirCI Slack app into your Slack workspace. Each Project then sends the notices it chooses to one channel. It's one-way: CirCI posts messages, and nothing in Slack acts on builds.
+
+## Set up the Slack app (instance admin)
+
+CirCI doesn't ship a Slack app of its own. Your instance uses an app you create at api.slack.com, so the Slack tile in the Add integration dialog says **Not set up on this server** until this is done.
+
+<InstanceSettingNote setting="Slack app">
+Set the Slack app's client ID and client secret in Instance settings, or by `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` as the initial value. Set both or neither: the server refuses to start with only one. `SLACK_API_URL` (default `https://slack.com/api`) points the integration at a different Slack API address and isn't normally needed. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
+</InstanceSettingNote>
+
+<Steps>
+
+1. Create a Slack app at api.slack.com (from scratch, in the Slack workspace you want to start with).
+2. Under **OAuth and Permissions**, add the redirect URL `PUBLIC_URL/api/integrations/slack/callback`.
+3. Add these bot token scopes: `chat:write`, `chat:write.public`, `channels:read`, `groups:read`. CirCI requests them when someone installs the app.
+4. Copy the app's client ID and client secret into the instance, as described above.
+5. If other Slack workspaces should install the app, activate public distribution for it in Slack.
+
+</Steps>
+
+## Connect a Slack workspace
+
+An owner or admin of the CirCI Workspace opens **Workspace settings**, **Integrations**, **Add integration**, **Slack**. Slack asks you to allow the app in your Slack workspace, and the return connects it. CirCI stores the bot token it receives, encrypted, and names the integration after the Slack workspace.
+
+If Slack later rejects the token (the app was uninstalled or the token revoked), CirCI flags the integration as needing attention and shows a **Reinstall** button. No notices go out until you reinstall.
+
+## Choose a channel and events for each Project
+
+On the Slack integration's page, each Project has a **Channel** and a list of **Events**. A Project without a channel sends nothing.
+
+The channel list comes from Slack: public channels as `#name` and private channels as `name (private)`. The bot can post to public channels without joining (the `chat:write.public` scope). For a private channel, invite the CirCI app to the channel in Slack first.
+
+| Event | Sent when | On by default |
+| --- | --- | --- |
+| Review requested | Someone is asked to review a build, or asked again | Yes |
+| Review overdue | A review request passes its target time | Yes |
+| Build rejected | A reviewer rejects a build | Yes |
+| Build approved | A reviewer approves a build | No |
+
+Approvals are opt-in because they're the notices that don't need anyone to act. See [Review requests and rules](/using/review-requests-and-rules/) for how requests and due times work.
+
+## What a notice looks like
+
+Every message is a short Slack block message with an **Open build** button that links to the build page. The plain text of each message is also set, so Slack notifications and screen readers have something readable.
+
+- **Review requested** (an eyes emoji): "Asked **Reviewer** to review Project #12 on `branch`", prefixed with who asked when a person did, and with "Due" and a date shown in each reader's own time zone. A repeat request says "Review requested again".
+- **Review overdue** (an hourglass): "**Reviewer**'s review of Project #12 on `branch` is overdue", with when it was due.
+- **Changes rejected** (a red cross): who rejected the changes, and the reason as a quote, cut at 500 characters. The full reason stays in CirCI.
+- **Changes approved** (a green check): who approved the changes.
+
+Names, branches and reasons that come from people are escaped so they can't create Slack mentions or links of their own.
+
+## Not built
+
+- Slack as a place to approve or reject: there are no interactive buttons beyond the link to the build.
+- Per-user Slack notifications or direct messages. Messages go to the Project's channel only.
+- The `build.completed` event isn't offered for Slack.
+
+<Aside type="note">
+Only fake-tested so far: the Slack edge is faked in the repository's tests. Also, the "public distribution" step above depends on Slack's own rules for apps, which the repository doesn't document, so check Slack's current instructions.
+</Aside>

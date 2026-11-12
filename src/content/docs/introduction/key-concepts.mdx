@@ -1,0 +1,49 @@
+---
+title: Key concepts
+description: The words the dashboard and the docs use.
+---
+{/* Source: CLAUDE.md (vocabulary), PLAN.md section 6, README.md, packages/core/src, apps/web/src/features */}
+
+The same terms appear in the dashboard, the CLI and the API. There is a shorter alphabetical list in the [glossary](/reference/glossary/).
+
+## Workspaces and projects
+
+**Workspace.** The top-level group: your company or team. It has members with roles, sign-in rules, email domains, integrations and defaults for its projects. In the CLI the flag that names a workspace is `--org <slug>`, kept from when workspaces were called organizations.
+
+**Project.** One thing you test, for example a web app. A project has a CI token, a default branch, a diff threshold, retention, review rules, ignore regions and optionally a linked repository and hosted sites. Everything below belongs to a project.
+
+**Instance.** The whole CirCI installation. Instance admins manage accounts, workspaces and instance settings.
+
+## Builds and screenshots
+
+**Build.** One upload for one commit. A project can have several kinds of build per commit, each with a **build name** (`--name chromium`, `--name mobile`), and each kind has its own baselines.
+
+**Screenshot.** One PNG in a build, named by its path (`settings/profile`). In a build every screenshot has a state: *added*, *removed*, *changed* or *unchanged*.
+
+**Baseline.** The approved screenshot a new one is compared with. Each screenshot name has its own baseline, taken from the nearest approved build in the commit history.
+
+**Diff.** The comparison of a screenshot with its baseline: an image of what changed and the share of changed pixels. Below the project's **diff threshold**, a small difference counts as unchanged.
+
+**Ignore region.** A rectangle of a screenshot (a clock, an ad) that isn't compared. Set per project for screenshots with a given name.
+
+## Review
+
+**Review.** A person's decision on a screenshot or a build: approved or rejected, with an optional reason. Every decision records where it came from (the dashboard, a GitHub check, a `/circi` comment).
+
+**Review request.** Asking a person to review a build, by hand or by a **review rule**. A rule is a glob over screenshot names (`checkout/**`) or over the build name that decides who is asked. Requests show up in the **Reviews** page and the Inbox.
+
+**Inbox.** The signed-in person's list of builds and mentions that need attention.
+
+**Comment and region.** A discussion on a build, optionally anchored to a rectangle (region) of a screenshot.
+
+**Triage.** The list of things in a project that need a decision beyond a normal review: flaky screenshots, screenshots with no baseline, and builds that failed. Items can be snoozed (until the next push, tomorrow, next week or a date).
+
+**Flaky.** A screenshot whose image keeps coming back to one it already had on the default branch (by default 3 times in the last 10 commits, settable from 2 to 8), or that came out different on two runs of the same commit. A screenshot that was redesigned (A, then B, then C) is not flaky.
+
+## Gates and sites
+
+**Merge gate.** What stops a pull request from merging while changes are unreviewed: the CirCI check on the git host, or the CI job's exit code.
+
+**Site.** A built static site (Storybook, a test report, coverage, docs) hosted by CirCI per commit and per branch on a separate sites domain, only for workspace members. See [Hosted sites](/using/hosted-sites/).
+
+**Integration.** A connection to an outside service: a git host, Slack, Linear, Jira or Figma. Added per workspace, linked per project.

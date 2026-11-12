@@ -1,0 +1,56 @@
+---
+title: HTTP API overview
+description: The CI API under /v1, the Argos-compatible /v2, the dashboard's JSON API, webhooks and health endpoints.
+---
+{/* Source: apps/server/src/http/app.ts, apps/server/src/http/routes (v1, argos, dashboard, auth.ts, health.ts, internal.ts, integration-webhook.ts), packages/api, apps/server/src/http/hooks */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+CirCI's server exposes four kinds of HTTP surface. Only the CI API and the webhooks are meant for outside programs.
+
+| Prefix | For | Authentication |
+|---|---|---|
+| `/v1` | The CI API: what `circi upload` uses. | `Authorization: Bearer circi_…` (a project CI token). |
+| `/v2` | The Argos-compatible upload protocol. | The same token. |
+| `/api` | The dashboard's JSON API. | The session cookie; changes need a same-origin request. Not a stable public API. |
+| `/api/auth/*` | Sign-in and sessions (better-auth). | Public: you sign in here. |
+| `/webhooks/:kind`, `/api/integrations/:kind/webhook` | Incoming webhooks of git hosts and other integrations. | Each provider's own signature. |
+| `/healthz`, `/readyz`, `/api/auth-methods` | Liveness, readiness, the sign-in methods on offer. | None. |
+| `/internal/*` | Answers the reverse proxy only (Caddy's `tls-ask`). | Never reachable from browsers. |
+
+<Aside type="caution">
+Only `/v1` and `/v2` are intended for scripts. The dashboard API under `/api` changes with the dashboard. Its wire types are in the `@circi/api` package (types only), one namespace per resource.
+</Aside>
+
+## The CI API (`/v1`)
+
+A token can only act on its own project. A session can't upload, and a token can't read the dashboard API.
+
+| Method and path | Purpose |
+|---|---|
+| `GET /v1/project` | The authenticated project. |
+| `POST /v1/builds` | Create a build (or join the shard of an existing one) from the commit, branch, pull request, base branch, ancestry and the list of screenshot files (SHA-256, size, `image/png`). Answers `201` with the build and the upload instructions for the files the server doesn't have. |
+| `PUT /v1/files/:sha256` | Upload a file through the API (local-disk storage). With S3, the instruction is a presigned URL bound to the checksum instead. Body: `image/png` or `application/octet-stream`. Stored only if the bytes hash to `:sha256`. |
+| `POST /v1/builds/:id/finalize` | Send the screenshot names, hashes and metadata of one shard (`shardIndex` for sharded builds). `409` with the missing files when any weren't uploaded or failed verification. Answers `complete` and the shard counts. |
+| `GET /v1/builds/:id/status` | The build, counts, `outcome`, `gate` and `errorMessage`. `?gate=status|exit-code` to ask for a mode. |
+| `POST /v1/sites` | Upload a site as a `.tar.gz` (the CLI does this). `404` when hosting isn't set up, `403` when it is off for the project. |
+| `GET /v1/sites/served` | Which sites the project serves. |
+
+Limits: a screenshot at most 25 MB, a build at most 10,000 screenshots, JSON bodies at most 16 MB, at most 2,000 ancestor commits, at most 1,000 shards. Build names match `[A-Za-z0-9][A-Za-z0-9._-]{0,63}`.
+
+Errors are JSON, `{ "error": "…" }`, with the usual status: `401` for a missing or wrong token (with `www-authenticate: Bearer`), `404`, `409`, `413`, `415`, `422`.
+
+## The upload sequence
+
+1. `POST /v1/builds` with the commit, ancestry and file list. Files the server already has verified aren't asked for again.
+2. Upload each requested file (parallel, with retries).
+3. `POST /v1/builds/:id/finalize` per shard. The build starts processing when the last shard arrives.
+4. Poll `GET /v1/builds/:id/status` (this is what `--wait` does) until the build is no longer processing.
+
+This is an implementation detail of the CLI; prefer `circi upload` over writing your own client.
+
+## Other endpoints
+
+- **Webhooks out:** a project's signed `build.completed` and `build.reviewed` events: [Webhooks](/integrations/webhooks/).
+- **Health:** `GET /healthz` answers `{ "status": "ok" }` while the process serves. `GET /readyz` also checks the database and storage, each with a timeout so a hung dependency can't hang the probe.
+- **Sign-in methods:** `GET /api/auth-methods`.

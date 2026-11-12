@@ -1,0 +1,71 @@
+---
+title: Vitest plugin
+description: Take stable screenshots in Vitest browser mode and upload them to CirCI.
+---
+{/* Source: docs/reference/vitest.md, packages/vitest/src (reporter.ts, browser.ts, screenshot.ts, collect.ts, shard.ts) */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+`@circi/vitest` takes screenshots from Vitest browser mode that stay the same between runs, and uploads them to CirCI when the run ends.
+
+<Aside type="note" title="Status">
+The reporter, collection, shard mapping and screenshot naming are unit-tested, and `circiScreenshot` has been run for real: CirCI's own design system is screenshotted with it in Vitest browser mode on Playwright's Chromium and uploaded to a CirCI stack. WebDriver is untried. `toMatchScreenshot` collection is only tested against fixture folders.
+</Aside>
+
+## Setup
+
+```ts title="vitest.config.ts"
+import { CirciReporter } from '@circi/vitest'
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  test: {
+    reporters: ['default', new CirciReporter({ name: 'vitest-chromium' })],
+    browser: { enabled: true, provider: 'playwright', instances: [{ browser: 'chromium' }] },
+  },
+})
+```
+
+```tsx title="button.test.tsx"
+import { circiScreenshot } from '@circi/vitest/browser'
+import { page } from 'vitest/browser'
+
+it('primary button', async () => {
+  render(<Button variant="primary">Save</Button>)
+  await circiScreenshot(page, 'button/primary')
+})
+```
+
+Import `circiScreenshot` from `@circi/vitest/browser`, not `@circi/vitest`: the main entry also holds the reporter, which needs Node (files and the network) and can't be bundled for the browser.
+
+## What `circiScreenshot` does
+
+It turns CSS animation and transitions off, waits for fonts and two animation frames, then saves `<project root>/.circi/screenshots/button/primary.png`. Both a locator (`page.getByRole(...)`, `page.elementLocator(el)`) and `page` itself work as the target. Names are lowercased and `/` makes folders.
+
+Set `CIRCI_API_URL` and `CIRCI_TOKEN` in CI. Without them the reporter prints a line and does nothing, and the pictures stay in `.circi/screenshots` (add it to `.gitignore`). Delete that folder before a run (a Vitest `globalSetup` is the place), or pictures of tests you removed are uploaded again.
+
+Reporters are a root-level Vitest option, not per project: with several projects, one `CirciReporter` collects what all of them saved.
+
+## Using `toMatchScreenshot`
+
+Already using Vitest's `expect(...).toMatchScreenshot()`? Set `collectToMatchScreenshot: true` on the reporter and the pictures it keeps in `__screenshots__` folders are uploaded too (its `-actual` and `-diff` pictures are skipped). CirCI then does the comparing and review; keep or drop Vitest's own assertion as you prefer.
+
+## One build per browser, and shards
+
+Give each browser project its own reporter `name` (`vitest-chromium`, `vitest-firefox`) so each has its own baselines. `vitest --shard=2/4` is picked up automatically and uploaded as shard 2 of 4 of the same build.
+
+## Reporter options
+
+| Option | Meaning |
+|---|---|
+| `apiUrl`, `token` | Default to `CIRCI_API_URL` and `CIRCI_TOKEN`. |
+| `name` | The build name. |
+| `dir` | Where to look for screenshots. |
+| `collectToMatchScreenshot` | Also upload `toMatchScreenshot` pictures. |
+| `root` | The project root. |
+| `wait` | Fail the run when changes need review. |
+| `strict` | Fail the run when the upload fails. By default a failed upload never changes the test result. |
+
+## Stable screenshots
+
+CirCI's own visual tests use a fixed viewport (1000x700), fonts imported by the test file (`@fontsource-variable/*`), and `circiScreenshot`'s own animation and caret stabilization. They also set `wait: true`, so the run exits 1 while a build has changes that need review and 0 after approval.

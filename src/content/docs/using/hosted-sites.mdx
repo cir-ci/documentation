@@ -1,0 +1,85 @@
+---
+title: Hosted sites
+description: "Host a built Storybook, test report or docs next to the screenshots, behind sign-in, with addresses per commit and per branch."
+---
+{/* Source: apps/web/src/features/sites (ProjectSitesPage.tsx, CustomDomainSection.tsx, SiteHandoffPage.tsx), apps/web/src/features/project-settings/SettingsForm.tsx, docs/reference/static-sites.md, apps/server/src/http/sites/serve.ts, packages/cli/src/main.ts, apps/server/src/http/routes/dashboard/projects/site-domains.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
+
+CirCI can host the built Storybook, Playwright or Vitest report, coverage report or docs of a commit, so a reviewer opens the real thing next to the screenshots. Sites are served from their own domain and always need sign-in.
+
+<InstanceSettingNote setting="Sites domain">
+Hosting is off until the instance has a sites domain. Set it in Instance settings, or by the environment variable `STATIC_SITES_HOST` as the initial value; `STATIC_SITES_MAX_MB` sets the largest site (200 MB by default). The domain must be separate from the dashboard's, with its own wildcard DNS record and certificate. See [Site domains](/self-hosting/site-domains/) and [Instance administration](/using/instance-administration/).
+</InstanceSettingNote>
+
+## Turn it on for a project
+
+Owners and admins switch hosting on per project: **Project settings, General, Hosted sites, Host static sites**, then **Save changes**. The checkbox only appears when the instance has a sites domain; without one, the Sites page says "Static site hosting isn't set up on this server" and who to ask (an instance admin sees the variable to set). See [Project settings](/using/project-settings/).
+
+## Upload a site from CI
+
+Use the project's CI token (see [CI examples](/ci/ci-examples/)) with the CLI:
+
+```sh
+circi storybook upload ./storybook-static
+circi site upload ./playwright-report --name playwright
+circi site upload ./coverage --kind coverage
+```
+
+| Option | Meaning |
+|---|---|
+| `<dir>` | The built site: a folder with its `index.html` |
+| `--name` | Which of the project's sites this is. Default `site`, or `storybook` for `circi storybook upload` |
+| `--kind` | `storybook`, `vitest-report`, `playwright-report`, `coverage`, `docs`, `generic` or `auto` (the default) |
+| `--spa` | Serve unknown paths with the entry page, for single-page apps |
+| `--api-url` | The CirCI address, instead of `CIRCI_API_URL` |
+
+Each upload belongs to a commit. A CI re-run of a commit replaces that commit's files and keeps its address. See [CLI](/ci/cli/).
+
+## Addresses
+
+Every upload gets two addresses on the sites domain:
+
+| | Address | Serves |
+|---|---|---|
+| Commit | the first 12 hex characters of the commit's SHA, then the site name | That commit's site, exactly |
+| Branch | a 12 hex-character hash of the branch name, then the site name | The newest upload on that branch |
+
+A branch address only moves when the upload is the branch's tip, and never for a pull request from a fork. When a project's pull requests have hosted sites, the summary comment on the pull request lists them under **Hosted sites for this commit**, each linked to its commit address.
+
+## The Sites page
+
+With hosting on and at least one site uploaded, **Sites** appears in the sidebar under the open project (and in project settings for owners and admins). For each site it shows:
+
+- **Custom domain**, covered below.
+- **Branches**: each branch's current address, the commit it points to and when it was updated.
+- **Uploads**: recent uploads by commit, with branch, size and age. The commit links to its address.
+
+Until the first upload, the page says "No sites yet" and shows the upload command with a copy button. The dashboard only links out: the sites themselves open on the sites domain.
+
+## Sign-in and access
+
+Opening a site sends you to the dashboard, which hands the site a one-minute, single-use token if you belong to the project's workspace. The site then sets its own host-only cookie and checks it against your dashboard session at least once a minute. Signing out, or leaving the workspace, ends access within a minute. A session you end under Sessions in [Account settings](/using/account-settings/) cuts off hosted sites too.
+
+An address that doesn't exist, isn't yours or has never been used gets the same answer, so nobody can probe for addresses. An address whose site was removed by retention answers **Site expired** (HTTP 410) to people who may open it, and the same "not found" answer to everyone else.
+
+Because a site runs the JavaScript you uploaded, the sites domain must not share cookies with the dashboard. See [Site domains](/self-hosting/site-domains/).
+
+## Custom domain for the default branch
+
+A site can have **one custom domain**, such as `storybook.acme.com`, that always serves the project's default branch: the newest upload that moved that branch's address. Commit and branch addresses stay as they are. Owners and admins set it; everyone else sees it.
+
+1. In **Custom domain**, type the domain and choose **Save domain**.
+2. Add the DNS record shown: a **CNAME** with the domain as its name, pointing to the target the page shows (`custom.` followed by the sites domain).
+3. Choose **Check DNS**. The badge changes from **Not verified** to **Verified**, the domain is served and its certificate is issued once DNS points at the server. If the check fails, a warning says why.
+
+**Change** edits the domain and **Remove** stops the site from opening on it (after a confirmation). A domain another site holds, the dashboard's host, or anything that shares cookie scope with it is refused: with the dashboard on `ci.acme.io`, `storybook.acme.io` is refused, but `storybook.acme.com` is fine. A domain that can't be a CNAME, such as an apex, can use `A` or `AAAA` records instead; the dashboard only shows the CNAME.
+
+## How long sites are kept
+
+Hosted site versions expire with their project's retention (**Keep builds for**, 30 days by default), except a version a live branch link still serves. See [Retention and garbage collection](/self-hosting/retention-and-gc/) and [Workspace settings](/using/workspace-settings/).
+
+<Aside type="note">
+Not built yet, according to the repository's notes on hosted sites: a site switcher injected into the page, a live view embedded in the review screen, deep links from screenshots to stories, branch expiry and garbage collection of old versions.
+</Aside>

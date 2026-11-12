@@ -1,0 +1,62 @@
+---
+// A table of environment variables from src/data/env.ts. Pass `group` (an id) for one group,
+// or nothing for every group with its heading. `marked` badges the Instance settings ones.
+import { envGroups } from '../data/env'
+import type { EnvGroup } from '../data/env'
+
+interface Props {
+  group?: string
+  headings?: boolean
+}
+const { group, headings = true } = Astro.props
+const groups: EnvGroup[] = group ? envGroups.filter((g) => g.id === group) : envGroups
+
+const code = (text: string) => text.replace(/`([^`]+)`/g, '<code>$1</code>')
+---
+
+{
+  groups.map((g) => (
+    <section class="env-group">
+      {headings && <h3 id={g.id}>{g.title}</h3>}
+      {g.intro && <p set:html={code(g.intro)} />}
+      <table>
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Default</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          {g.vars.map((v) => (
+            <tr>
+              <td>
+                <code>{v.name}</code>
+                {v.instanceSetting && <span class="env-badge" title="Set in Instance settings; the variable is the initial value">Instance settings</span>}
+              </td>
+              <td>{v.required ? <strong>required</strong> : v.default ? <code>{v.default}</code> : <span class="env-none">none</span>}</td>
+              <td set:html={code(v.description)} />
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  ))
+}
+
+<style>
+  .env-badge {
+    display: inline-block;
+    margin-inline-start: 0.5em;
+    padding: 0 0.5em;
+    border-radius: var(--circi-radius-inline);
+    background: var(--circi-accent-subtle);
+    color: var(--sl-color-text-accent);
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .env-none {
+    color: var(--circi-text-tertiary);
+  }
+</style>

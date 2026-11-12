@@ -1,0 +1,58 @@
+---
+title: Admin CLI
+description: The circi server command and its admin subcommands, run on the server.
+---
+{/* Source: apps/server/src/cli (index.ts, server.ts, admin.ts, commands/*), README.md (Server commands) */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+The `circi` command inside the Docker image is the **server** command. It reads the same environment variables as the server (it needs `DATABASE_URL` and the storage settings for most commands), so run it in the container:
+
+```sh
+docker compose exec circi circi admin doctor
+```
+
+It is not the upload CLI (see [CLI reference](/ci/cli/)). Commands that act inside a workspace take `--org <slug>`; the flag keeps its name from when workspaces were called organizations. Expected failures print one line and exit 1; `--debug` (or `DEBUG=1`) prints a stack trace.
+
+## Processes
+
+| Command | What it does |
+|---|---|
+| `circi all` | HTTP server and worker in one process (small installs). |
+| `circi serve` | The HTTP API and web UI. |
+| `circi worker` | Background jobs (diffing, notifications). |
+| `circi migrate` | Apply database migrations and exit. |
+
+`serve`, `worker` and `all` migrate on start unless `--no-migrate`.
+
+## `circi admin …`
+
+| Command | What it does |
+|---|---|
+| `user create --email --name [--password] [--instance-admin] [--json]` | Create an account. There is no self sign-up. The password needs at least 12 characters; without `--password` one is generated and printed once. |
+| `user set-password --email [--password] [--json]` | Set a new password. |
+| `workspace create --name --owner <email> [--slug] [--json]` | Create a workspace owned by an existing account. |
+| `workspace list [--json]` | List workspaces. |
+| `member add --org --email [--role owner\|admin\|member]` | Add an existing account to a workspace (default role `member`). |
+| `project create --org --name [--slug] [--default-branch main] [--member <email>…] [--json]` | Create a project and print its CI token. |
+| `project list --org [--json]` | List a workspace's projects. |
+| `project rotate-token --org --project [--json]` | Replace the CI token; the old one stops at once. |
+| `auth enable\|disable <email\|password> --org` | Change a workspace's accepted sign-in methods. Skips the lockout guard: break-glass if a setting locked everyone out. |
+| `github link --org --project --repo <owner/name> --installation <id>` | Link a project to a GitHub repository (needs the GitHub App). |
+| `github unlink --org --project` | Stop reporting a project to GitHub. |
+| `webhook add --org --project --url --events <list> [--json]` | Add a webhook; the signing secret is printed once. Events: `build.completed`, `build.reviewed`. At least one is required. |
+| `webhook list --org --project` | List a project's webhooks. |
+| `webhook remove --org --project --id` | Remove one (ID from `list`). |
+| `ignore add --org --project --name <screenshot> --region <x,y,width,height>` | Ignore a rectangle (pixels from the top left) in screenshots with that name. |
+| `ignore list --org --project` | List ignored regions. |
+| `ignore remove <id> --org --project` | Stop ignoring a region. |
+| `storage usage [--json]` | Files and bytes by kind, and what waits to be deleted. |
+| `storage migrate --to fs\|s3 [--path] [--bucket] [--region] [--endpoint] [--force-path-style]` | Copy every stored file to another storage under the same keys. |
+| `storage gc [--grace-hours <h>] [--dry-run]` | Run retention now. |
+| `doctor` | Check storage, database and migrations, mail, free disk space, the dashboard address and the cookie scope of the domains. Exits 1 on a warning or failure. |
+| `setup-code` | Print the code the first-run setup page asks for. |
+| `mail test --to <email>` | Send a test mail through the configured SMTP server. |
+
+<Aside type="tip">
+Everything the setup page and the dashboard do also works from here, which is the way to automate a fresh install or to recover from a lockout.
+</Aside>

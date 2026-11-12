@@ -1,0 +1,81 @@
+---
+title: Docker Compose
+description: The compose files, what they run, and what to change for production.
+---
+{/* Source: deploy/docker-compose.yml, deploy/docker-compose.caddy.yml, deploy/docker-compose.s3.yml, deploy/.env.example, deploy/README.md, deploy/Dockerfile */}
+
+import { Aside, FileTree } from '@astrojs/starlight/components'
+
+The `deploy/` folder of the repository is the reference install.
+
+<FileTree>
+
+- deploy/
+  - Dockerfile the app image
+  - docker-compose.yml app and Postgres, local-disk storage
+  - docker-compose.s3.yml overlay: a local MinIO and S3 storage
+  - docker-compose.caddy.yml overlay: Caddy for TLS and sites
+  - Caddyfile
+  - caddy/Dockerfile Caddy with the Route53 DNS module
+  - .env.example copy to .env
+
+</FileTree>
+
+## The base file
+
+`docker compose up -d --build` runs two services:
+
+- **postgres** (`postgres:18-alpine`) with a named volume `pgdata`, a health check, user and database `circi`, and the password from `POSTGRES_PASSWORD`.
+- **circi**, built from `deploy/Dockerfile`, command `all` (server and worker in one process), published on `CIRCI_PORT` (default 3000). Files go to the `files` volume at `/var/lib/circi/files`. It waits for Postgres to be healthy, then applies migrations on start.
+
+Everything the app reads comes from the `environment:` list, filled from `.env`. The compose file passes through the common variables (URLs, SMTP, sign-in, GitHub App, sites, timeouts, diff engine). A variable that is not in that list is **not** passed to the container: for example `SMTP_SECURE`, `SLACK_CLIENT_ID`, `AUTH_GITLAB_*`, `CIRCI_DIFF_THREADS` and `DATABASE_POOL_MAX`. Add it to the `environment:` block (or use an `env_file`) when you need it.
+
+## Settings file
+
+Copy `.env.example` to `.env`. Required: `POSTGRES_PASSWORD` and `BETTER_AUTH_SECRET`. For production also set:
+
+| Variable | Why |
+|---|---|
+| `PUBLIC_URL` | The https address people use, e.g. `https://ci.acme.io`. Links in emails, pull request comments and OAuth redirects use it. |
+| `TRUSTED_PROXIES` | The reverse proxy's address or range, so sign-in rate limits see real client addresses. |
+| `SMTP_*` | Email codes and invitations. |
+
+Every variable is in the [environment variable reference](/reference/environment-variables/).
+
+## Overlays
+
+```sh
+# S3-compatible storage with a local MinIO (development)
+docker compose -f docker-compose.yml -f docker-compose.s3.yml up -d --build
+
+# TLS for the dashboard and the sites domain, with Caddy
+docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
+```
+
+For production S3 point `S3_*` at AWS S3, Cloudflare R2, Backblaze B2 or similar instead of running MinIO. See [Storage](/self-hosting/storage/) and [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/).
+
+## Running the server and worker separately
+
+`command: ['all']` is right for a small install. To scale, run two services from the same image with `command: ['serve']` and `command: ['worker']`. See [Scaling the worker](/self-hosting/scaling-the-worker/).
+
+## First run
+
+After the stack is up, open `PUBLIC_URL` and follow the setup page, or script it. The server commands run inside the container:
+
+```sh
+docker compose exec circi circi admin setup-code
+docker compose exec circi circi admin user create --email you@acme.io --name "You" --instance-admin
+docker compose exec circi circi admin workspace create --name "Acme" --owner you@acme.io
+docker compose exec circi circi admin project create --org acme --name "Web app"
+docker compose exec circi circi admin doctor
+```
+
+<Aside type="tip">
+`circi admin doctor` checks storage, the database and its migrations, mail, free disk space, the dashboard address, and the cookie scope of the domains. It exits 1 if anything warns or fails, so it works in a deploy script.
+</Aside>
+
+## What the image runs
+
+One bundle, `/app/dist/main.mjs`, plus `/app/migrations` (`CIRCI_MIGRATIONS`), `/app/web` (`CIRCI_WEB_DIST`) and a small `node_modules` (`sharp`, `pg`, the AWS SDK). The image sets `NODE_OPTIONS=--enable-source-maps`, so stack traces point at source files. The image doesn't contain the upload CLI.
+
+Health endpoints: `GET /healthz` (liveness) and `GET /readyz` (the database and storage answer).

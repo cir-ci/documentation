@@ -1,0 +1,42 @@
+---
+title: Sign in and set up
+description: The first-run setup page, then signing in.
+---
+{/* Source: apps/web/src/features/setup, apps/server/src/http/routes/dashboard/instance/setup.ts, README.md, apps/server/src/cli/commands/setup-code.ts, user.ts, workspace.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+## First-run setup
+
+On a fresh install the dashboard shows **Set up CirCI**, a short guided flow. There is no self sign-up in CirCI, so this page is how the first account comes to exist. A stranger can't claim a fresh install: the page asks for a **setup code** that only someone with access to the server can read.
+
+1. **Setup code.** Read it from the server log (`docker compose logs circi`) or print it with `docker compose exec circi circi admin setup-code`.
+2. **Your account.** Your name, email and password (at least 12 characters). This account is an **instance admin**.
+3. **Your workspace.** A name and an address (the slug in URLs, for example `acme`). You are its owner.
+4. **Checks.** The flow runs a check of storage and the other basics, and lets you re-run it. You can continue with warnings and come back to them in Instance settings, Health.
+5. **Your first project.** Name it, and the flow shows its CI token once.
+
+<Aside type="tip">
+Instances that were set up from the command line don't see the guided flow. Everything it does also works with `circi admin`: see [the admin CLI](/reference/admin-cli/).
+</Aside>
+
+## Signing in
+
+The sign-in page offers the methods your instance allows:
+
+- **Email and password.** Passwords need at least 12 characters.
+- **Email code.** With SMTP configured, people with an account can get a 6-digit code by email. Codes work once, expire after 10 minutes, are stored hashed, lock after 5 wrong attempts, and addresses without an account get the same answer and no mail. Code requests are limited to 5 per address per 15 minutes.
+- **Single sign-on.** A button for each configured provider (GitHub, Google, GitLab or any OpenID Connect provider), and "Sign in through your workspace" when a workspace has connected its own provider.
+
+A provider login never creates an account by itself: the person must have been invited, or the provider must be trusted for email and the address on a verified workspace domain. See [Members and roles](/using/members-and-roles/) and [Workspace settings](/using/workspace-settings/).
+
+## Adding people
+
+Owners and admins invite people by email from the workspace's members page. People without an account create it by signing in with an emailed code. Without SMTP, add accounts from the command line:
+
+```sh
+docker compose exec circi circi admin user create --email you@acme.io --name "You"
+docker compose exec circi circi admin member add --org acme --email you@acme.io --role member
+```
+
+Next: [Create a project](/getting-started/create-a-project/).

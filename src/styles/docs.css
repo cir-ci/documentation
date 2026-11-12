@@ -1,0 +1,151 @@
+/*
+ * Component-level touches on top of Starlight: radii, header, sidebar, code, tables, callouts.
+ * Colours come only from the --sl-* / --circi-* variables in circi-theme.css; no hex here.
+ */
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The app's content sits on a panel with a hairline; the docs page follows. */
+.site-title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.site-title img {
+  border-radius: var(--circi-radius-control);
+}
+
+header.header {
+  border-bottom: 1px solid var(--circi-line-subtle);
+}
+.sidebar-pane {
+  border-inline-end: 1px solid var(--circi-line-subtle);
+}
+.sidebar-content details > summary .large {
+  font-size: var(--sl-text-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.sidebar-content a {
+  border-radius: var(--circi-radius-control);
+}
+.sidebar-content a:hover {
+  background: var(--circi-action-hover);
+}
+.sidebar-content a[aria-current='page'] {
+  background: var(--circi-accent-subtle);
+  color: var(--circi-accent-text);
+}
+
+/* Content */
+.sl-markdown-content :not(a):not(pre) > code {
+  border: 1px solid var(--circi-line-subtle);
+  border-radius: var(--circi-radius-inline);
+  font-size: 0.85em;
+}
+.sl-markdown-content a:not(.sl-link-button):not([class]) {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3 {
+  letter-spacing: -0.01em;
+}
+
+/* Tables */
+.sl-markdown-content table {
+  border: 1px solid var(--circi-line-subtle);
+  border-radius: var(--circi-radius-popup);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-size: var(--sl-text-sm);
+}
+.sl-markdown-content th {
+  background: var(--circi-surface-raised);
+  color: var(--circi-text-secondary);
+  font-weight: 600;
+}
+.sl-markdown-content :is(th, td) {
+  border-block-end: 1px solid var(--circi-line-subtle);
+  padding: 0.5rem 0.75rem;
+}
+.sl-markdown-content tr:last-child td {
+  border-block-end: 0;
+}
+
+/* Code blocks (Expressive Code reads these variables) */
+:root {
+  --ec-brdRad: var(--circi-radius-popup);
+  --ec-codeFontFml: var(--circi-font-mono);
+  --ec-codeFontSize: 0.8125rem;
+}
+
+/* Callouts and cards */
+.starlight-aside {
+  border-radius: var(--circi-radius-popup);
+  border-inline-start-width: 3px;
+}
+.card {
+  border-radius: var(--circi-radius-panel);
+  border-color: var(--circi-line-strong);
+  background: var(--circi-surface-raised);
+}
+.sl-link-button {
+  border-radius: var(--circi-radius-control);
+  font-weight: 500;
+}
+.sl-link-button.primary {
+  background: var(--circi-accent-main);
+  border-color: transparent;
+  color: var(--circi-accent-on-accent);
+}
+
+/* Splash page */
+[data-has-hero] .hero > img {
+  border-radius: var(--circi-radius-command);
+}
+:focus-visible {
+  outline: 2px solid var(--circi-accent-text);
+  outline-offset: 2px;
+}
+kbd {
+  border: 1px solid var(--circi-line-strong);
+  border-radius: var(--circi-radius-inline);
+  background: var(--circi-surface-raised);
+  padding: 0 0.35em;
+  font-family: var(--circi-font-mono);
+  font-size: 0.8em;
+}
+
+/* CopyCommand island */
+.copy-command {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-block: 1rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+  border: 1px solid var(--circi-line-strong);
+  border-radius: var(--circi-radius-control);
+  background: var(--circi-surface-raised);
+  font-family: var(--circi-font-mono);
+  font-size: 0.8125rem;
+}
+.copy-command button {
+  height: 1.75rem;
+  padding-inline: 0.75rem;
+  border: 1px solid var(--circi-line-strong);
+  border-radius: var(--circi-radius-control);
+  background: var(--circi-surface-overlay);
+  color: var(--circi-text-primary);
+  font: inherit;
+  font-family: var(--circi-font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.copy-command button:hover {
+  background: var(--circi-action-selected);
+}

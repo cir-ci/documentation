@@ -1,0 +1,68 @@
+---
+title: Run it locally
+description: Start CirCI with Docker Compose in a few minutes.
+---
+{/* Source: README.md (Self-hosting), deploy/README.md, deploy/docker-compose.yml, deploy/.env.example */}
+
+import { Steps, Aside } from '@astrojs/starlight/components'
+import CopyCommand from '../../../components/CopyCommand.tsx'
+
+This starts the whole stack on one machine: the app (server, worker and dashboard in one process) and Postgres, with files on a Docker volume. It is also the starting point of a production install: see [Docker Compose](/self-hosting/docker-compose/) for what to change.
+
+You need Docker with Compose v2, and a clone of the CirCI repository (the image is built from it).
+
+<Steps>
+
+1. Go to the `deploy` folder and create your settings file.
+
+   ```sh
+   cd deploy
+   cp .env.example .env
+   ```
+
+2. Edit `.env`. Two values are required: `POSTGRES_PASSWORD`, and `BETTER_AUTH_SECRET`, which signs sessions and must be 32 characters or more.
+
+   <CopyCommand client:visible command="openssl rand -base64 32" />
+
+   `PUBLIC_URL` defaults to `http://localhost:3000`, which is right for a local try-out.
+
+3. Build and start.
+
+   ```sh
+   docker compose up -d --build
+   ```
+
+   The first build compiles the server, the dashboard and the native diff engine, and takes a few minutes. Later builds use the layer cache.
+
+4. Open `http://localhost:3000`. A fresh install shows a **Set up CirCI** page. It asks for a setup code, which the server prints in its log and which you can also print on demand:
+
+   ```sh
+   docker compose logs circi
+   docker compose exec circi circi admin setup-code
+   ```
+
+</Steps>
+
+Next: [Sign in and set up](/getting-started/sign-in-and-set-up/).
+
+## Check that it works
+
+```sh
+curl http://localhost:3000/healthz   # liveness: the process serves
+curl http://localhost:3000/readyz    # readiness: Postgres and storage answer
+```
+
+<Aside type="note" title="Two commands named circi">
+Inside the image, `circi` is the **server** command (`circi all`, `circi migrate`, `circi admin …`). The command you run in CI to upload screenshots is also called `circi`, but it is a different program, the CLI from the `@circi/cli` package. See [the CLI reference](/ci/cli/).
+</Aside>
+
+## Useful commands
+
+```sh
+docker compose logs -f circi                       # follow the server log
+docker compose exec circi circi admin doctor       # check storage, database, mail and the domains
+docker compose down                                # stop (data stays in the volumes)
+docker compose down -v                             # stop and delete the data
+```
+
+To try CirCI with S3-compatible storage locally, add the MinIO overlay: `docker compose -f docker-compose.yml -f docker-compose.s3.yml up -d --build`. See [Storage](/self-hosting/storage/).

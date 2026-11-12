@@ -1,0 +1,62 @@
+---
+title: Storage
+description: Local disk, S3-compatible buckets, LocalStack and MinIO, and moving between them.
+---
+{/* Source: README.md (Self-hosting), packages/config/src/schema.ts, packages/config/src/load.ts, packages/storage, apps/server/src/cli/commands/storage.ts, deploy/docker-compose.s3.yml, docs/reference/running-costs.md */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+CirCI stores screenshots, diff images, thumbnails and hosted sites as files. They are **content-addressed** by SHA-256 and verified when written, so an unchanged screenshot is uploaded and stored once, however many builds contain it. Storage grows with *changes*, not builds.
+
+## Local disk (the default)
+
+```sh
+STORAGE_DRIVER=fs
+STORAGE_PATH=/var/lib/circi/files     # the default; a Docker volume in the compose file
+```
+
+The cheapest option. Uploads stream through the API, which hashes while writing a temp file and renames it into place only if the hash matches. Back up the volume together with the database (see [Backups](/self-hosting/backups/)).
+
+## S3 and S3-compatible services
+
+```sh
+STORAGE_DRIVER=s3
+S3_BUCKET=circi
+S3_REGION=eu-west-1
+# S3_ENDPOINT=https://<account>.r2.cloudflarestorage.com   # R2, B2, MinIO, LocalStack. Omit for AWS.
+# S3_FORCE_PATH_STYLE=true                                 # default true when S3_ENDPOINT is set
+# S3_ACCESS_KEY_ID= / S3_SECRET_ACCESS_KEY=                # both, or neither for the AWS credential chain
+```
+
+- `S3_BUCKET` is required with the `s3` driver. Set both key variables or neither: with neither, the AWS credential chain applies (an IAM role is best on AWS).
+- With S3, the CLI uploads **directly to the bucket** through presigned PUT URLs bound to the file's SHA-256 checksum (`x-amz-checksum-sha256`, supported by AWS S3, R2 and MinIO), so storage rejects bytes that don't match. Finalize then confirms each object. The bucket needs to be reachable from where CI runs.
+- Timeouts: `S3_CONNECT_TIMEOUT_SECONDS` (default 10) and `S3_REQUEST_TIMEOUT_SECONDS` (default 60, idle time rather than total).
+
+<Aside type="tip" title="Keeping the bill down">
+Egress and storage are the main costs. Object storage with free egress (Cloudflare R2, Backblaze B2 behind Cloudflare, or MinIO on the same disk) cuts the most. Shorter [retention](/self-hosting/retention-and-gc/) for projects that don't need history helps next.
+</Aside>
+
+## MinIO and LocalStack for development
+
+`docker-compose.s3.yml` adds a local MinIO (API on 9000, console on 9001) with a `circi` bucket and points the app at it. The end-to-end suite uses LocalStack for S3. Neither is meant for production.
+
+## Moving between storages
+
+```sh
+# local disk to S3
+circi admin storage migrate --to s3 --bucket circi --region eu-west-1
+# S3 (or anything) to a directory
+circi admin storage migrate --to fs --path /mnt/files
+```
+
+It copies every stored file to the new storage under the same keys, reports `Copied`, `already there`, `missing at the source` and `failed` counts, and exits 1 if any copy failed. When it succeeds it tells you to set `STORAGE_DRIVER` (and its settings) and restart. Other options: `--endpoint`, `--force-path-style`.
+
+## What's using space
+
+```sh
+circi admin storage usage          # files and bytes by kind, and what is waiting to be deleted
+```
+
+## Checking
+
+`circi admin doctor` checks that the storage is usable and, for local disk, the free space. `GET /readyz` includes storage.

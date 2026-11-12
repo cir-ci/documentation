@@ -1,0 +1,102 @@
+---
+title: CLI reference
+description: The circi upload command, its flags, environment variables and exit codes.
+---
+{/* Source: packages/cli/src/main.ts, packages/cli/src/upload.ts, packages/cli/src/files.ts, packages/cli/src/ci-env.ts, packages/cli/src/git.ts, packages/cli/src/site.ts, docs/reference/ci-examples.md */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+The `circi` CLI (package `@circi/cli`) uploads screenshots and sites from CI. It is separate from the `circi` server command inside the Docker image (see [the admin CLI](/reference/admin-cli/)).
+
+```sh
+CIRCI_TOKEN=circi_… CIRCI_API_URL=https://ci.acme.io npx circi upload ./screenshots --wait
+```
+
+## `circi upload <dir>`
+
+Uploads a directory of PNG screenshots as a build.
+
+| Flag | Meaning |
+|---|---|
+| `<dir>` | Directory with `.png` screenshots, searched recursively. |
+| `--name <name>` | Build name, for several kinds of builds per commit (default `default`). Letters, digits, `.`, `_`, `-`; at most 64. Each name has its own baselines. |
+| `--wait` | Wait for the result and exit non-zero when it should block the merge. |
+| `--shard <n/total>` | This job uploads shard `n` of `total` of one parallel build (for example `2/4`). The build is processed once all shards arrive. |
+| `--nonce <id>` | Ties the shards of one parallel build together. Default: the CI run's ID. |
+| `--gate <mode>` | Who blocks the merge: `status` (the git host's check; exit 0 on unreviewed changes) or `exit-code` (this job). Default: decided by the server from the project's settings. |
+| `--author <login>` | Who made the change. Default: the CI actor (for example `GITHUB_ACTOR`). |
+| `--timeout <seconds>` | How long `--wait` waits (default 600). |
+| `--api-url <url>` | CirCI address. Default: `CIRCI_API_URL`. |
+| `--no-fetch` | Don't run `git fetch` to complete a shallow history. |
+| `--json` | Print the result as JSON (progress goes to stderr). |
+
+Global: `--debug` prints the stack trace of an unexpected error (or set `DEBUG=1`). `--version` and `--help` work as usual.
+
+### Screenshots
+
+- Every `*.png` under the folder is a screenshot, named by its path without the extension, using `/` on every OS (`settings/profile.png` is `settings/profile`).
+- Hidden folders and `node_modules` are skipped. Symbolic links to files and folders are followed; a link back up the tree is skipped.
+- At most **25 MB** per screenshot and 10,000 screenshots per build.
+- An optional `<file>.png.json` sidecar next to a screenshot adds metadata (browser, viewport, test name): a JSON object.
+- PNG only.
+
+### Environment variables
+
+| Variable | Meaning |
+|---|---|
+| `CIRCI_TOKEN` | The project's CI token. Required. |
+| `CIRCI_API_URL` | Your CirCI address, for example `https://ci.acme.io`. Required unless `--api-url`. |
+| `CIRCI_COMMIT`, `CIRCI_BRANCH`, `CIRCI_PR_NUMBER`, `CIRCI_BASE_BRANCH` | Override what is detected. |
+| `CIRCI_AUTHOR` | Same as `--author`. |
+| `CIRCI_PARALLEL_NONCE` | Ties shards together when the CI isn't recognized. |
+| `DEBUG=1` | Stack traces. |
+
+CI detection covers GitHub Actions (for pull requests the head SHA from the event payload, not the merge commit), Gitea and Forgejo Actions, GitLab CI (merge request pipelines too), Bitbucket Pipelines, CircleCI, Buildkite, Jenkins and Azure Pipelines. For Jenkins, pass the pull request yourself unless you use the multibranch plugin (`CHANGE_ID`, `BRANCH_NAME`, `CHANGE_TARGET` are read).
+
+### Git history
+
+The CLI collects the commit history CirCI needs to pick the baseline, from the **head commit**, never from `HEAD` (CI checkouts often sit on a synthetic merge commit).
+
+- Shallow checkouts are fine: it fetches the base branch and just enough history (and deepens up to 2,000 commits if needed). A full fetch is faster for large repositories.
+- In a full clone it never changes the repository's history; only an already shallow checkout is deepened.
+- `--no-fetch` turns this off. If it still can't find a merge base, the build page shows a warning and CirCI falls back to the default branch's newest eligible build.
+
+### Sharding
+
+`--shard 2/4` uploads shard 2 of 4. Every job uploads its own screenshots; CirCI joins them into one build (they share the run's ID) and processes it when the fourth arrives. A shard that never arrives fails the build after `UPLOAD_TIMEOUT_MINUTES` (default 60), naming the missing shards. A re-run of the whole workflow is a new attempt and starts a new build. Vitest's `--shard` is picked up automatically by the [Vitest plugin](/ci/vitest/).
+
+### `--wait` and exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | Uploaded. With `--wait`: the build passed, or the git host's check is the merge gate. |
+| `1` | With `--wait`: visual changes need review and this job is the gate. Approve them in the dashboard, then re-run the job. |
+| `2` | An error: bad flags or setup, the server couldn't be reached, the build failed to process (the server's reason is printed), or `--wait` timed out. |
+
+Errors print one line (`error: No such directory: ./screenshotz`). API calls are retried with backoff on network errors and 5xx answers, and time out after 30 seconds each.
+
+<Aside type="caution" title="Which job is the gate?">
+With the project linked to a git host, `--wait` waits for processing, exits 0 even with unreviewed changes and fails only on processing errors: the CirCI check is the gate, and approving updates it with no re-run. Without a linked repository the CI job is the gate: exit 1 until approved, then re-run. Override with `--gate`.
+</Aside>
+
+## `circi site upload <dir>` and `circi storybook upload <dir>`
+
+Upload a built static site next to the screenshots (the project must have **Host static sites** on and the server a `STATIC_SITES_HOST`; see [Hosted sites](/using/hosted-sites/)).
+
+| Flag | Meaning |
+|---|---|
+| `<dir>` | The built site, a folder with its `index.html`. |
+| `--name <name>` | Which of the project's sites this is (default `site`; `storybook` for the shortcut). |
+| `--kind <kind>` | `storybook`, `vitest-report`, `playwright-report`, `coverage`, `docs`, `generic` or `auto` (default). Not on `storybook upload`. |
+| `--spa` | Serve unknown paths with the entry page (single-page apps). |
+| `--api-url <url>` | CirCI address. |
+
+```sh
+circi storybook upload ./storybook-static
+circi site upload ./playwright-report --name playwright
+circi site upload ./coverage --kind coverage
+```
+
+## `circi argos-env`
+
+Prints the two lines that point the Argos SDKs at this server (from `CIRCI_API_URL` and `CIRCI_TOKEN`): `ARGOS_API_BASE_URL=<url>/v2` and `ARGOS_TOKEN=<token>`. See [the Argos-compatible API](/ci/argos-compatible-api/).

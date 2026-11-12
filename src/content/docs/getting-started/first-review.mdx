@@ -1,0 +1,27 @@
+---
+title: First review
+description: Approve your first build so it becomes the baseline.
+---
+{/* Source: apps/web/src/features/builds, packages/core/src/baselines, packages/core/src/builds/approvable.ts, PLAN.md section 7.4-7.5 */}
+
+Open the build from the project page. The build page lists its screenshots grouped by state (changed, added, removed, unchanged) and shows the selected one in a viewer.
+
+## Approve the baseline
+
+1. For a first build every screenshot is added. Look through them, then approve them one by one or approve the whole build.
+2. The build's review status becomes **approved**, and it is now the baseline for later builds of the same name.
+3. Upload again with the same screenshots (a re-run). The build finishes with **no changes** and `circi upload --wait` exits `0`.
+
+Change a screenshot, upload from a new commit, and the build shows that screenshot as **changed**, with the diff next to the baseline. That is the loop: see [Reviewing a build](/using/reviewing-a-build/) for the viewer, shortcuts, comments and requests.
+
+## Close the loop with your git host
+
+- Link the project to its repository to get a **CirCI** check on pull requests with Approve and Reject buttons, and a summary comment: [GitHub](/integrations/github/), [GitLab](/integrations/gitlab/), [Bitbucket](/integrations/bitbucket/).
+- Mark that check as required in the repository's branch protection to block merges until someone reviews.
+- Add [Slack](/integrations/slack/) or a [webhook](/integrations/webhooks/) to hear about builds.
+
+## Then
+
+- Tune [project settings](/using/project-settings/): threshold, retention, merge gate, flaky handling.
+- Set up [review rules](/using/review-requests-and-rules/) so the right people are asked.
+- Read [CI examples](/ci/ci-examples/) for sharded runs and several builds per commit.

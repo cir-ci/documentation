@@ -1,0 +1,63 @@
+---
+title: Integrations overview
+description: What integrations are, which kinds exist, who can add them and how each one connects.
+---
+{/* Source: docs/integration-sdk.md, packages/integrations/src/kinds/*, packages/integrations/src/sdk/catalog.ts, packages/core/src/integrations, apps/web/src/features/integrations, apps/server/src/http/routes/dashboard/integrations */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+An integration connects a Workspace to an outside tool. CirCI reports builds to your git host, posts review notices to chat, files issues in your tracker and links screenshots to designs. Integrations belong to the Workspace, and each Project then chooses what it maps to: a repository, a channel, a tracker project or a design file.
+
+## The kinds
+
+| Kind | Group in the dashboard | What it does | How it authenticates |
+| --- | --- | --- | --- |
+| [GitHub](/integrations/github/) | Git hosts | A `CirCI / <build name>` check with Approve and Reject buttons, one summary comment on the pull request, `/circi` commands | The instance's GitHub App, installed on your account or organization. The connection stores only the installation ID |
+| [GitLab](/integrations/gitlab/) | Git hosts | A commit status and one summary note on the merge request, `/circi` commands | An access token with the `api` scope |
+| [Bitbucket](/integrations/bitbucket/) | Git hosts | A commit status and one summary comment on the pull request, `/circi` commands | A workspace or repository access token, or an app password with its username |
+| [Slack](/integrations/slack/) | Chat | Review requested, overdue, rejected and approved notices in one channel per Project | Installing the CirCI Slack app (OAuth) |
+| [Linear](/integrations/linear/) | Issue trackers | Create an issue from a build or a screenshot | A personal API key |
+| [Jira](/integrations/jira/) | Issue trackers | Create an issue from a build or a screenshot | Site address, account email and API token (Jira Cloud) |
+| [Figma](/integrations/figma/) | Design tools | Link screenshots to Figma frames | A personal access token |
+
+Azure DevOps, Microsoft Teams and Penpot appear in the Add integration dialog as **Planned**. Nothing is built for them.
+
+Integrations are separate from [outgoing webhooks](/integrations/webhooks/), which are a Project setting that sends signed JSON to your own services, and from sign-in providers, which let people log in (see [Instance settings](/self-hosting/instance-settings/)).
+
+<Aside type="note">
+GitHub, GitLab, Bitbucket, Slack, Linear, Jira and Figma have so far been tested against fakes of their HTTP APIs, not against the live services. The repository's own release checklist asks for one manual run against each real service. Report anything that differs from these pages.
+</Aside>
+
+## Where you add them
+
+Open **Workspace settings**, then **Integrations**. The page lists the integrations you have added, grouped by kind, each with its logo. **Add integration** opens a dialog that lists every kind, searchable and filterable by group. A tile can say:
+
+- **Planned**: the kind isn't built.
+- **Not set up on this server**: the kind needs an app of its own on this instance (the GitHub App, the Slack app) and none is configured yet.
+
+Adding an integration connects it. Its own page then maps Projects to targets: which repository, channel, tracker project or Figma file each Project uses. Some kinds also keep project-wide links there (Figma's frame links). A Project can map to one git host and to one connection per tracker kind, and mapping it to another moves it.
+
+If a provider rejects the stored credentials (a revoked token, an uninstalled app), the integration is flagged as needing attention. The page shows a banner with the reason, and no notices go out for it until you reconnect. Connecting the same account again replaces its credentials and clears the flag for git hosts, and Slack's Reinstall button does the same for Slack.
+
+An external account connects to one Workspace of the instance. A second Workspace that tries the same GitHub installation, GitLab user, Bitbucket workspace or Figma account gets a conflict error.
+
+## Who can add them
+
+Owners and admins of the Workspace connect, map and remove integrations. Other members can look at the integrations and their mappings. Credentials are encrypted with the instance secret before they're stored and are never sent back to the dashboard. See [Members and roles](/using/members-and-roles/).
+
+A GitHub link can also be made from a Project's own settings page and by `circi admin github link`; see [GitHub](/integrations/github/).
+
+## The integration SDK
+
+Every integration is one definition in `packages/integrations/src/kinds/<id>/`, listed once in one registry. The definition says:
+
+- the credentials form (the dashboard draws its fields from it) and how to verify them with the provider,
+- what the provider can do (the capabilities: send chat messages, create issues, list and link design frames, act as a git host),
+- how a Project maps to a target, and which events it wants,
+- when an error means a person has to act.
+
+The Add dialog, the HTTP routes, the worker job and the mapping page all read that definition, so a new integration needs no route, table or page of its own. Contributors who want to add one should read [Repository layout](/contributing/repo-layout/) and `docs/integration-sdk.md` in the repository.
+
+## Events
+
+The events a Workspace's integrations can hear about are `review.requested`, `review.overdue`, `build.rejected`, `build.approved` and `build.completed`. Slack is the only chat integration and lets you choose among the first four per Project. Git hosts get their status and comment from the build itself, not from these events. See [Review requests and rules](/using/review-requests-and-rules/) for when review requests are sent.

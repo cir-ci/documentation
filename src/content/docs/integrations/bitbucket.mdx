@@ -1,0 +1,76 @@
+---
+title: Bitbucket
+description: Report builds to Bitbucket Cloud pull requests as a commit status and a summary comment.
+---
+{/* Source: packages/integrations/src/kinds/bitbucket (definition.ts, client.ts), packages/integrations/src/git/render.ts, packages/services/src/git/events.ts, packages/services/src/uploads/status.ts, docs/integration-sdk.md, packages/auth/src */}
+
+import { Steps, Aside } from '@astrojs/starlight/components'
+
+The Bitbucket integration supports Bitbucket Cloud. Each build of a linked Project shows on the pull request as a commit status named `CirCI / <build name>`, and CirCI keeps one summary comment on the pull request up to date. It's the smallest of the three git integrations: statuses and comments, with commands, but no buttons.
+
+## Connect Bitbucket
+
+An owner or admin of the Workspace opens **Workspace settings**, **Integrations**, **Add integration**, **Bitbucket**.
+
+<Steps>
+
+1. In Bitbucket, create a workspace or repository access token that can read and write pull requests. An app password also works.
+2. In CirCI, enter the **Bitbucket workspace** ID (`acme` in `bitbucket.org/acme`; lower case letters, digits, dashes and underscores) and the **Access token**.
+3. For an app password only, also enter the **Username** it belongs to.
+4. Connect. CirCI lists the workspace's repositories with the token, so a rejected token, a token that can't read the workspace, or an unknown workspace fails here with a message.
+
+</Steps>
+
+A connection is one Bitbucket workspace, and that workspace can be connected in one CirCI Workspace only. Connecting again with a new token replaces the credentials and clears a "needs attention" flag. If Bitbucket later rejects the token, the integration shows the reason.
+
+## Add the webhook on Bitbucket
+
+On the Bitbucket integration's page, owners and admins see the webhook address and the secret. In each Bitbucket repository open **Repository settings**, **Webhooks** and add:
+
+- **URL**: `PUBLIC_URL/webhooks/bitbucket` (the alias `PUBLIC_URL/api/integrations/bitbucket/webhook` also works).
+- **Secret**: the secret shown on the integration's page. It's derived from the instance secret.
+- **Triggers**: pull request created, updated, and comment created.
+
+CirCI checks the `X-Hub-Signature` header on every delivery.
+
+## Link a Project to a repository
+
+On the integration's page, choose the repository each CirCI Project reports to, written `workspace/repository` (for example `acme/web`). A Project reports to one git host at a time.
+
+## What shows on the pull request
+
+- **Commit status.** One per build name. The key is `circi-` plus a short hash of the build name, so each build name keeps its own status. It's `INPROGRESS` while screenshots are processed, `SUCCESSFUL` when there are no changes, the changes are approved, or the Project doesn't block merging, and `FAILED` when changes await review with merge blocking on or are rejected. It links to the build.
+- **Summary comment.** One comment per pull request, edited in place, with a table of builds and any hosted sites for the newest commit.
+
+To block merging, add a merge check in Bitbucket that requires the build status to pass. The **Merge gate** settings on the CirCI Project page apply as they do for GitHub.
+
+## Commands
+
+Comment `/circi approve`, `/circi reject` or `/circi rerun` on a line of its own. Bitbucket has no reactions, so CirCI always answers with a reply: "Done: approved the latest CirCI build", or a short explanation when nothing applied.
+
+A person may use commands when CirCI can match their Bitbucket account ID to a CirCI account that belongs to the Project's Workspace. See the caution below.
+
+<Aside type="caution">
+CirCI has no Bitbucket sign-in provider (the sign-in providers are GitHub, GitLab, Google and OpenID Connect), so there is currently no way for a person to link a Bitbucket account to their CirCI account in the dashboard. Until that exists, `/circi` commands on Bitbucket are answered with the "link your account" reply. Review in the dashboard instead. If you know a way to link, check `packages/auth/src` and `packages/db/src/repositories/build-authors.ts` in the repository.
+</Aside>
+
+## What the webhook handles
+
+- Pull request created or updated: remembers the author, and gives builds their pull request number by matching the source commit or branch.
+- Comment created on a pull request: the `/circi` commands.
+
+Nothing happens when a pull request is merged or declined.
+
+## The merge gate in CI
+
+`circi upload --wait` decides who blocks the merge: the status on Bitbucket or the CI job (see [the CLI](/ci/cli/)). The server picks the status as the gate when a Project reports to a git host, but today it only knows that when the GitHub App is configured on the instance. On an instance without it, a Bitbucket-linked Project defaults to the CI job being the gate (exit code 1 until approved). Pass `--gate status` to make Bitbucket's status the gate.
+
+## Not built
+
+- Approve and Reject buttons (Bitbucket statuses have none).
+- Bitbucket Server and Data Center. Only Bitbucket Cloud is supported.
+- Linking a Bitbucket account for commands, as described above.
+
+<Aside type="note">
+Only fake-tested so far: the Bitbucket edge is faked in the repository's tests.
+</Aside>

@@ -1,0 +1,54 @@
+---
+title: How a build flows
+description: From CI upload to the merge gate, step by step.
+---
+{/* Source: PLAN.md section 7.1-7.4, README.md (Uploading from CI, GitHub), packages/cli/src, packages/core/src/baselines, packages/core/src/builds */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+
+A **build** is one upload of screenshots for one commit. This page follows a build through its four stages.
+
+<Steps>
+
+1. **Upload.** After your screenshot tests, CI runs `circi upload ./screenshots --wait`.
+
+   - The CLI collects every `*.png` under the folder (the screenshot's name is its path without `.png`) and hashes each file with SHA-256.
+   - It reads the commit, branch, pull request and base branch from the CI environment (GitHub Actions, GitLab CI, Bitbucket Pipelines, Gitea and Forgejo Actions, CircleCI, Buildkite, Jenkins, Azure Pipelines).
+   - It collects the git history it needs to find the right baseline. A shallow checkout is fine: it fetches the base branch and just enough history.
+   - It creates the build, learns which files the server doesn't have yet, uploads only those, and finalizes. Unchanged screenshots are stored once, whatever the number of builds.
+
+2. **Compare.** When the last shard of the build arrives, the build moves to *processing* and the worker pairs screenshots by name with the baseline.
+
+   - A screenshot only in this build is **added**, only in the baseline **removed**, with the same hash **unchanged** (no work), and otherwise it is diffed.
+   - A different image size is always a change, whatever the share of changed pixels. Otherwise a change is a change when it is bigger than the project's diff threshold.
+   - The worker writes a diff image and thumbnails, and sets the build's conclusion.
+
+3. **Review.** If anything changed, the build needs review. People open it in the dashboard (or from the GitHub check) and approve or reject each screenshot, or the whole build. Screenshots that are known to be flaky are marked so reviewers can skip them. See [Reviewing a build](/using/reviewing-a-build/).
+
+4. **Merge gate.** What blocks the merge depends on whether the project is linked to a repository on a git host.
+
+   - **Linked (GitHub today with buttons and commands; GitLab and Bitbucket with statuses and comments):** the CirCI check is the gate. Mark it as required in branch protection. `circi upload --wait` waits for processing, exits 0 even with unreviewed changes (so a green CI job isn't confused with a visual review) and fails only on processing errors. Approving in the dashboard or on GitHub updates the check within seconds, with no re-run.
+   - **Not linked:** the CI job is the gate. `--wait` exits 1 while changes need review. After approval, re-run the job.
+   - `--gate status` or `--gate exit-code` overrides the choice.
+
+</Steps>
+
+## Which baseline?
+
+The baseline for a build is the nearest earlier build of the same project and the same build name (`--name`, default `default`) that is approved, or that matched its own approved baseline.
+
+- For a **pull request**, CirCI walks the history from the merge base of the pull request and its base branch.
+- For a **default-branch build**, it walks from the commit before.
+- If the history isn't available, it falls back to the newest eligible build on the default branch. The build page says which source it used.
+- If there is none, every screenshot is new and waits for review.
+
+<Aside type="caution" title="The first build">
+A project's first build has nothing to compare with, so all its screenshots are *added* and need review, even on the default branch. Automatic approval of default-branch builds only applies once there is an approved baseline, so someone approves every screenshot once. Until then later builds have no baseline either.
+</Aside>
+
+## Re-runs and sharding
+
+- A new build for the same project, build name and commit whose screenshots are identical to an already approved build is approved automatically, so "approve, then re-run the CI job" goes green. It never carries over a rejection or a changed screenshot.
+- Parallel jobs upload as shards of one build (`--shard 2/4`). CirCI processes the build when the last shard arrives. A shard that never arrives fails the build after `UPLOAD_TIMEOUT_MINUTES` (default 60), naming the missing shards.
+
+Next: [Key concepts](/introduction/key-concepts/).

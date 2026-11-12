@@ -1,0 +1,90 @@
+---
+title: Site domains
+description: The sites domain, custom domains and the cookie rules you must check.
+---
+{/* Source: docs/reference/static-sites.md, deploy/Caddyfile, packages/config/src/sites-host.ts, apps/server/src/http/routes/internal.ts, apps/server/src/cli/commands/doctor.ts */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+
+Hosted sites (a built Storybook, a test report, coverage) are optional and off until you set `STATIC_SITES_HOST` and switch on **Host static sites** in a project's settings. How people use them is described in [Hosted sites](/using/hosted-sites/). This page is for the operator.
+
+<Aside type="danger" title="Read this before you set STATIC_SITES_HOST">
+A hosted site runs **arbitrary JavaScript from the build you uploaded**. Two rules keep it from reaching anything else, and CirCI can't enforce them for you.
+
+1. **The sites domain is dedicated to CirCI.** Use a domain you serve nothing else from, not even its apex or `www`, and never set cookies on it. Browser JavaScript can set cookies for any parent domain that isn't a public suffix. CirCI refuses a `STATIC_SITES_HOST` that equals the dashboard's host, is its parent or child, or shares its parent domain (`ci.acme.io` and `sites.acme.io` could set cookies for each other).
+2. **Nothing on the dashboard's parent domain may set cookies for the whole domain** (for example `Domain=acme.io` when the dashboard is `ci.acme.io`). Uploaded code can't read those cookies, but every one is sent to the dashboard. Keep them host-scoped.
+</Aside>
+
+## Check the rules
+
+In the browser's developer tools (Application, Cookies) look at the dashboard host's parent domain and `www`, or:
+
+```sh
+curl -sI https://acme.io     | grep -i 'set-cookie.*domain='
+curl -sI https://www.acme.io | grep -i 'set-cookie.*domain='
+```
+
+`circi admin doctor` does a best-effort version. It can't see every host, so it repeats this warning.
+
+## Addresses
+
+Every upload belongs to a commit and gets two addresses on the sites domain:
+
+| | Address | Serves |
+|---|---|---|
+| Commit | `<first 12 hex of the SHA>-<site>.acme-sites.com` | that commit's site, exactly |
+| Branch | `<12 hex of sha256(branch)>-<site>.acme-sites.com` | the newest upload on that branch |
+
+Every request needs sign-in: the dashboard hands the site a one-minute single-use token if you belong to the project's workspace, and the site then sets its own host-only `HttpOnly` cookie, re-checked against your dashboard session at least once a minute.
+
+## DNS and certificates with Route53
+
+- `A` and `AAAA` for the dashboard host in its own zone.
+- A **new hosted zone for the sites domain** with `*` `A` and `AAAA` pointing at the server (leave the apex empty).
+- Certificates: the dashboard host by HTTP-01, and `*.acme-sites.com` by **DNS-01** (needed for wildcards). The bundled Caddy covers both.
+
+A minimal IAM policy for Caddy, on **the sites hosted zone only**:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    { "Effect": "Allow", "Action": ["route53:ListHostedZonesByName", "route53:GetChange"], "Resource": "*" },
+    {
+      "Effect": "Allow",
+      "Action": ["route53:ChangeResourceRecordSets", "route53:ListResourceRecordSets"],
+      "Resource": "arn:aws:route53:::hostedzone/SITES_ZONE_ID"
+    }
+  ]
+}
+```
+
+```hcl
+resource "aws_route53_zone" "sites" { name = "acme-sites.com" }
+
+resource "aws_route53_record" "sites_wildcard" {
+  zone_id = aws_route53_zone.sites.zone_id
+  name    = "*.acme-sites.com"
+  type    = "A"
+  ttl     = 300
+  records = [var.server_ip]
+}
+```
+
+## Custom domains
+
+A site can have **one custom domain**, such as `storybook.acme.com`, that always serves the project's default branch. Owners and admins set it in the project's **Sites** page.
+
+<Steps>
+
+1. Enter the domain. It must be a plain host name. CirCI refuses the dashboard host, anything related to it by the cookie rules (so with the dashboard on `ci.acme.io`, `storybook.acme.io` is refused; use another registrable domain such as `storybook.acme.com`), the sites domain and everything under or above it, and a domain another site already holds.
+2. Add the DNS record it shows: a **CNAME** to `custom.<sites domain>`. A domain that can't be a CNAME (an apex) can use `A` and `AAAA` records with the server's addresses.
+3. Press **Check DNS**. The domain is served, and gets a certificate, only once a check has seen it point at this server. A later failing check un-verifies it.
+
+</Steps>
+
+Certificates for custom domains come from Caddy's on-demand TLS. On the first request Caddy asks `GET /internal/tls-ask?domain=<host>`, which answers `200` for a verified custom domain and `404` for everything else. The endpoint refuses requests that came through a proxy (`X-Forwarded-For`) and answers at most 300 questions a minute: keep it on the internal network and never publish it.
+
+## Limits
+
+`STATIC_SITES_MAX_MB` (default 200) is the largest site. An expired address answers `410 Site expired` to people who may open the site. See the plan notes in `docs/reference/static-sites.md` for what is not built yet (the review page's live view, per-file S3 upload, branch expiry, and garbage collection of old versions).

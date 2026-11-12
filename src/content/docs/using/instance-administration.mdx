@@ -1,0 +1,74 @@
+---
+title: Instance administration
+description: "What instance admins manage: accounts, all workspaces, instance settings, the GitHub App and health checks."
+---
+{/* Source: apps/web/src/features/instance (InstanceHubPage.tsx, hub-model.ts, AccountsPage.tsx, WorkspacesPage.tsx, InstanceSettingsPage.tsx, HealthPage.tsx, GithubAppSection.tsx, CreateWorkspaceDialog.tsx, ChangeEmailDialog.tsx, AddressChangeBanner.tsx), apps/web/src/features/setup, packages/config/src/schema.ts */}
+{/* instance-setting: this page names settings that are moving from environment variables into Instance settings. Search the docs for "instance-setting" to find every place to update. */}
+
+import { Aside } from '@astrojs/starlight/components'
+import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
+
+An **instance** is one CirCI installation. **Instance admins** run it: they manage every account and workspace, the server's settings and its health. This is separate from the workspace roles in [Members and roles](/using/members-and-roles/): an instance admin isn't automatically a member of any workspace, and sees a workspace's projects only if they belong to it.
+
+## Where to open it
+
+Instance admins have **Instance admin** in the account menu and an **Instance** entry in the sidebar. The hub lists three groups:
+
+| Group | Page | What it holds |
+|---|---|---|
+| People | Accounts | Everyone who can sign in, and who runs the instance |
+| Workspaces | All workspaces | Every workspace, new and deleted ones |
+| Server | Instance settings, Health | Address, sign-in methods, mail, who can create workspaces; checks and background jobs |
+
+The first account created during first-run setup becomes the first instance admin. See [Sign in and set up](/getting-started/sign-in-and-set-up/).
+
+## Accounts
+
+A searchable, paged list (up to a page of accounts at a time). **Create account** takes a **Name**, an **Email**, how they first sign in (**Show a generated password** or **Email a sign-in code**), an optional password, and **Make them an instance admin**. A generated password is shown once, in a dialog: pass it on yourself, because CirCI doesn't keep it readable.
+
+Each account's actions menu offers:
+
+- **Change email**: takes effect at once with no confirmation mail, so it works without mail and for a lost mailbox. They stay signed in.
+- **Reset password**: signs them out everywhere and shows a new password once.
+- **Make instance admin** or **Remove instance admin**. The last instance admin can't be removed.
+- **Sign out everywhere**.
+- **Ban** (with an optional reason and number of days; empty means no end) or **Lift ban**. Banning signs the person out at once; their reviews stay in each build's history.
+
+The same actions exist in `circi admin user` on the server. See [Admin CLI](/reference/admin-cli/).
+
+## Workspaces
+
+Every workspace with its size, each opening its settings hub. **New workspace** asks for a **Name** and the **Owner's email**, which must already have an account; the owner invites the rest. Deleted workspaces are in a group of their own with the days left. A workspace's owner deletes it, it is purged after 30 days, and an instance admin can **Restore** it or **Delete permanently** from its hub. See [Workspace settings](/using/workspace-settings/).
+
+## Instance settings
+
+<InstanceSettingNote setting="Instance settings">
+Settings that used to be environment variables are moving into this page: who can create workspaces, sign-in methods, limits, SMTP, the Slack app and the instance's single sign-on providers. For each, set it in Instance settings, or by the environment variable as the initial value. See [Instance settings](/self-hosting/instance-settings/) for the current state.
+</InstanceSettingNote>
+
+<Aside type="caution">
+In the dashboard version this page was written from, Instance settings shows the effective values with the variable behind each, read-only. The GitHub App section is the editable part. Where a value isn't editable, change the variable and restart.
+</Aside>
+
+| Section | Shows | Variable |
+|---|---|---|
+| Dashboard address | The address every outgoing link uses, and old addresses that redirect to it | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` |
+| Sign-in methods allowed | Password, email code and single sign-on providers: the outer limit, which each workspace can only narrow | `AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_*` |
+| Who can create workspaces | Instance admins only, or every signed-in account | `WORKSPACE_CREATION` (`admin` or `anyone`, default `admin`) |
+| Mail | The SMTP server, the sender, and **Send test mail** to your own address | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_FROM` |
+| Storage and limits | Storage driver, retention for new projects, grace period for unused files, upload timeout, private webhook addresses | `STORAGE_DRIVER`, `GC_GRACE_HOURS`, `UPLOAD_TIMEOUT_MINUTES`, `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` |
+| Hosted sites | The sites domain and largest site, or "Not set up" | `STATIC_SITES_HOST`, `STATIC_SITES_MAX_MB` |
+
+Without mail, nobody gets sign-in codes or invitations by email. See [Configuration](/self-hosting/configuration/) and [Environment variables](/reference/environment-variables/).
+
+### GitHub App
+
+One click on **Create GitHub App** sends you to GitHub with the App's name, address, permissions and events filled in. You confirm it there and install it on your account or organization. Checks and pull request comments are all it asks for. CirCI stores what GitHub returns, encrypted, on this instance. The **App name** must be unique across GitHub, and the organization field can stay empty to use your account. The badge says whether the App is **Not set up**, from the **Environment** (`GITHUB_APP_*`, edited there) or **Created here**. See [GitHub](/integrations/github/).
+
+### Address changes
+
+When the dashboard's address changes, instance admins see a banner and a **Moving to …** checklist on Health: old links redirect, but a few registrations outside CirCI (such as the GitHub App's webhook) still name the old address. The checklist can be dismissed and shown again.
+
+## Health
+
+**Run checks again** reruns the same findings as `circi admin doctor`, grouped as **Services**, **Domains and cookies** (best effort: it can only check hosts it knows) and a summary of Passing, Need a look and Failing. It also shows **Background jobs** (waiting, running, oldest waiting, retrying, failed) per queue, and the **Setup code** state: only needed on a fresh install, where the code is in the server log or from `circi admin setup-code`. See [Scaling the worker](/self-hosting/scaling-the-worker/).

@@ -1,0 +1,102 @@
+---
+title: Project settings
+description: "Every project setting, what it changes, who can change it, and which ones save on their own."
+---
+{/* Source: apps/web/src/features/project-settings (ProjectSettingsHubPage.tsx, hub-model.ts, ProjectSettingsPage.tsx, SettingsForm.tsx, settings-patch.ts, ProjectMembersPage.tsx, CiTokenPage.tsx, WebhooksPage.tsx), apps/web/src/features/projects (ProjectIdentity.tsx, DeleteProjectSection.tsx, NewProjectDialog.tsx), packages/core/src/project/project-settings-rules.ts, packages/services/src/access/policies.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+A project's settings decide how its builds are compared, what holds back a merge, who reviews, and what gets connected to it. Settings is a closed area of the dashboard: you move around inside it, and its way back leads to the app, but no page in the app links into it.
+
+## Where to open them
+
+- The project page's **Settings** button, and the **Project settings** item when you right-click a project in the sidebar. Both are shown only to owners and admins.
+- `Cmd` + `K`, then type the page's name (for example "Webhooks"). Inside settings the menu offers that area's pages and the way back, and nothing of the app.
+- **Settings** in the workspace menu, then **Projects**, then the project. See [Workspace settings](/using/workspace-settings/).
+
+The hub lists the project's pages in three groups, each with a one-line summary such as "2 webhooks" or "3 rules":
+
+| Group | Pages |
+|---|---|
+| Project | General, Members, CI token |
+| Reviews | Reviews and triage, Ignore regions |
+| Connections | Webhooks, Sites |
+
+## Who can do what
+
+Owners and admins of the workspace change a project's settings. A project member who isn't an owner or admin sees only **Members** and **Ignore regions**, read-only, and is sent back to the hub from the other pages. Someone who can't see the project at all gets "not found". See [Members and roles](/using/members-and-roles/).
+
+## Creating a project
+
+Owners and admins create projects from the **Projects** page with **New project**. Step 1 asks for the workspace, a **Name**, a **Default branch** (builds on it become the baselines other branches compare with) and, optionally, a repository to link. Step 2 shows the project's **CI token** once, with a CI example to copy. Copy it now: later you can only rotate it. See [Create a project](/getting-started/create-a-project/). Several repositories can also be imported at once from a connected git host; see [GitHub](/integrations/github/).
+
+## General
+
+The first section, **Display Settings**, saves as soon as you change a field, with a toast:
+
+- **Display Name**, with the icon and colour tile beside it. Picking a colour or an icon saves at once ("Icon and colour saved").
+- **URL Slug**, used in addresses and in `circi admin` commands. Changing it breaks existing links, including bookmarks and the links in existing pull request comments; new builds post the new address. The CI token keeps working.
+- **Default Branch**: its approved builds are the baselines. It must be a valid git branch name.
+
+Each of these shows a check mark when it differs from what is saved, and you confirm it there.
+
+Everything below saves together with one **Save changes**, and **Discard** reverts. The buttons stay disabled until something changes.
+
+### Repository
+
+Shows the linked repository, or "No repository linked". **Link a repository** (or **Change**) goes to the workspace's integrations, because git hosts are connected there. **Remove** (owners and admins) stops CirCI posting checks and comments on that repository's pull requests; builds already uploaded stay. With a repository linked, CirCI posts a check named `CirCI / <build name>` and one summary comment on each pull request. See [GitHub](/integrations/github/), [GitLab](/integrations/gitlab/) and [Bitbucket](/integrations/bitbucket/). If the connection needs attention, a banner at the top says so.
+
+### Comparison
+
+| Setting | Meaning | Limits |
+|---|---|---|
+| Diff threshold | A screenshot counts as changed when more than this share of its pixels differ. A change of size is always a change | 0 to 100 %. Stored as a share between 0 and 1 |
+| Keep builds for | Older builds and their hosted sites expire. The newest approved baseline on the default branch never does | 1 to 3650 days. New projects start at 30 |
+
+See [Retention and garbage collection](/self-hosting/retention-and-gc/).
+
+### Merge gate
+
+What the check on a pull request says while changes wait for review. It only blocks merging if the repository marks the check as required.
+
+- **Unreviewed changes block merging**: the check stays pending until someone approves. Off: it passes with a "changes to review" summary.
+- **Flaky-only changes block merging**: when the only changes are to flaky screenshots. Choose Inherit from workspace, On or Off. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+- **Approve default-branch builds automatically**: builds on the default branch become the new baseline without review. Needs an approved baseline, so a project's first build is always reviewed.
+
+### Hosted sites
+
+**Host static sites** is shown only when the instance has a sites domain. See [Hosted sites](/using/hosted-sites/).
+
+### Danger zone
+
+**Delete project** removes the project with its builds, screenshots, hosted sites, rules and webhooks, and stops its CI token working. Screenshot files are cleaned up by retention afterwards. You type the confirmation phrase, `workspace/project`, to enable the button. It can't be undone.
+
+## Members
+
+Who is in the project and their role. Owners and admins see every project; a member sees the projects they belong to. A member who isn't an owner or admin sees the list and can **Leave project**. Owners and admins can **Add members** (picking from the workspace's members) and **Remove from project**. Removing yourself reads **Leave project**.
+
+## CI token
+
+The page shows the token as a hint (never the full secret), when it was created and by whom, and when it was last used. **Rotate token** makes a new token and deletes the old one: the old one stops working at once, so CI fails until you update its secret. The new token is shown once. The page also shows the two secrets CI needs, `CIRCI_TOKEN` and `CIRCI_API_URL`, with the upload command and its exit codes; when a repository is linked it explains that the check on the pull request is the gate. See [CLI](/ci/cli/).
+
+## Reviews and triage
+
+Review rules, the review target, automation, the triage rotation, the flaky threshold and the snooze default. Rules apply as soon as you confirm them; the rest saves with **Save changes**. See [Review requests and rules](/using/review-requests-and-rules/) and [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+
+## Ignore regions
+
+A list of the screenshots that have ignore regions, each opening its baseline inside settings. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
+
+## Webhooks
+
+**Add webhook** takes an **Address** and the **Events** to send: `build.completed` (a build finished processing, with its conclusion) and `build.reviewed` (someone approved or rejected a build). The address must be public: localhost, private networks and cloud metadata addresses are refused. The signing secret is shown once.
+
+Each webhook offers **Send test**, **Regenerate secret** (the old secret stops signing at once) and **Remove**, and lists its recent deliveries. Deliveries are signed JSON; any answer other than 2xx is retried 8 times with backoff, and redirects aren't followed. See [Webhooks](/integrations/webhooks/) for the payloads and how to check a signature.
+
+## Sites
+
+The same page as the project's Sites: branches, uploads and the custom domain. See [Hosted sites](/using/hosted-sites/).
+
+<Aside type="tip">
+Channels, issue trackers and Figma are set per project in the workspace's integrations, not here. See [Integrations](/integrations/overview/).
+</Aside>

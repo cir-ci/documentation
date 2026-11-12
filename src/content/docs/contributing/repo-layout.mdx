@@ -1,0 +1,70 @@
+---
+title: Repo layout and layers
+description: The folders of the CirCI repository and the rules that keep the layers apart.
+---
+{/* Source: CLAUDE.md (Layers, Types, Style), README.md (Layout), docs/architecture-review/layering.md, packages/services/test/layers.test.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+CirCI is a pnpm and Turborepo monorepo. The rules below are enforced by a test (`packages/services/test/layers.test.ts`) and by lint overrides in `.oxlintrc.json`.
+
+## Folders
+
+```text
+apps/server      circi command: HTTP routes (CI API, dashboard, sign-in), admin CLI, composition
+apps/worker      background jobs: claim loop and thin job adapters (inlined in the server bundle)
+apps/web         the dashboard (React, TanStack Router and Query, Base UI), organized by feature
+packages/api     the wire types of the dashboard API (types only)
+packages/auth    better-auth composition, admin operations
+packages/cli     circi upload for CI
+packages/config  environment parsing and validation
+packages/core    rules with no I/O: baselines, pairing, outcomes, limits, slugs, review rules
+packages/db      Drizzle schema, migrations, repositories, queries (dashboard read models), queue
+packages/diff    PNG validation, pixel diffs (JS, worker threads, native Rust), thumbnails
+packages/integrations  the integration SDK and one folder per kind (GitHub, GitLab, ...)
+packages/services      use cases: transactions, repositories, queued jobs and notices
+packages/sites         hosted-site handling
+packages/storage       local-disk and S3 drivers, checksum-verified writes
+packages/testing       db-free test support
+packages/ui            the design system: Base UI parts, CSS modules, --circi-* tokens
+packages/vitest        @circi/vitest
+deploy/ dev/ e2e/ perf/ docs/
+```
+
+## Layers
+
+```text
+transport    apps/server (http/, cli/), apps/worker (handlers/, jobs/), apps/web
+   v         parse the request, check who is asking, call a service or read model, shape the reply
+services     packages/services/src/<area>/   use cases: open the transaction, call repositories, queue the jobs and notices
+core         packages/core                   rules with no I/O
+db           packages/db   queries/ (read models), repositories/ (stores), queue/, schema/
+adapters     packages/{integrations,storage,diff,sites}   talk to GitHub, Slack, S3, images
+```
+
+Dependencies point downwards; `core` and `api` depend on nothing.
+
+## The rules
+
+- **`@circi/db` subpaths say the layer.** Apps use `@circi/db/queries` and types only, never repositories, the queue, the schema, `drizzle-orm` or `pg`. The composition root is the one app folder that wires the database.
+- **Repositories store and look up, nothing else.** They never queue jobs; a repository that changes something returns what happened and the caller decides.
+- **Services own every change that triggers something.** The service opens the transaction and queues the jobs and notices, so a webhook delivery or check run exists exactly when the change is committed (a transactional outbox). Services import no app, Fastify, auth, api or config.
+- **Read models** (`db/queries`) are shaped for the dashboard; their return types must fit `@circi/api` (`apps/server/src/contract-check.ts` fails to typecheck if they drift).
+- **Routes decide no roles** (use the policies in `services/src/access`), nothing outside config reads `process.env`, and a route file stays under 250 lines.
+- `core` imports no `@circi` package; `storage`, `sites`, `diff` and `config` import at most `core`; `integrations` import at most `core` and `api`; the web app imports no server package.
+- Better-auth's tables (`schema/auth.ts`) are generated (`pnpm db:auth-schema`, then `pnpm db:generate`), never edited by hand.
+
+## Where does new code go?
+
+A new **endpoint**: the route in `apps/server/src/http/routes/<area>/`, the use case in `packages/services/src/<area>/`, the read model in `packages/db/src/queries/`, the store in `packages/db/src/repositories/`, the wire type in `packages/api`. A new **background job**: a body in `services/src/jobs/` or the area folder and a thin adapter in `apps/worker/src/handlers/`; never a new job name or payload key without a rolling-deploy plan. A **pure rule**: `packages/core`.
+
+## Conventions
+
+- Types that belong to something live in type-only namespaces (`createBuild.Input`, `Row.Props`, `Build.Detail`); a namespace contains only types.
+- Imports use the `#folder/*` aliases from each package's `package.json`.
+- CSS modules: `styles.root`; colors and sizes come from `--circi-*` tokens, never copied hex values.
+- Copy: contractions with the straight apostrophe, "ID", "Delete" vs "Remove", "screenshot" never "snapshot".
+
+<Aside type="note">
+The full text is `CLAUDE.md` at the repository root. Background and the evidence behind the layering rules: `docs/architecture-review/` (read `layering.md` first), and the integration SDK is described in `docs/integration-sdk.md`.
+</Aside>

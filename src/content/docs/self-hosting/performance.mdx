@@ -1,0 +1,52 @@
+---
+title: Performance
+description: Measured throughput of the diff engines, and what it means for sizing.
+---
+{/* Source: docs/perf/2026-11-11-diff-engines.md, docs/reference/running-costs.md, packages/config/src/schema.ts (CIRCI_DIFF_ENGINE), perf/ */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+The pixel comparison runs in the worker, and it is the only CPU-heavy work. CirCI ships three engines, chosen with `CIRCI_DIFF_ENGINE`:
+
+| Engine | What it is |
+|---|---|
+| `native` (default) | A Rust addon the image ships. Runs off the event loop and across cores. If it can't load, the worker logs a warning and uses `js`. |
+| `js-workers` | The JavaScript comparison (pixelmatch) in a pool of worker threads. No native module. |
+| `js` | The same comparison on the worker's event loop. The simplest. |
+
+## The numbers
+
+From the load tests of 2026-11-11 (Apple M4 Pro, 12 cores, 24 GB, Node 26.13, the built server bundle, Postgres in Docker, local-disk storage). Each build has 10 screenshots at 1440x900 and 1440x4000, about 6 of them pixel-diffed.
+
+| 20 concurrent builds | `js` | `js-workers` | `native` |
+|---|---:|---:|---:|
+| Builds per minute | 118 | 251 | **261** |
+| Time from finalize to done (median) | 9.9 s | 4.4 s | 4.5 s |
+| Worker CPU (average) | 239% | 514% | 485% |
+| Worker memory, peak | 696 MB | 1835 MB | 703 MB |
+
+- The JavaScript engine's limit is the worker's one JavaScript thread, not the CPU: it plateaus at about 2.4 cores whatever the load.
+- `native` is 2.2 times the throughput of `js` and halves the wait. It uses 15 to 20 percent less memory.
+- `js-workers` recovers almost all of that throughput without a native module, at about 2.6 times the memory (each thread is its own V8 isolate).
+- Per CPU the engines cost about the same (about 50 to 55 builds a minute per worker core). The win is using the machine's cores, so on a server short of cores the gain is smaller.
+- `native` is the clear winner on large changes (2.7 times faster per diff).
+- Builds of 120 screenshots: about 23 builds per minute with `native` and `js-workers`, against 10.5 with `js`.
+- The dashboard's read API isn't affected: p95 was 9 to 26 ms for every endpoint at 50 virtual users.
+
+<Aside type="note">
+One machine, one run each. 100 and more concurrent builds couldn't be measured on that Mac (Docker Desktop's VM shut down). That run found and fixed a real bug: a dropped Postgres connection used to crash the server and worker. Run heavier loads on Linux or in CI.
+</Aside>
+
+## Cost levers
+
+In rough order of effect (from `docs/reference/running-costs.md`; items marked proposal there are not built):
+
+1. Use object storage with free egress (R2, B2 behind Cloudflare, MinIO on the same disk).
+2. Shorten retention where history isn't needed.
+3. Screenshots are served with `private, max-age=31536000, immutable`, so a second view costs nothing.
+4. Keep the worker in the same process on a 1 to 2 vCPU box, and size diff concurrency to your cores.
+5. Thumbnails (WebP, at most 480x720) keep lists light.
+
+## Run the suite yourself
+
+The repository has a k6 suite (`pnpm perf`, `pnpm perf:down`; `perf/`). See [Contributing](/contributing/local-development/).

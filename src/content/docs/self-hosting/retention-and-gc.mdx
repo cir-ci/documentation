@@ -1,0 +1,51 @@
+---
+title: Retention and garbage collection
+description: How long builds and sites are kept, and how unused files are deleted.
+---
+{/* Source: packages/services/src/retention/retention.ts, apps/worker/src/sweeps.ts, packages/core/src/builds/limits.ts, packages/core/src/project/project-settings-rules.ts, apps/server/src/cli/commands/storage.ts, PLAN.md section 8 */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+CirCI deletes what is old and what nothing uses, in the background.
+
+## Retention
+
+Each project keeps its builds for a number of days, **30 by default** (1 to 3650). Builds older than that, and hosted-site versions past their retention, expire. Change it in the project's settings. Files are deleted after expiry only once nothing references them.
+
+Baselines matter: a build that is still the baseline for others should be kept. Choose a retention longer than the longest time a branch lives.
+
+## Garbage collection
+
+The worker runs a **retention pass every 6 hours**. One pass:
+
+1. Purges workspaces that were deleted more than 30 days ago.
+2. Expires old builds and site versions.
+3. Removes expired undo records.
+4. Un-marks files that became referenced again, and **marks** files nothing references (screenshots, diffs, thumbnails, site files, upload claims).
+5. **Deletes** files that have been marked for longer than the grace period.
+
+The grace period (`GC_GRACE_HOURS`, default 24) makes this race-free: a new upload that references a marked file clears the mark, and before deleting, each file is re-checked under a lock. Several processes can run a pass at once.
+
+## Run it by hand
+
+```sh
+circi admin storage usage                      # sizes by kind, and what is waiting to be deleted
+circi admin storage gc --dry-run               # what would be deleted; changes nothing
+circi admin storage gc                         # run a pass now
+circi admin storage gc --grace-hours 0         # delete unused files without waiting
+```
+
+The dry run doesn't simulate builds and sites that are past retention.
+
+## Other cleanups
+
+| Variable | Default | What it deletes |
+|---|---|---|
+| `JOB_RETENTION_DAYS` | 14 | Finished background jobs (done or failed). `0` keeps them. |
+| `UPLOAD_TIMEOUT_MINUTES` | 60 | Not a deletion: a build still uploading after this long fails and names the missing shards. `0` never. |
+
+Webhook delivery history keeps the latest 50 deliveries per webhook.
+
+<Aside type="caution">
+`--grace-hours 0` skips the safety delay. Don't run it while uploads are in flight.
+</Aside>

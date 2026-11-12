@@ -1,0 +1,47 @@
+---
+title: Requirements
+description: What you need to run CirCI, and how big a machine.
+---
+{/* Source: README.md (Self-hosting, Development), deploy/README.md, deploy/docker-compose.yml, docs/reference/running-costs.md, docs/perf/2026-11-11-diff-engines.md */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+## What CirCI is made of
+
+| Part | What it is |
+|---|---|
+| **The app** | One image (`circi`) that runs the HTTP server, the dashboard and the background worker. `circi all` runs them in one process; `circi serve` and `circi worker` run them separately. |
+| **Postgres** | The only database. The compose file uses `postgres:18-alpine`. The worker's job queue lives in it. |
+| **File storage** | Screenshots, diffs, thumbnails and hosted sites: local disk (a Docker volume) or any S3-compatible bucket. |
+| **A reverse proxy** | Optional for a try-out, needed for https. The repository ships a Caddy setup. |
+| **SMTP** | Optional. Needed for email sign-in codes, invitations and "new sign-in" mail. |
+
+## What you need
+
+- A Linux host (or any machine) with **Docker and Compose v2**. A small install is one VM.
+- A **hostname** for the dashboard (`ci.acme.io`) and TLS for it. Logins need https outside local development.
+- For [hosted sites](/self-hosting/site-domains/): a second, **separate** domain used for nothing else.
+- Enough disk (local storage) or a bucket. Storage is usually the biggest cost: every screenshot, diff and thumbnail is an object, though unchanged screenshots are stored once.
+
+## Sizing
+
+From reading the code and the load tests (see [Performance](/self-hosting/performance/)):
+
+- About **2 vCPU and 4 GB** with a small Postgres serves dozens to a couple of hundred people browsing, and a few CI builds per minute. Browsing is cheap; **image processing is the limit**.
+- The worker runs two builds at a time by default. With the native diff engine a 12-core machine processed about 250 builds of 10 screenshots per minute in the load tests. A server with fewer cores gets less.
+- Worker memory peaks around 700 MB with the default engine in those tests (the `js-workers` engine used about 2 GB).
+- Keep the worker in the same process on a 1 to 2 vCPU box. Run a second worker only when the queue depth (Instance settings, Health) stays above zero.
+
+<Aside type="note">
+The capacity figures are estimates, except for the measurements in the performance report, which came from one machine. Measure on yours.
+</Aside>
+
+## Database connection
+
+The worker wakes on Postgres `LISTEN/NOTIFY`, so give it a **direct connection or session pooling**. A transaction pooler such as PgBouncer in transaction mode doesn't work. `DATABASE_POOL_MAX` (default 10) caps connections per process.
+
+## Where the image comes from
+
+The Docker image is built from the repository (`docker compose up -d --build` in `deploy/`). Its layers include a Rust build of the native diff engine for the image's own architecture. The image runs one bundle plus `sharp`, `pg` and the AWS SDK, about 457 MB.
+
+Next: [Docker Compose](/self-hosting/docker-compose/).

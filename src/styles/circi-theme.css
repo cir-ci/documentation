@@ -1,0 +1,177 @@
+/*
+ * CirCI design tokens and the Starlight mapping. This is the ONE place colours, fonts and radii
+ * are defined (DESIGN.md explains the mapping).
+ *
+ * Source of truth: repo/packages/ui/src/theme.ts (palettes) and repo/packages/ui/tokens-css.ts
+ * (radii, fonts). The `--circi-*` names are the app's own, copied with their values, so a token
+ * means the same thing here and in the dashboard. Starlight's `--sl-*` variables below are
+ * derived from them: change a colour in the first block, not in the mapping.
+ *
+ * Dark is the reference scheme (Starlight's `:root` default); light is `:root[data-theme='light']`.
+ * Starlight sets `data-theme` from the reader's choice (Auto follows the system).
+ */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+/* ---------- 1. CirCI tokens ---------- */
+:root {
+  /* brand (the logo's tones, same in both schemes) */
+  --circi-brand-maroon: #724039;
+  --circi-brand-blush: #e4b1a7;
+  --circi-brand-rosewood: #d49689;
+  --circi-brand-salmon: #d48677;
+  --circi-brand-terracotta: #b96e5f;
+
+  --circi-surface-chrome: #0c0a09;
+  --circi-surface-panel: #131110;
+  --circi-surface-raised: #1a1716;
+  --circi-surface-overlay: #221e1d;
+  --circi-surface-highest: #2b2625;
+
+  --circi-text-primary: #ede6e3;
+  --circi-text-secondary: #a89d98;
+  --circi-text-tertiary: #998e89;
+
+  --circi-accent-main: #d9806d;
+  --circi-accent-text: #eaa493;
+  --circi-accent-on-accent: #1c0f0c;
+  --circi-accent-hover: #f3c2b6;
+  --circi-accent-subtle: rgba(217, 128, 109, 0.12);
+
+  --circi-state-approved: #5cb8a8;
+  --circi-state-review: #eec84f;
+  --circi-state-processing: #9aa3f7;
+  --circi-state-failed: #ff0a1f;
+  --circi-state-rejected: #ff5fa8;
+  --circi-state-added: #b1d038;
+  --circi-state-removed: #ef8e32;
+  --circi-state-flaky: #f9b5fe;
+  --circi-state-approved-text: #5cb8a8;
+  --circi-state-review-text: #eec84f;
+  --circi-state-failed-text: #ff3b4c;
+  --circi-state-rejected-text: #ff5fa8;
+
+  --circi-line-subtle: rgba(255, 255, 255, 0.07);
+  --circi-line-strong: rgba(255, 255, 255, 0.12);
+  --circi-action-hover: rgba(255, 255, 255, 0.045);
+  --circi-action-selected: rgba(255, 255, 255, 0.075);
+  --circi-shadow-popup: none;
+  --circi-scrim: rgba(0, 0, 0, 0.5);
+
+  --circi-radius-inline: 4px;
+  --circi-radius-control: 6px;
+  --circi-radius-popup: 8px;
+  --circi-radius-panel: 10px;
+  --circi-radius-command: 12px;
+
+  --circi-font-sans: 'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+  --circi-font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+:root[data-theme='light'] {
+  --circi-surface-chrome: #e9e2de;
+  --circi-surface-panel: #fefdfc;
+  --circi-surface-raised: #ffffff;
+  --circi-surface-overlay: #ffffff;
+  --circi-surface-highest: #dcd3ce;
+
+  --circi-text-primary: #1c1614;
+  --circi-text-secondary: #51463f;
+  --circi-text-tertiary: #63574f;
+
+  --circi-accent-main: #a63f27;
+  --circi-accent-text: #8e3420;
+  --circi-accent-on-accent: #ffffff;
+  --circi-accent-hover: #6f2615;
+  --circi-accent-subtle: rgba(166, 63, 39, 0.1);
+
+  --circi-state-approved: #0f7a68;
+  --circi-state-review: #946f00;
+  --circi-state-processing: #4350cc;
+  --circi-state-failed: #8f0026;
+  --circi-state-rejected: #b00f66;
+  --circi-state-added: #6c7300;
+  --circi-state-removed: #a85a00;
+  --circi-state-flaky: #b04ea7;
+  --circi-state-approved-text: #0d6b5b;
+  --circi-state-review-text: #654600;
+  --circi-state-failed-text: #8f0026;
+  --circi-state-rejected-text: #b00f66;
+
+  --circi-line-subtle: rgba(28, 15, 12, 0.1);
+  --circi-line-strong: rgba(28, 15, 12, 0.18);
+  --circi-action-hover: rgba(28, 15, 12, 0.05);
+  --circi-action-selected: rgba(28, 15, 12, 0.085);
+  --circi-shadow-popup: 0 8px 24px rgba(28, 15, 12, 0.14);
+  --circi-scrim: rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- 2. Starlight mapping ---------- */
+/* Starlight's scale: white is the strongest text and black the page ground in dark; the scale is
+   inverted in light, so the same names work in both. gray-7 .. gray-5 are fills and borders,
+   gray-3 .. gray-2 are text, gray-1 is emphasised text. */
+:root {
+  --sl-font: var(--circi-font-sans);
+  --sl-font-mono: var(--circi-font-mono);
+
+  --sl-color-white: var(--circi-text-primary);
+  --sl-color-gray-1: color-mix(in srgb, var(--circi-text-primary) 88%, var(--circi-surface-panel));
+  --sl-color-gray-2: var(--circi-text-secondary);
+  --sl-color-gray-3: var(--circi-text-tertiary);
+  --sl-color-gray-4: color-mix(in srgb, var(--circi-text-tertiary) 50%, var(--circi-surface-panel));
+  --sl-color-gray-5: var(--circi-surface-highest);
+  --sl-color-gray-6: var(--circi-surface-overlay);
+  --sl-color-gray-7: var(--circi-surface-raised);
+  --sl-color-black: var(--circi-surface-panel);
+
+  --sl-color-accent-low: color-mix(in srgb, var(--circi-accent-main) 16%, var(--circi-surface-panel));
+  --sl-color-accent: var(--circi-accent-main);
+  --sl-color-accent-high: var(--circi-accent-text);
+
+  --sl-color-text: var(--circi-text-primary);
+  --sl-color-text-accent: var(--circi-accent-text);
+  --sl-color-text-invert: var(--circi-accent-on-accent);
+  --sl-color-bg: var(--circi-surface-panel);
+  --sl-color-bg-nav: var(--circi-surface-chrome);
+  --sl-color-bg-sidebar: var(--circi-surface-chrome);
+  --sl-color-bg-inline-code: var(--circi-surface-raised);
+  --sl-color-bg-accent: var(--circi-accent-main);
+  --sl-color-hairline: var(--circi-line-subtle);
+  --sl-color-hairline-light: var(--circi-line-subtle);
+  --sl-color-hairline-shade: var(--circi-line-subtle);
+
+  --sl-shadow-md: var(--circi-shadow-popup);
+  --sl-shadow-lg: var(--circi-shadow-popup);
+
+  /* Callouts: tip teal (approved), note periwinkle (processing), caution amber (review), danger crimson (failed). */
+  --sl-color-blue-low: color-mix(in srgb, var(--circi-state-processing) 14%, var(--circi-surface-panel));
+  --sl-color-blue: var(--circi-state-processing);
+  --sl-color-blue-high: var(--circi-state-processing);
+  --sl-color-green-low: color-mix(in srgb, var(--circi-state-approved) 14%, var(--circi-surface-panel));
+  --sl-color-green: var(--circi-state-approved);
+  --sl-color-green-high: var(--circi-state-approved-text);
+  --sl-color-orange-low: color-mix(in srgb, var(--circi-state-review) 14%, var(--circi-surface-panel));
+  --sl-color-orange: var(--circi-state-review);
+  --sl-color-orange-high: var(--circi-state-review-text);
+  --sl-color-red-low: color-mix(in srgb, var(--circi-state-failed) 14%, var(--circi-surface-panel));
+  --sl-color-red: var(--circi-state-failed);
+  --sl-color-red-high: var(--circi-state-failed-text);
+  --sl-color-purple-low: color-mix(in srgb, var(--circi-state-flaky) 14%, var(--circi-surface-panel));
+  --sl-color-purple: var(--circi-state-flaky);
+  --sl-color-purple-high: var(--circi-state-flaky);
+
+  --sl-nav-height: 3.25rem;
+  --sl-sidebar-width: 17rem;
+  --sl-content-width: 46rem;
+  --sl-text-body: 0.9375rem;
+  --sl-line-height: 1.65;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: color-mix(in srgb, var(--circi-accent-main) 12%, var(--circi-surface-panel));
+  --sl-color-gray-1: color-mix(in srgb, var(--circi-text-primary) 90%, var(--circi-surface-panel));
+  --sl-color-gray-4: color-mix(in srgb, var(--circi-text-tertiary) 45%, var(--circi-surface-panel));
+  --sl-color-gray-5: var(--circi-surface-highest);
+  --sl-color-gray-6: var(--circi-surface-chrome);
+  --sl-color-gray-7: color-mix(in srgb, var(--circi-surface-chrome) 45%, var(--circi-surface-panel));
+}

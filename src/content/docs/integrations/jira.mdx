@@ -1,0 +1,45 @@
+---
+title: Jira
+description: Create a Jira Cloud issue from a build or a screenshot, with the build link and the diff.
+---
+{/* Source: packages/integrations/src/kinds/jira (definition.ts, client.ts), packages/services/src/issues/issues.ts, packages/core/src/integrations/issues.ts, apps/web/src/features/builds (IssueAction.tsx, CreateIssueDialog.tsx) */}
+
+import { Steps, Aside } from '@astrojs/starlight/components'
+
+The Jira integration works like [Linear](/integrations/linear/): a **Create issue** button in the build review files an issue in the Jira project you chose, with the build link and the diff. It supports Jira Cloud.
+
+## Connect Jira
+
+An owner or admin of the Workspace opens **Workspace settings**, **Integrations**, **Add integration**, **Jira**.
+
+<Steps>
+
+1. In Atlassian, create an API token at id.atlassian.com: **Security**, **API tokens**.
+2. In CirCI, enter the **Site address** (`acme.atlassian.net`; `https://` is added when you leave it out), the **Account email** and the **API token**, and connect.
+
+</Steps>
+
+The site address must be an `https` address with a host name: IP addresses, `localhost` and `.local` names are refused, so the server can't be pointed at its own network. CirCI checks the credentials with Jira on connect. The token is stored encrypted. Issues are created as the account that owns the token. If Jira later rejects the credentials, the integration is flagged as needing attention.
+
+## Choose a project and issue type
+
+On the Jira integration's page, choose a Jira **Project** for each CirCI Project. There is also an optional **Issue type** text field. Left empty, issues are created as `Task`. Whatever you type must exist in that Jira project. CirCI doesn't check it when you save, so a wrong name only fails when someone tries to create an issue, with Jira's error in the dialog. A Project maps to one Jira connection at a time.
+
+## Create an issue
+
+The dialog and the description are the same as for Linear: a title pre-filled as `Visual regression: <screenshot> in build #<number>`, a description preview, and a **Tracker** switch when the Project has both trackers. For Jira the dialog also shows the target Jira project key.
+
+The description becomes paragraphs in Jira's document format, with the build address and a `Diff:` line holding the diff image address. The image is linked, not attached, because attaching needs the image bytes and those sit behind CirCI's sign-in. People open the link in a browser where they are signed in to CirCI.
+
+On success CirCI records the issue key (for example `WEB-45`) on the build and shows a **Created WEB-45** toast. On failure nothing is recorded.
+
+## Not built
+
+- Status sync, transitions and comments back to Jira.
+- Jira Server and Data Center. Only Jira Cloud sites are accepted.
+- Attaching the diff image to the issue.
+- Choosing assignee, labels or priority in the dialog.
+
+<Aside type="note">
+Only fake-tested so far: the Jira edge is faked in the repository's tests.
+</Aside>
