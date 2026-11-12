@@ -36,7 +36,7 @@ Global: `--debug` prints the stack trace of an unexpected error (or set `DEBUG=1
 - Every `*.png` under the folder is a screenshot, named by its path without the extension, using `/` on every OS (`settings/profile.png` is `settings/profile`).
 - Hidden folders and `node_modules` are skipped. Symbolic links to files and folders are followed; a link back up the tree is skipped.
 - At most **25 MB** per screenshot and 10,000 screenshots per build.
-- An optional `<file>.png.json` sidecar next to a screenshot adds metadata (browser, viewport, test name): a JSON object.
+- An optional `<file>.png.json` file next to a screenshot adds metadata (browser, viewport, test name): a JSON object.
 - PNG only.
 
 ### Environment variables

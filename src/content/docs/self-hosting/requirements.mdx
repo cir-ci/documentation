@@ -46,7 +46,7 @@ The capacity figures are estimates, except for the measurements in the performan
 
 The worker wakes on Postgres `LISTEN/NOTIFY`, so give it a **direct connection or session pooling**. A transaction pooler such as PgBouncer in transaction mode can't carry notifications, so the worker polls every second instead and builds start a little later. `DATABASE_POOL_MAX` (default 10) caps connections per process.
 
-## Where the image comes from
+## The image
 
 The image is built from the repository (`docker compose up -d --build` in `deploy/`) and includes a Rust build of the native diff engine for the image's own architecture. It runs one bundle plus `sharp`, `pg` and the AWS SDK, about 457 MB.
 

@@ -27,8 +27,8 @@ Six tiles open the page. Each has its value, a note, and how it compares with th
 
 | Tile | What it measures |
 |---|---|
-| Median time to first review | From a build being ready to the first approval or rejection by a person (automatic approvals don't count), with the 90th percentile in the note |
-| Median time to decision | From the build being ready to it being approved or rejected, with its 90th percentile |
+| Median time to first review | From a build being ready to the first approval or rejection by a person (automatic approvals don't count), with the slowest 10% in the note |
+| Median time to decision | From the build being ready to it being approved or rejected, with the slowest 10% |
 | First reviews within target | The share of reviews that came within the project's review target, weekends not counted. "No review target set" when there is none. See [Review requests and rules](/using/review-requests-and-rules/) |
 | Builds reviewed | How many builds got a review in the range |
 | Builds with changes | The share of finished builds that had changes, and how many |
@@ -37,10 +37,10 @@ Six tiles open the page. Each has its value, a note, and how it compares with th
 ## Trends
 
 - **Median time to first review**, per week or day.
-- **Time to decision**: the median and the 90th percentile as two lines, in hours.
+- **Time to decision**: the median and the slowest 10% as two lines, in hours.
 - **Outcomes**: finished builds per period, stacked as Approved, Auto-approved, Rejected and Failed.
 - **Waiting for review**: builds waiting at the end of each day.
-- **Flaky screenshots** at the end of each period, **Failed builds** per period and **Processing time** (median and 90th percentile, in minutes). See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+- **Flaky screenshots** at the end of each period, **Failed builds** per period and **Processing time** (median and slowest 10%, in minutes). See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
 
 Hover a bar or point for its exact numbers.
 
@@ -62,6 +62,6 @@ Four tables point at specific things to act on:
 - **Oldest waiting builds**: builds still waiting for review, longest first, with branch, author and wait time.
 - **Rejected most often**: screenshots rejected most in the range.
 
-Every table sorts when you click a column header. The sort is kept in the address (`?sort=`), so you can share a sorted view.
+Every table sorts when you click a column header. The sort is kept in the page's address, so you can share a sorted view.
 
 To collect build and review events in your own system rather than read them here, use [webhooks](/integrations/webhooks/).

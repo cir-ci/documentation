@@ -46,7 +46,7 @@ Radii: inline 4px, control 6px, popup 8px, panel 10px, command 12px (`--circi-ra
 (`--circi-state-*`: approved, review, processing, failed, rejected, added, removed, flaky) are available for
 status chips in prose; light-scheme values are darkened for 4.5:1 contrast.
 
-Body text is 15px (`--sl-text-body`) where the app uses 13px: documentation is read, not scanned.
+Body text is 16px with a 1.6 line height (`--sl-text-base`, set on `.sl-markdown-content`) where the app uses 13px: documentation is read, not scanned. Paragraphs are capped at 62ch.
 
 ## Overrides (Starlight `components:` in `astro.config.mjs`)
 
@@ -57,8 +57,10 @@ the glossary, environment variables, HTTP API and CLI). The sidebar, table of co
 no repository to link to, so the header has no social icons. Code blocks use Expressive Code with the vitesse themes and the app's
 surfaces (`expressiveCode.styleOverrides`).
 
-Line length: paragraphs and lists are capped at `60ch` (about 70 characters at 15px); tables, code and figures use the full column.
-Type scale: body 15px (`--sl-text-base`), h1 30px, h2 22px, h3 18px.
+Line length: paragraphs and lists are capped at `62ch` (about 70 characters at 16px); tables, code and figures use the full column.
+Type scale: body 16px, h1 30px, h2 24px with a hairline above, h3 17px.
+
+Shell: like the app, the chrome color fills the page and the main pane is an inset panel (10px radius, 8px from the right and bottom, a 1px `line-subtle` border). Callouts follow the app's Banner (1px border at 40% of the status color, 8% tint, 6px radius); keys, status chips and scrollbars follow `Kbd`, `StatusChip` and `global.css`. The brand glow (`--circi-glow`) is used on the landing hero only. Smart punctuation is off (`markdown.smartypants: false`) so `--flags` stay copyable.
 
 ## Components
 
@@ -77,7 +79,7 @@ In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a
   Put a `CopyCommand` or a fenced block inside a step.
 - Callouts: Starlight's `<Aside type="note|tip|caution|danger">`, mapped to processing, approved, needs review and failed.
   Note is information, tip is good news, caution needs a decision, danger breaks something.
-- `ScreenFrame.astro`: `<ScreenFrame name="build-review" alt="..." caption="..." width={760} />`. `aspect="16 / 10"` crops to a fixed ratio
+- `ScreenFrame.astro` (a window title strip, and a click opens the image large in a native dialog: `title="…"` sets the strip's text): `<ScreenFrame name="build-review" alt="..." caption="..." width={760} />`. `aspect="16 / 10"` crops to a fixed ratio
   (keeps the top of the capture) so a run of captures lines up; images are lazy and reserve their box (`loading="eager"` for the first one on a page). Reads
   `src/assets/screens/<name>-dark.jpg` and `<name>-light.jpg` and shows the one for the reader's theme. Capture both from the running
   dashboard (`pnpm dev` in the repo) at 1440px wide. Alt text says what the screenshot shows, not "screenshot of".
@@ -95,7 +97,7 @@ In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a
   For several lines use a fenced `sh` block (Expressive Code adds its own copy button).
 - `ReviewCompare.astro` / `.tsx`: the landing page's before / after / diff slider (React island). Landing page only.
 - `EnvTable.astro`: `<EnvTable />` or `<EnvTable group="mail" />`. Reads `src/data/env.ts`.
-- `InstanceSettingNote.astro`: the dashed callout for a passage about a setting that is edited in Instance settings (sentence-case title).
+- `InstanceSettingNote.astro`: the dashed callout for a passage about a setting that is edited in Instance settings (sentence-case `title` prop, explicit on every use; not for settings that are read-only there).
   Searching for `InstanceSettingNote` finds every spot. The truth to state everywhere: an environment variable, when set, wins and locks the
   setting ("Set by <VAR>", and a save is refused); otherwise the saved value; otherwise the default. Changes apply within about 30 seconds
   on every server process, with no restart. Secrets are write-only and sealed at rest.
@@ -119,7 +121,7 @@ builds), the build flow, and a screenshot of the build page.
 
 - MDX, no H1 in the body. Frontmatter `title` and `description`.
 - First line after frontmatter: `{/* Source: repo files this page came from */}` (invisible).
-- Vocabulary and copy (from the repo's `CLAUDE.md`): Project and Workspace, "screenshot" never "snapshot",
+- Vocabulary and copy (from the repo's `CLAUDE.md`): US spelling, "project" and "workspace" lowercase in running text (capital only at a sentence start or in a UI label), "screenshot" never "snapshot", "build page", "sign in", menu paths as **Settings** › **Integrations\*\*,
   "ID", straight apostrophes, sentence case, "Delete" vs "Remove", no emojis.
 - In prose, put `{`, `}` and `<` in backticks (MDX).
 

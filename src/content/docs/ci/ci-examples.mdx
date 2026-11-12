@@ -97,7 +97,7 @@ Every job uploads its own screenshots; CirCI joins them into one build and proce
 - run: npx circi upload ./screenshots-mobile --name mobile
 ```
 
-## Overrides
+## Override what's detected
 
 `CIRCI_COMMIT`, `CIRCI_BRANCH`, `CIRCI_PR_NUMBER` and `CIRCI_BASE_BRANCH` replace what is detected. `CIRCI_PARALLEL_NONCE` ties shards together when the CI isn't recognized.
 
