@@ -4,7 +4,9 @@ description: "The three workspace roles, who can see which project, and how to i
 ---
 {/* Source: apps/web/src/features/members (MembersPage.tsx, InviteForm.tsx, model.ts), apps/web/src/features/project-settings/ProjectMembersPage.tsx, packages/core/src/project/roles.ts, packages/services/src/access/policies.ts, packages/auth/src/constants.ts, apps/server/src/http/routes/dashboard/builds/comments.ts */}
 
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, Steps } from '@astrojs/starlight/components'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
+import Kbd from '../../../components/Kbd.astro'
 
 People belong to a workspace with one of three roles, and are added to the projects they work on. The role decides what someone can change; project membership decides what they can see.
 
@@ -30,6 +32,8 @@ Separately from these, an **instance admin** runs the whole installation: accoun
 
 Open it from **Settings** in the workspace menu, then **Members**. It is the one workspace settings page every member can open. Each person is a row with their name and email, tags for how they sign in (for example a password or a connected account), the projects they're in, and their role. The header counts people, and the find field filters by name, email or role.
 
+<ScreenFrame name="use-members" alt="The Members page of the Acme workspace, seen by its owner. Nine people are listed with name, email, how they sign in, the projects they are in, and a role control set to Admin or Member, with an actions menu on each row. The owner's own row shows Owner. An Invite button sits in the header." caption="The Members page as an owner sees it: a role control and an actions menu on every row but their own." />
+
 Owners and admins also see:
 
 - **Invite** in the page header.
@@ -37,9 +41,15 @@ Owners and admins also see:
 
 ### Invite someone
 
+<Steps>
+
 1. Choose **Invite**.
+
 2. Enter the **Email** and a **Role**: Admin or Member. Owners aren't invited; a workspace's first owner is whoever created it.
+
 3. Choose **Send invite**. The toast says "Invitation sent to …".
+
+</Steps>
 
 An invitation is valid for 7 days. Inviting an address that already has a pending invitation replaces it: the earlier link stops working, and the toast says so. The people you've invited but who haven't accepted yet are under **Pending invitations**, each with its role and when it expires. **Resend** sends it again, and **Revoke** cancels it.
 

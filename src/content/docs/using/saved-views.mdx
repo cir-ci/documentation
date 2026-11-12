@@ -4,9 +4,14 @@ description: "Filter a project's builds list, save the filters as a view, and ke
 ---
 {/* Source: apps/web/src/features/views (ViewPage.tsx, SaveViewDialog.tsx, api.ts), apps/web/src/features/builds/list (BuildsBrowser.tsx, BuildFilterBar.tsx, builds-filters.ts, display-options.ts), apps/web/src/app/Sidebar.tsx, apps/web/src/app/shell-model.ts, apps/server/src/http/routes/dashboard/inbox/views.ts, packages/services/src/views/views.ts */}
 
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, Steps } from '@astrojs/starlight/components'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
+import Kbd from '../../../components/Kbd.astro'
+import StatusChip from '../../../components/StatusChip.astro'
 
 A project's builds page can be narrowed with filters. A **saved view** keeps a set of filters under a name, so "Rejected builds on release branches" is one click in the sidebar instead of four chips every time. Views are yours alone: nobody else in the workspace sees them.
+
+<ScreenFrame name="use-views" alt="The saved view Needs review in the Acme workspace. The filter row shows the chip Status: Needs review set, with Branch, Author, Reviewer, Build name and Date unset, Clear filters and a Display button. Below, builds from several projects are listed with their state and the number of changed screenshots." caption="The Needs review view in the sidebar. Its Status chip is set and the list below follows it." />
 
 ## Filter the builds list
 
@@ -16,7 +21,7 @@ Below the header, a row of chips filters by:
 
 | Chip | Choices |
 |---|---|
-| Status | Needs review, Approved, Rejected, Processing, Failed, Expired |
+| Status | Needs review, Approved, Rejected, Processing, Failed, Expired. Needs review filters by the review, not the build's state, so a failed build with no decision can appear under it |
 | Branch | Pick from the branches builds were made on, or type part of a name |
 | Author | Text |
 | Reviewer | Text |
@@ -25,25 +30,31 @@ Below the header, a row of chips filters by:
 
 Each chip fills in once it is set and has a small clear button. **Clear filters** removes them all. The filters are kept in the address, so you can send a filtered list to someone.
 
-**Display options** (`Shift` + `v`) change how the list looks without changing which builds it holds:
+**Display options** (<Kbd keys="Shift+V" />) change how the list looks without changing which builds it holds:
 
 - **Group by**: No grouping, Status, Branch, Author or Day.
 - **Order**: Newest first, Oldest first, Most changes, or Needs attention first.
 - **Show**: Branch and commit, Author, Time and Change counts.
 
-These are remembered in your browser. `j` and `k` move through the list, `x` selects a build, `Space` peeks at it, `f` focuses the filters, and `Enter` opens it. With several builds selected, a bar offers Approve, Reject and Request review; see [Reviewing a build](/using/reviewing-a-build/).
+These are remembered in your browser. <Kbd keys="j" /> and <Kbd keys="k" /> move through the list, <Kbd keys="x" /> selects a build, <Kbd keys="Space" /> peeks at it, <Kbd keys="f" /> focuses the filters, and <Kbd keys="Enter" /> opens it. With several builds selected, a bar offers Approve, Reject and Request review; see [Reviewing a build](/using/reviewing-a-build/).
 
 ## Save a view
 
+<Steps>
+
 1. Set at least one filter. The **Save view** button appears next to **Clear filters**.
+
 2. Click it. The dialog lists the filters it will save and asks for a **Name** (up to 80 characters).
+
 3. Click **Save view**. A toast says "Saved view" with the name.
 
-The view is tied to the project whose list you filtered, and it appears in the sidebar under **Your views**. When the current filters already match a saved view, the button gives way to "Saved as" and its name.
+</Steps>
+
+The view is tied to the project whose list you filtered (a view saved without a project covers the whole workspace, and its list shows the project of each build), and it appears in the sidebar under **Your views**. When the current filters already match a saved view, the button gives way to "Saved as" and its name.
 
 ## Open and use a view
 
-Choose it under **Your views** in the sidebar, or search for it with `Cmd` + `K` (saved views are listed under Go to). It opens the project's builds list with the view's filters applied. You can change the filters on that page to look around, but those changes last only for the visit: a view isn't edited by browsing it. To keep a variation, set the filters on the project's own list and save again under a new name.
+Choose it under **Your views** in the sidebar, or search for it with <Kbd keys="Mod+K" /> (saved views are listed under Go to). It opens that builds list with the view's filters applied, under a **Views** breadcrumb. You can change the filters on that page to look around, but those changes last only for the visit: a view isn't edited by browsing it. To keep a variation, set the filters on the project's own list and save again under a new name.
 
 If a view is deleted, or belongs to someone else, its address shows "This view doesn't exist".
 

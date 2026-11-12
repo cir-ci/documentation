@@ -4,7 +4,10 @@ description: "What a baseline is, how CirCI picks the one a build is compared wi
 ---
 {/* Source: apps/web/src/features/baselines (BaselinesPage.tsx, BaselinePage.tsx, api.ts), apps/web/src/features/regions (IgnoreRegionsEditor.tsx, IgnoreRegionsPanel.tsx, IgnoreRegionsPage.tsx), packages/core/src/baselines (baseline.ts, pairing.ts), packages/services/src/pipeline/process.ts, apps/server/src/http/routes/dashboard/projects/ignore-regions.ts, apps/server/src/cli/commands/ignore-region.ts */}
 
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, Steps } from '@astrojs/starlight/components'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
+import Kbd from '../../../components/Kbd.astro'
+import StatusChip from '../../../components/StatusChip.astro'
 
 A **baseline** is the approved screenshot a new one is compared with. Every screenshot has a name, and a build's screenshot is compared with the baseline of the same name. This page covers how baselines are chosen, the Baselines page of a project, and **ignore regions**, the rectangles that are blanked out before comparing.
 
@@ -32,15 +35,19 @@ A rejected screenshot never becomes a baseline.
 
 ## The Baselines page
 
-Open a project in the sidebar and choose **Baselines**. It lists the current baseline of every screenshot name, grouped by the part of the name before the first `/` ("checkout/cart.png" is in **checkout**; names without a slash are under **Ungrouped**). The header counts them ("12 on main") and has a find field. Each row shows the name, the build it comes from (and the build name when it isn't `default`), when it was approved, and a **Flaky** chip when it is flaky. Until a build of the default branch finishes, the page says "No baselines yet".
+Open a project in the sidebar and choose **Baselines**. It lists the current baseline of every screenshot name, grouped by the part of the name before the first `/` ("checkout/cart.png" is in **checkout**; names without a slash are under **Ungrouped**). The header counts them ("12 on main") and has a find field. Each row shows a thumbnail, the name, the build it comes from (and the build name when it isn't `default`), when it was approved, a chip with the number of ignored regions, and a flaky chip that says why ("Came back to an earlier image 4 times") and opens the item in Triage. Until a build of the default branch finishes, the page says "No baselines yet".
 
-Press `j` and `k` to move, and right-click a row for Open, Open build, Open in Triage (when flaky), Open in new tab, Copy link and Copy name. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+<ScreenFrame name="use-baselines" alt="The Baselines page of the Web app project. Eight baselines grouped as dashboard, onboarding, settings and Ungrouped, each with a thumbnail and its build. Two show an ignored region chip and two a flaky chip." caption="Every screenshot name with its current baseline. The chips on the right say which have ignore regions or are flaky." />
+
+Press <Kbd keys="j" /> and <Kbd keys="k" /> to move, and right-click a row for Open, Open build, Open in Triage (when flaky), Open in new tab, Copy link and Copy name. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
 
 ### One baseline
 
 Open a row to see the screenshot's page: the baseline image, which build it is from and who approved it, **Open build**, and **History on main**: the recent builds where this screenshot changed, each with its status, newest first. If the screenshot is flaky, it says why.
 
 The page also holds the screenshot's ignore regions.
+
+<ScreenFrame name="use-ignore-regions" alt="The dashboard/overview baseline inside project settings. Above the image: the flaky reasons and the build it comes from. The baseline image has one ignore region drawn over the header's top right, shown with diagonal stripes and a number 1." caption="One baseline with its ignore region, striped over the top right of the header. Dragging on the image draws another." />
 
 ## Ignore regions
 
@@ -56,9 +63,15 @@ Owners and admins add, move, edit and remove regions. Other members see them. A 
 
 ### Add a region
 
-1. Open the screenshot's baseline page, or open the screenshot in a build and choose **Ignore regions** under **Dragging draws** in View options.
+<Steps>
+
+1. Open the screenshot's baseline page, or open the screenshot in a build and choose **Ignore regions** under **Dragging draws** in the View options menu (⋯).
+
 2. Drag a rectangle over the baseline image. It is saved at once, with a toast ("Ignore region added").
-3. To place it precisely, use the keyboard tool (the crosshair button): arrow keys move, `Shift` + arrows resize, `Enter` confirms.
+
+3. To place it precisely, use the keyboard tool (the crosshair button): arrow keys move, <Kbd keys="Shift" /> + arrows resize, <Kbd keys="Enter" /> confirms.
+
+</Steps>
 
 Drag a region's handles to move or resize it ("Ignore region saved"). In the list under the image, **Edit** opens fields for **Left**, **Top**, **Width** and **Height** in pixels, and **Remove** deletes the rectangle after a confirmation: the area is compared again from the next build. Each region shows its size and position (`300 x 40 at 120, 16`) and who added it.
 

@@ -4,6 +4,8 @@ description: "A workspace's name and address, defaults for its projects, sign-in
 ---
 {/* Source: apps/web/src/features/workspace-settings (WorkspaceSettingsHubPage.tsx, hub-model.ts, WorkspaceGeneralPage.tsx, BuildSettings.tsx, SignInMethods.tsx, WorkspaceSso.tsx, EmailDomains.tsx, WorkspaceStoragePage.tsx, DeleteWorkspaceSection.tsx, DeletedWorkspaceSection.tsx), apps/web/src/app/shell-model.ts, packages/core/src/project/workspace-deletion.ts, packages/services/src/access/policies.ts */}
 
+import ScreenFrame from '../../../components/ScreenFrame.astro'
+import Kbd from '../../../components/Kbd.astro'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
 A **workspace** is your organisation in CirCI: its members, projects, integrations and defaults. Workspace settings are where owners and admins shape them. Settings is a closed area: you move between its pages, and its way back leads to the app, but no page in the app links into it.
@@ -11,8 +13,8 @@ A **workspace** is your organisation in CirCI: its members, projects, integratio
 ## Where to open them
 
 - **Settings** in the workspace menu (the workspace's name at the top of the sidebar). Owners and admins land on **General**, other members on **Members**, and instance admins on the workspace's hub.
-- `g` then `s` from anywhere.
-- `Cmd` + `K`, then the page's name, for example "Members" or "Storage".
+- <Kbd keys="g" /> then <Kbd keys="s" /> from anywhere.
+- <Kbd keys="Mod+K" />, then the page's name, for example "Members" or "Storage".
 
 The hub groups the pages, each with a summary on the right:
 
@@ -27,11 +29,13 @@ A member who isn't an owner or admin sees only Members and Projects, and is redi
 
 ## General
 
-**Display Settings** save as soon as you change them:
+**Details** saves as soon as you change it:
+
+<ScreenFrame name="use-workspace-settings" alt="The General page of workspace settings for Acme. Details has the picture, Display name and URL slug. Below are Merge gate defaults with Flaky-only changes block merging turned on and the projects that inherit or set their own, then Triage defaults." caption="General for the Acme workspace. Each default shows which projects inherit it and which set their own." />
 
 - The **picture**: **Change picture** uploads one, and it can be removed ("Picture saved", "Picture removed").
-- **Display Name**.
-- **URL Slug**: where the workspace lives in CirCI. Changing it breaks existing links, including bookmarks and the links in existing pull request comments; new builds post the new address.
+- **Display name**.
+- **URL slug**: where the workspace lives in CirCI. Changing it breaks existing links, including bookmarks and the links in existing pull request comments; new builds post the new address.
 
 A name or slug field shows a check mark when it differs from what is saved, and you confirm it there.
 

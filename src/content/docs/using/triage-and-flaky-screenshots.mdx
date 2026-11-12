@@ -5,18 +5,23 @@ description: "The project's triage queue for flaky screenshots, missing baseline
 {/* Source: apps/web/src/features/triage (TriagePage.tsx, api.ts), apps/web/src/features/reviews/settings/RotationSection.tsx, apps/web/src/features/workspace-settings/BuildSettings.tsx, packages/core/src/builds/flaky.ts, packages/core/src/builds/outcome.ts, packages/core/src/reviews (rotation.ts, snooze.ts, triage.ts), packages/services/src/triage, apps/server/src/http/routes/dashboard/projects/triage.ts */}
 
 import { Aside } from '@astrojs/starlight/components'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
+import Kbd from '../../../components/Kbd.astro'
+import StatusChip from '../../../components/StatusChip.astro'
 
 Triage is the queue of problems with a project's **default branch** that no single pull request owns. Where a review is about one build, triage is about the screenshots and builds that keep causing trouble. It is a page of the project, in the sidebar under the open project, with a count of items waiting. Anyone who can see the project can work the queue.
+
+<ScreenFrame name="use-triage" alt="The Triage page of the Web app project. A flaky screenshot, two screenshots with no baseline and a failed build are listed in groups. The flaky one is open on the right with why it is flaky, the last 10 commits on main with the changed ones marked, a preview, the assignee and what it blocks." caption="A queue with one of each kind of item. The pane shows why dashboard/overview is flaky." />
 
 ## What is in the queue
 
 | Group | What it is |
 |---|---|
-| Flaky | A screenshot that keeps changing on the default branch without anyone meaning it to |
+| <StatusChip status="flaky">Flaky</StatusChip> | A screenshot that keeps changing on the default branch without anyone meaning it to |
 | No baseline | A screenshot with no approved baseline yet. The pane shows "First seen in build #N" |
-| Failed | A default-branch build that failed to process. The pane shows its error |
+| <StatusChip status="failed">Failed</StatusChip> | A default-branch build that failed to process. The pane shows its error |
 
-Each row shows the screenshot or build, why it is here, the assignee, and how long ago it was first seen. The pane on the right adds the detail: for flaky items the reason it is flaky, a strip of the last commits on the default branch with the ones where the screenshot changed marked `~`, and a preview; plus the assignee, how long the item has been in triage, and what it is **Blocking** ("The check on this commit is failing", or "3 pull requests show it as changed").
+Each row shows the screenshot or build, why it is here, the assignee, and how long ago it was first seen. The pane on the right adds the detail: for flaky items **Why it's flaky**, a strip of the **last 10 commits on main** with the ones where the screenshot changed marked `~`, and a preview (**Where it changes**) with **Open in build**; plus the assignee, how long the item has been in triage, and what it is **Blocking** ("The check on this commit is failing", or "3 pull requests show it as changed").
 
 The count next to the title is the number of items; "2 handled" counts what you dealt with since the page opened. "Triage is clear" means nothing is waiting.
 
@@ -26,11 +31,11 @@ Select a row and use the pane's buttons or the keys. Each action acts at once, a
 
 | Action | Key | Does |
 |---|---|---|
-| Open in build | `Enter` (or double-click) | Opens the build with the screenshot selected |
+| Open in build | <Kbd keys="Enter" /> (or double-click) | Opens the build with the screenshot selected |
 | Re-run comparison | | Failed items only, and the pane's one primary button. Compares the build again; it can't be undone |
-| Assign to me / Unassign me | `m` | Takes the item or gives it back |
-| Snooze | `h` | Until next push, Tomorrow, Next week, or a Custom date |
-| Dismiss | `d` | Takes the item out of the queue |
+| Assign to me / Unassign me | <Kbd keys="m" /> | Takes the item or gives it back |
+| Snooze | <Kbd keys="h" /> | Until next push, Tomorrow, Next week, or a Custom date |
+| Dismiss | <Kbd keys="d" /> | Takes the item out of the queue |
 
 "Until next push" wakes the item when a new build arrives on the default branch. A snooze with no choice lasts the project's **Snoozed items come back after** setting. Right-click a row for the same actions.
 
@@ -38,7 +43,7 @@ When an item leaves the queue the next row is selected, so you can keep going wi
 
 ## The weekly rotation
 
-A project can have a **triage rotation**: its members take turns, one calendar week each (Monday to Sunday, UTC). The header shows a chip such as "On triage: Ada until Mon". With **Assign new items to whoever is on triage** on, items nobody holds are assigned to the person on triage, and move to the next person at the handover. Items someone assigns or unassigns by hand stay as they left them. The person gets an Inbox notice, "Assigned to you as the person on triage". See [Inbox and reviews](/using/inbox-and-reviews/).
+A project can have a **triage rotation**: its members take turns, one calendar week each (Monday to Sunday, UTC). The header shows a chip such as "You're on triage until Mon" when it is you, and the name of whoever is on triage otherwise. With **Assign new items to whoever is on triage** on, items nobody holds are assigned to the person on triage, and move to the next person at the handover. Items someone assigns or unassigns by hand stay as they left them. The person gets an Inbox notice, "Assigned to you as the person on triage". See [Inbox and reviews](/using/inbox-and-reviews/).
 
 The rotation also catches builds that no [review rule](/using/review-requests-and-rules/) matches: those are requested from whoever is on triage that week.
 

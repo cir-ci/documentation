@@ -5,6 +5,8 @@ description: "Your profile, password, linked accounts, sessions, notifications, 
 {/* Source: apps/web/src/features/account (ProfilePage.tsx, YouSection.tsx, PasswordSection.tsx, LinkedAccounts.tsx, SessionsSection.tsx, NotificationsPage.tsx, PushSection.tsx, AppearancePage.tsx, ShortcutsPage.tsx, api.ts), apps/web/src/features/auth/UserMenu.tsx, apps/web/src/features/pwa, packages/auth/src/constants.ts */}
 
 import { Aside } from '@astrojs/starlight/components'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
+import Kbd from '../../../components/Kbd.astro'
 
 Account settings are about you, not a workspace: they follow you across workspaces and projects. Settings is a closed area of the dashboard, so these pages have their own way back to the app.
 
@@ -20,13 +22,13 @@ The **account menu** at the bottom of the sidebar (your name) has:
 - **Instance admin**, for instance admins only
 - **Sign out**
 
-`Cmd` + `K` also opens any of these pages by name, including **Appearance**.
+<Kbd keys="Mod+K" /> also opens any of these pages by name, including **Appearance**. Inside settings, the sidebar lists the account pages (Profile, Notifications, Appearance, Keyboard shortcuts) above the instance, workspaces and projects.
 
 ## Profile
 
-### Display Settings
+### Details
 
-- **Display Name** saves when you confirm it with its check mark ("Name saved").
+- **Display name** saves when you confirm it with its check mark ("Name saved").
 - **Email**. With mail set up on the server, changing it sends a confirmation to the new address ("Check … to confirm the change"), and the line "Waiting for confirmation of …" shows until you click the link. Without mail, the field is read-only: only an instance admin can change your email.
 - The picture isn't uploaded. CirCI uses the picture of the account you sign in with, then Gravatar for your email, then a generated avatar.
 
@@ -73,19 +75,22 @@ The page lists the kinds, so you know what to expect: review requested, mentione
 
 ## Appearance
 
-**Theme**: System (follows your computer), Light or Dark, each shown as a small preview. It is kept in this browser only, so another browser starts with its own choice. Screenshots under review always show on white. The account menu's Theme control, and `Cmd` + `K` then "theme", change it from anywhere.
+**Theme**: System (follows your computer), Light or Dark, each shown as a small preview. It is kept in this browser only, so another browser starts with its own choice. Screenshots under review always show on white. The account menu's Theme control, and <Kbd keys="Mod+K" /> then "theme", change it from anywhere. The change applies at once and needs no Save.
+
+<ScreenFrame name="use-account" alt="The Appearance page of account settings. Three cards, System, Light and Dark, each with a small preview of the dashboard; System is selected. A note says the choice is kept in this browser only. Below, Switch quickly names the command menu and the account menu." caption="Appearance, with System selected. This documentation follows the same three choices through its own theme control." />
 
 ## Keyboard shortcuts
 
-Every shortcut in one page, grouped as in the `?` dialog: General, Navigation, Tabs, Lists, Inbox, Build review and Triage. Press `?` anywhere to see them. The main ones:
+Every shortcut in one page, grouped as in the `?` dialog: General, Navigation, Tabs, Lists, Inbox, Build review and Triage. Press <Kbd keys="?" /> anywhere to see them. The main ones:
 
 | Key | Does |
 |---|---|
-| `Cmd` + `K` | Open the command menu |
-| `?` | Show the shortcut list |
-| `Cmd` + `\` | Hide or show the sidebar |
-| `g` `i`, `g` `r`, `g` `p`, `g` `t`, `g` `s` | Open Inbox, Reviews, Projects, Triage, Settings |
-| `j` / `k`, `Enter`, `Space`, `x`, `f` | Move, open, peek, select, filter in a list |
+| <Kbd keys="Mod+K" /> | Open the command menu |
+| <Kbd keys="?" /> | Show the shortcut list |
+| <Kbd keys="Mod+\" /> | Hide or show the sidebar |
+| <Kbd keys="Mod+Shift+C" /> | Copy the link to this page |
+| <Kbd keys="g" /> then <Kbd keys="i" />, <Kbd keys="r" />, <Kbd keys="p" />, <Kbd keys="t" />, <Kbd keys="s" /> | Open Inbox, Reviews, Projects, Triage, Settings |
+| <Kbd keys="j" /> / <Kbd keys="k" />, <Kbd keys="Enter" />, <Kbd keys="Space" />, <Kbd keys="x" />, <Kbd keys="f" /> | Move, open, peek, select, filter in a list |
 
 See [Reviewing a build](/using/reviewing-a-build/), [Inbox and reviews](/using/inbox-and-reviews/) and [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/) for the keys of each screen.
 

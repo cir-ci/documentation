@@ -5,16 +5,18 @@ description: "Every project setting, what it changes, who can change it, and whi
 {/* Source: apps/web/src/features/project-settings (ProjectSettingsHubPage.tsx, hub-model.ts, ProjectSettingsPage.tsx, SettingsForm.tsx, settings-patch.ts, ProjectMembersPage.tsx, CiTokenPage.tsx, WebhooksPage.tsx), apps/web/src/features/projects (ProjectIdentity.tsx, DeleteProjectSection.tsx, NewProjectDialog.tsx), packages/core/src/project/project-settings-rules.ts, packages/services/src/access/policies.ts */}
 
 import { Aside } from '@astrojs/starlight/components'
+import ScreenFrame from '../../../components/ScreenFrame.astro'
+import Kbd from '../../../components/Kbd.astro'
 
 A project's settings decide how its builds are compared, what holds back a merge, who reviews, and what gets connected to it. Settings is a closed area of the dashboard: you move around inside it, and its way back leads to the app, but no page in the app links into it.
 
 ## Where to open them
 
 - The project page's **Settings** button, and the **Project settings** item when you right-click a project in the sidebar. Both are shown only to owners and admins.
-- `Cmd` + `K`, then type the page's name (for example "Webhooks"). Inside settings the menu offers that area's pages and the way back, and nothing of the app.
+- <Kbd keys="Mod+K" />, then type the page's name (for example "Webhooks"). Inside settings the menu offers that area's pages and the way back, and nothing of the app.
 - **Settings** in the workspace menu, then **Projects**, then the project. See [Workspace settings](/using/workspace-settings/).
 
-The hub lists the project's pages in three groups, each with a one-line summary such as "2 webhooks" or "3 rules":
+The hub lists the project's pages in three groups, each with a one-line summary such as "2 webhooks" or "3 rules". Inside a page, the sidebar lists the same pages under the project's name (General, Members, CI token and the rest), next to the account, instance and workspace entries, with **Back to** the page you came from at the top:
 
 | Group | Pages |
 |---|---|
@@ -32,10 +34,12 @@ Owners and admins create projects from the **Projects** page with **New project*
 
 ## General
 
-The first section, **Display Settings**, saves as soon as you change a field, with a toast:
+The first section, **Details**, saves as soon as you change a field, with a toast:
 
-- **Display Name**, with the icon and colour tile beside it. Picking a colour or an icon saves at once ("Icon and colour saved").
-- **URL Slug**, used in addresses and in `circi admin` commands. Changing it breaks existing links, including bookmarks and the links in existing pull request comments; new builds post the new address. The CI token keeps working.
+<ScreenFrame name="use-project-settings" alt="The General page of project settings for Web app. The Details section has the icon and colour tile, Display name, URL slug and Default Branch fields. Below it are Repository with no repository linked, and Comparison with a diff threshold of 0.5 percent and keep builds for 365 days." caption="General: Details at the top save by themselves, everything below waits for Save changes." />
+
+- **Display name**, with the icon and colour tile beside it. Picking a colour or an icon saves at once ("Icon and colour saved").
+- **URL slug**, used in addresses and in `circi admin` commands. Changing it breaks existing links, including bookmarks and the links in existing pull request comments; new builds post the new address. The CI token keeps working.
 - **Default Branch**: its approved builds are the baselines. It must be a valid git branch name.
 
 Each of these shows a check mark when it differs from what is saved, and you confirm it there.

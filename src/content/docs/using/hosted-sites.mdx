@@ -4,7 +4,8 @@ description: "Host a built Storybook, test report or docs next to the screenshot
 ---
 {/* Source: apps/web/src/features/sites (ProjectSitesPage.tsx, CustomDomainSection.tsx, SiteHandoffPage.tsx), apps/web/src/features/project-settings/SettingsForm.tsx, docs/reference/static-sites.md, apps/server/src/http/sites/serve.ts, packages/cli/src/main.ts, apps/server/src/http/routes/dashboard/projects/site-domains.ts */}
 
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, Steps } from '@astrojs/starlight/components'
+import Kbd from '../../../components/Kbd.astro'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
 CirCI can host the built Storybook, Playwright or Vitest report, coverage report or docs of a commit, so a reviewer opens the real thing next to the screenshots. Sites are served from their own domain and always need sign-in.
@@ -15,7 +16,7 @@ Hosting is off until the instance has a sites domain. Set it in Instance setting
 
 ## Turn it on for a project
 
-Owners and admins switch hosting on per project: **Project settings, General, Hosted sites, Host static sites**, then **Save changes**. The checkbox only appears when the instance has a sites domain; without one, the Sites page says "Static site hosting isn't set up on this server" and who to ask (an instance admin sees the variable to set). See [Project settings](/using/project-settings/).
+Owners and admins switch hosting on per project: **Project settings, General, Hosted sites, Host static sites**, then **Save changes**. The checkbox only appears when the instance has a sites domain; without one, the Sites page says "Static site hosting isn't set up on this server" and, to an instance admin, which variable to set (`STATIC_SITES_HOST`, a separate domain). See [Project settings](/using/project-settings/).
 
 ## Upload a site from CI
 
@@ -70,9 +71,15 @@ Because a site runs the JavaScript you uploaded, the sites domain must not share
 
 A site can have **one custom domain**, such as `storybook.acme.com`, that always serves the project's default branch: the newest upload that moved that branch's address. Commit and branch addresses stay as they are. Owners and admins set it; everyone else sees it.
 
+<Steps>
+
 1. In **Custom domain**, type the domain and choose **Save domain**.
+
 2. Add the DNS record shown: a **CNAME** with the domain as its name, pointing to the target the page shows (`custom.` followed by the sites domain).
+
 3. Choose **Check DNS**. The badge changes from **Not verified** to **Verified**, the domain is served and its certificate is issued once DNS points at the server. If the check fails, a warning says why.
+
+</Steps>
 
 **Change** edits the domain and **Remove** stops the site from opening on it (after a confirmation). A domain another site holds, the dashboard's host, or anything that shares cookie scope with it is refused: with the dashboard on `ci.acme.io`, `storybook.acme.io` is refused, but `storybook.acme.com` is fine. A domain that can't be a CNAME, such as an apex, can use `A` or `AAAA` records instead; the dashboard only shows the CNAME.
 

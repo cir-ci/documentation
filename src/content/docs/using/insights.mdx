@@ -4,7 +4,11 @@ description: "A workspace's review speed, build outcomes, flaky screenshots, fai
 ---
 {/* Source: apps/web/src/features/insights (InsightsPage.tsx, Charts.tsx, Lists.tsx, api.ts, sort.tsx), apps/server/src/http/routes/dashboard/inbox/insights.ts, packages/core/src/builds/insights.ts, packages/core/src/builds/flaky.ts */}
 
+import ScreenFrame from '../../../components/ScreenFrame.astro'
+
 Insights answers "how is review going?" for a workspace: how long builds wait, how they end, how many screenshots are flaky, what fails, and what is stored. Open it from the sidebar, under the workspace's name. Any member of the workspace can see it.
+
+<ScreenFrame name="use-insights" alt="The Insights page of the Acme workspace on the 30 days range. Six summary tiles, such as a median time to first review of 18 hours and 66 percent of first reviews within target, then the first trend charts, a bar chart of median time to first review per week and a line chart of time to decision." caption="The summary tiles and the first two charts, over 30 days. Each tile says how it compares with the 30 days before." />
 
 ## Choose what to look at
 
