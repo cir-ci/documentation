@@ -48,7 +48,7 @@ GitLab sends the secret in the `X-Gitlab-Token` header. CirCI refuses deliveries
 
 On the integration's page, choose the **GitLab project** each CirCI Project reports to, written as the path with its namespace, for example `acme/web` or `acme/team/web`. The list comes from the repositories the token can read; you can also type the path. A Project reports to one git host at a time.
 
-<InstanceSettingNote setting="GitLab sign-in">
+<InstanceSettingNote title="Set up GitLab sign-in in Instance settings">
 Linking a GitLab login (needed for commands) requires GitLab sign-in to be configured on the instance. An instance admin adds a GitLab provider in Instance settings (with the GitLab address for a self-managed GitLab), or sets `AUTH_GITLAB_CLIENT_ID` and `AUTH_GITLAB_CLIENT_SECRET` (plus `AUTH_GITLAB_URL`), which then win and lock it. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 
@@ -108,12 +108,10 @@ A person may use commands when they have linked their GitLab login in the **Sign
 - Merge request opened or reopened: remembers the author and gives builds their merge request number. Other merge request updates aren't used.
 - Note created on a merge request: the `/circi` commands.
 
-## Not built
+## Not supported yet
 
 - Approve and Reject buttons on the status (GitLab has none).
 - GitLab events beyond merge request open, reopen and notes. For example, closing a merge request does nothing (GitHub closes its review requests).
 - Reporting a project to more than one GitLab project.
 
-<Aside type="caution" title="Tested against fakes only">
-The GitLab edge is faked in the repository's tests. It hasn't been run against gitlab.com or a self-managed server.
-</Aside>
+Not yet verified against gitlab.com or a self-managed GitLab server.

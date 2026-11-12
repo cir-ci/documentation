@@ -14,8 +14,10 @@ interface Props {
   aspect?: string
   /** `lazy` (default) for anything below the first screen; `eager` for the first image of a page. */
   loading?: 'lazy' | 'eager'
+  /** Text in the window's title strip (default "CirCI"). */
+  title?: string
 }
-const { name, alt, caption, width, aspect, loading = 'lazy' } = Astro.props
+const { name, alt, caption, width, aspect, loading = 'lazy', title = 'CirCI' } = Astro.props
 const shots = import.meta.glob<{ default: ImageMetadata }>('/src/assets/screens/*.{jpg,png}', { eager: true })
 const find = (scheme: string) => {
   const key = Object.keys(shots).find((k) => k.includes(`/${name}-${scheme}.`))
@@ -29,22 +31,93 @@ const ratio = aspect ?? `${dark.width} / ${dark.height}`
 ---
 
 <figure class="screen-frame" style={width ? `max-width:${width}px` : undefined}>
-  <div class="shot" class:list={{ cropped: Boolean(aspect) }} style={`aspect-ratio:${ratio}`}>
-    <Image src={dark} alt={alt} class="shot-dark" widths={[720, 1080, 1440]} sizes="(min-width: 50rem) 46rem, 100vw" loading={loading} decoding="async" />
-    <Image src={light} alt={alt} class="shot-light" widths={[720, 1080, 1440]} sizes="(min-width: 50rem) 46rem, 100vw" aria-hidden="true" loading={loading} decoding="async" />
-  </div>
+  <screen-zoom>
+    <div class="window">
+      <div class="strip" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span class="strip-title">{title}</span></div>
+      <button type="button" class="shot-button" aria-label={`Enlarge: ${alt}`}>
+        <div class="shot" class:list={{ cropped: Boolean(aspect) }} style={`aspect-ratio:${ratio}`}>
+          <Image src={dark} alt={alt} class="shot-dark" widths={[720, 1080, 1440, 2160]} sizes="(min-width: 50rem) 46rem, 100vw" loading={loading} decoding="async" />
+          <Image src={light} alt={alt} class="shot-light" widths={[720, 1080, 1440, 2160]} sizes="(min-width: 50rem) 46rem, 100vw" aria-hidden="true" loading={loading} decoding="async" />
+        </div>
+      </button>
+    </div>
+    <dialog class="zoom" aria-label={alt}>
+      <div class="zoom-bar"><span class="zoom-title">{title}</span><button type="button" class="zoom-close" aria-label="Close">Close <kbd>Esc</kbd></button></div>
+      <div class="zoom-stage">
+        <Image src={dark} alt={alt} class="zoom-dark" widths={[1440, 2160, 2880]} sizes="95vw" loading="lazy" decoding="async" />
+        <Image src={light} alt={alt} class="zoom-light" widths={[1440, 2160, 2880]} sizes="95vw" aria-hidden="true" loading="lazy" decoding="async" />
+      </div>
+    </dialog>
+  </screen-zoom>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
+
+<script>
+  // Click the screenshot to open it large in a native dialog: Esc closes it, focus returns to the screenshot.
+  class ScreenZoom extends HTMLElement {
+    connectedCallback() {
+      const dialog = this.querySelector('dialog')!
+      const opener = this.querySelector<HTMLButtonElement>('.shot-button')!
+      opener.addEventListener('click', () => dialog.showModal())
+      this.querySelector('.zoom-close')!.addEventListener('click', () => dialog.close())
+      dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) dialog.close()
+      })
+      dialog.addEventListener('close', () => opener.focus())
+    }
+  }
+  customElements.define('screen-zoom', ScreenZoom)
+</script>
 
 <style>
   .screen-frame {
     margin-block: 1.5rem;
   }
-  .shot {
+  .window {
     border: 1px solid var(--circi-line-strong);
     border-radius: var(--circi-radius-panel);
     overflow: clip;
     background: var(--circi-surface-chrome);
+  }
+  .strip {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 1.75rem;
+    padding-inline: 0.75rem;
+    border-block-end: 1px solid var(--circi-line-subtle);
+    background: var(--circi-surface-chrome);
+    color: var(--circi-text-tertiary);
+    font-size: 11px;
+  }
+  .dots {
+    display: inline-flex;
+    gap: 5px;
+  }
+  .dots i {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--circi-surface-highest);
+  }
+  .strip-title {
+    margin-inline: auto;
+    padding-inline-end: 2.5rem;
+  }
+  .shot-button {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+  }
+  .shot-button:focus-visible {
+    outline-offset: -2px;
+  }
+  .shot {
+    overflow: clip;
   }
   .shot :global(img) {
     display: block;
@@ -56,18 +129,77 @@ const ratio = aspect ?? `${dark.width} / ${dark.height}`
     object-fit: cover;
     object-position: top;
   }
-  .shot-light {
+  .shot-light,
+  .zoom-light {
     display: none !important;
   }
-  :global(:root[data-theme='light']) .shot-dark {
+  :global(:root[data-theme='light']) .shot-dark,
+  :global(:root[data-theme='light']) .zoom-dark {
     display: none !important;
   }
-  :global(:root[data-theme='light']) .shot-light {
+  :global(:root[data-theme='light']) .shot-light,
+  :global(:root[data-theme='light']) .zoom-light {
     display: block !important;
   }
   figcaption {
     margin-block-start: 0.5rem;
     font-size: var(--sl-text-sm);
     color: var(--circi-text-secondary);
+  }
+  .zoom {
+    width: min(96vw, 1600px);
+    max-width: none;
+    max-height: 94vh;
+    padding: 0;
+    border: 1px solid var(--circi-line-strong);
+    border-radius: var(--circi-radius-command);
+    background: var(--circi-surface-overlay);
+    color: var(--circi-text-primary);
+    overflow: hidden;
+  }
+  .zoom::backdrop {
+    background: var(--circi-scrim);
+  }
+  .zoom[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .zoom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    border-block-end: 1px solid var(--circi-line-subtle);
+    font-size: var(--sl-text-sm);
+    font-weight: 600;
+  }
+  .zoom-close {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 1.75rem;
+    padding-inline: 0.75rem;
+    border: 1px solid var(--circi-line-strong);
+    border-radius: var(--circi-radius-control);
+    background: none;
+    color: var(--circi-text-primary);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .zoom-close:hover {
+    background: var(--circi-action-hover);
+  }
+  .zoom-stage {
+    overflow: auto;
+    padding: 1rem;
+    background: var(--circi-surface-chrome);
+  }
+  .zoom-stage :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--circi-radius-control);
   }
 </style>

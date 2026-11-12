@@ -9,7 +9,7 @@ import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
 Values are read once at start. Booleans accept `true`, `false`, `1`, `0`, `yes` and `no`. An empty value counts as unset. A bad value stops the process with a list of problems. Guidance is in [Configuration](/self-hosting/configuration/).
 
-<InstanceSettingNote setting="Instance settings badge">
+<InstanceSettingNote title="The Instance settings badge">
 A variable with the **Instance settings** badge is also editable in the dashboard: who can create workspaces, sign-in methods and providers, the five limits (grace period, upload timeout, job retention, largest site, webhook timeout), the mail server and the Slack app. When the variable is set it wins and locks the setting ("Set by VARIABLE"); otherwise the saved value applies, otherwise the default. Saved changes apply within about 30 seconds, with no restart. The default retention of new projects is a dashboard setting with no variable. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 

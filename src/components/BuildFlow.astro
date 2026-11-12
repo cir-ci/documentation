@@ -12,11 +12,11 @@ const stages = [
   { name: 'Upload', note: 'CI sends screenshots', cmd: 'circi upload' },
   { name: 'Compare', note: 'The worker diffs each one', cmd: 'against the baseline' },
   { name: 'Review', note: 'People approve or reject', cmd: 'in the dashboard' },
-  { name: 'Merge gate', note: 'The check decides', cmd: 'green when approved' },
+  { name: 'Merge gate', note: 'Approval decides', cmd: 'passes when approved' },
 ]
 const title = 'How a build flows'
 const desc =
-  'Four stages in order. Upload: CI sends screenshots with circi upload. Compare: the worker diffs each screenshot against the baseline. Review: people approve or reject changes in the dashboard. Merge gate: the check on the pull request turns green when everything is approved.'
+  'Four stages in order. Upload: CI sends screenshots with circi upload. Compare: the worker diffs each screenshot against the baseline. Review: people approve or reject changes in the dashboard. Merge gate: the check on the pull request, or the CI job when no repository is linked, passes once everything is approved.'
 const uid = Math.random().toString(36).slice(2, 8)
 ---
 

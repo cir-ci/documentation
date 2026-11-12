@@ -13,9 +13,7 @@ The Figma integration links screenshots to the Figma frames they implement. In t
 | A **Figma frame** chip, with the frame's name | The build review, on a screenshot whose name matches a link |
 | A **Frame links** table | The Figma integration's page, under each project |
 
-<Aside type="caution" title="Only linking is built">
-The plans for the Figma integration also describe a **Design** compare mode (a screenshot beside its frame, with differences marked), frames as first baselines, and comments posted on frames when a build is approved or rejected. None of that is built. The Design compare mode is switched off in the dashboard, and CirCI never writes to Figma. See "Not built" below.
-</Aside>
+Only linking is supported: CirCI never writes to Figma, and there is no view that shows a screenshot beside its frame yet.
 
 ## Set up
 
@@ -62,13 +60,11 @@ A screenshot whose name matches a link shows the **Figma frame** chip in the rev
 | **Link automatically** links nothing for a screenshot | Its name fits two frames, or no frame, so it's left alone by design. Add the link by hand |
 | The integration shows **needs attention** | Figma rejected the token. Remove the integration and connect again with a new token |
 
-## Not built
+## Not supported yet
 
-- **Design compare mode**, the fifth view mode (key 5). The view exists in the code but is disabled, and shows "No design linked" if it were opened.
+- A view that shows a screenshot beside its frame, with the differences marked.
 - **Frames as first baselines**: comparing a new screenshot with its frame when no baseline exists.
-- **Posting results on frames**: the client method for comments exists, but nothing calls it.
+- **Posting results on frames**, such as a comment when a build is approved.
 - Penpot is a **Planned** tile and has no backend.
 
-<Aside type="caution" title="Tested against fakes only">
-The Figma edge is faked in the repository's tests and has not been run against Figma.
-</Aside>
+Not yet verified against Figma.

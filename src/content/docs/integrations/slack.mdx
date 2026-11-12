@@ -20,7 +20,7 @@ The Slack integration installs a CirCI Slack app into your Slack workspace. Each
 
 CirCI doesn't ship a Slack app of its own. Your instance uses an app you create at api.slack.com, so the Slack tile in the Add integration dialog says **Not set up on this server** until this is done.
 
-<InstanceSettingNote setting="Slack app">
+<InstanceSettingNote title="Set up the Slack app in Instance settings">
 An instance admin sets the Slack app's client ID and client secret in Instance settings (the secret is write-only), or by `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`, which then win and lock the section. Set both variables or neither: the server refuses to start with only one. `SLACK_API_URL` (default `https://slack.com/api`) points the integration at a different Slack API address and isn't normally needed. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
 </InstanceSettingNote>
 
@@ -76,12 +76,10 @@ Names, branches and reasons that come from people are escaped so they can't crea
 | The integration shows **needs attention** with **Reinstall** | Slack rejected the token (the app was uninstalled or the token revoked). Press **Reinstall**; no notices go out until then |
 | Approvals don't show | **Build approved** is off by default. Turn it on for the project |
 
-## Not built
+## Not supported yet
 
 - Slack as a place to approve or reject: there are no interactive buttons beyond the link to the build.
 - Per-user Slack notifications or direct messages. Messages go to the project's channel only.
 - The `build.completed` event isn't offered for Slack.
 
-<Aside type="caution" title="Tested against fakes only">
-The Slack edge is faked in the repository's tests and has not been run against Slack. Also, the "public distribution" step above depends on Slack's own rules for apps, which the repository doesn't document, so check Slack's current instructions.
-</Aside>
+Not yet verified against Slack.

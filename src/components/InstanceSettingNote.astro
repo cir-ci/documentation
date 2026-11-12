@@ -1,18 +1,15 @@
 ---
-// Marks a passage about a setting that is moving from the environment into Instance settings
-// in the dashboard. Search the docs for "instance-setting" to find every marker when the move is
-// done (see DESIGN.md). Slot: what the page says about this setting.
+// A callout for a passage about a setting that is edited in Instance settings. Pass an explicit
+// `title`; don't use it for settings that are read-only there (an environment variable only).
 interface Props {
-  /** Short name of the setting, shown in the callout title. */
-  setting?: string
+  /** The callout's title: say what the passage tells the reader, in sentence case. */
+  title?: string
 }
-const { setting } = Astro.props
+const { title = 'Set in Instance settings' } = Astro.props
 ---
 
-<aside class="instance-setting" data-instance-setting={setting ?? ''} aria-label="Instance setting">
-  <p class="instance-setting__title">
-    {setting ? `${setting}: ` : ''}set in Instance settings
-  </p>
+<aside class="instance-setting" aria-label={title}>
+  <p class="instance-setting__title">{title}</p>
   <div class="instance-setting__body">
     <slot>
       Set in <strong>Instance settings</strong>, or by the environment variable as the initial value.

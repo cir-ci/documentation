@@ -44,7 +44,7 @@ Every workspace with its size, each opening its settings hub. **New workspace** 
 
 <ScreenFrame name="host-instance-settings" aspect="16 / 10" alt="The top of Instance settings: the dashboard address with its variable, the three sign-in methods checked, an empty list of single sign-on providers and the workspace creation checkbox." caption="The top of Instance settings in a development instance. Edits wait for Save changes at the bottom of each section." width={760} />
 
-<InstanceSettingNote setting="Environment variables win">
+<InstanceSettingNote title="An environment variable wins">
 A setting fixed by an environment variable shows **Set by VARIABLE** and can't be edited here: a save is refused, so change the variable and restart. Otherwise what you save applies within about 30 seconds on every server process, with no restart, and secrets are write-only and sealed at rest. See [Instance settings](/self-hosting/instance-settings/) for every setting, its variable and its default.
 </InstanceSettingNote>
 

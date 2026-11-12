@@ -6,11 +6,11 @@ description: Make a project, find its settings and its CI token.
 
 import ScreenFrame from '../../../components/ScreenFrame.astro'
 
-A Project is one thing you test. Each project has its own CI token, baselines, review rules and settings.
+A project is one thing you test. Each project has its own CI token, baselines, review rules and settings.
 
 ## In the dashboard
 
-Use **New project** on the projects page. Give it a name; the address is derived from it. If a GitHub App is connected, you can also import projects from your repositories, which links each one to its repository. You and the workspace's owners and admins can then open the project's **Settings** from its page.
+Use **New project** on the projects page. Give it a **Name** (the address is derived from it), choose the **Workspace**, and set the **Default branch** (`main` unless yours differs). You can **Link a repository** at the same time; it's optional and needs a connected git host. If a GitHub App is connected, you can also import projects from your repositories, which links each one to its repository. You and the workspace's owners and admins can then open the project's **Settings** from its page.
 
 <ScreenFrame name="start-projects" alt="The projects page: projects grouped by workspace, each with its members, latest build and changes. New project is at the top right." caption="The projects page." width={900} />
 
@@ -37,11 +37,11 @@ circi admin project rotate-token --org acme --project web-app
 
 | Setting | Default | What it does |
 |---|---|---|
-| Default branch | `main` | Builds on this branch become baselines. |
-| Retention | 30 days | Builds and sites older than this expire. Files nothing uses are deleted after a grace period. |
-| Diff threshold | 0% | The share of changed pixels (a percentage) at or below which a same-size screenshot counts as unchanged. At 0% every pixel change counts. |
-| Auto-approve on default branch | on | Builds on the default branch are approved when they have a baseline. |
-| Block merge on changes | on | Unreviewed changes keep the check red. |
+| **Default branch** | `main` | Builds on this branch become baselines. |
+| **Keep builds for** | 30 days | Builds and sites older than this expire. Files nothing uses are deleted after a grace period. |
+| **Diff threshold** | 0% | The percentage of changed pixels at or below which a same-size screenshot counts as unchanged. At 0% every pixel change counts. |
+| **Approve default-branch builds automatically** | On | Builds on the default branch are approved when they have a baseline. |
+| **Unreviewed changes block merging** | On | Unreviewed changes keep the check red. |
 
 See [Project settings](/using/project-settings/) for all of them.
 

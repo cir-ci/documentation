@@ -21,7 +21,7 @@ Every setting has up to three sources, and the first one that exists wins.
 2. **The value saved in the dashboard.**
 3. **The default.**
 
-<InstanceSettingNote setting="Changes apply without a restart">
+<InstanceSettingNote title="Changes apply without a restart">
 A saved setting takes effect within about 30 seconds on every server and worker process, because each one re-reads the stored settings on a timer. The process that served the save uses it at once. Changing an environment variable still needs a restart.
 </InstanceSettingNote>
 

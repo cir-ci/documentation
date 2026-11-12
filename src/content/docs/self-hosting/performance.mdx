@@ -43,7 +43,7 @@ From the load tests of 2026-11-11 (Apple M4 Pro, 12 cores, 24 GB, Node 26.13, th
 | Worker memory, peak | 696 MB | 1835 MB | 703 MB |
 
 - The JavaScript engine's limit is the worker's one JavaScript thread, not the CPU: it plateaus at about 2.4 cores whatever the load.
-- `native` is 2.2 times the throughput of `js` and halves the wait. It uses 15 to 20 percent less memory.
+- `native` is 2.2 times the throughput of `js` and halves the wait. Its peak memory is about the same (703 MB against 696 MB).
 - `js-workers` recovers almost all of that throughput without a native module, at about 2.6 times the memory (each thread is its own V8 isolate).
 - Per CPU the engines cost about the same (about 50 to 55 builds a minute per worker core). The win is using the machine's cores, so on a server short of cores the gain is smaller.
 - `native` is the clear winner on large changes (2.7 times faster per diff).
@@ -56,7 +56,7 @@ One machine, one run each. 100 and more concurrent builds couldn't be measured o
 
 ## Cost levers
 
-In rough order of effect (from `docs/reference/running-costs.md`; items marked proposal there are not built):
+In rough order of effect:
 
 1. Use object storage with free egress (R2, B2 behind Cloudflare, MinIO on the same disk).
 2. Shorten retention where history isn't needed.

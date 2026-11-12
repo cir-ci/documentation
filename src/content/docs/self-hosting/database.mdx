@@ -23,10 +23,10 @@ The most connections one process keeps open. A server and a worker each take up 
 ### Connection rules
 
 <Aside type="caution" title="Use a direct connection or session pooling">
-The worker wakes on Postgres `LISTEN/NOTIFY`, which a transaction pooler (PgBouncer in transaction mode) doesn't support. Without a live notification connection the worker falls back to polling every second, so a pooler makes builds slower, not wrong. Don't rely on it.
+The worker wakes on Postgres `LISTEN/NOTIFY`, which a transaction pooler (PgBouncer in transaction mode) doesn't support. Without a live notification connection the worker polls every second instead, so builds start a little later but still run. Point `DATABASE_URL` at Postgres directly, or use session pooling.
 </Aside>
 
-A dropped connection no longer crashes a process: it reconnects (this was fixed after the load tests).
+If a connection drops, the process reconnects by itself.
 
 ## What is stored
 

@@ -44,7 +44,7 @@ The capacity figures are estimates, except for the measurements in the performan
 
 ## Database connection
 
-The worker wakes on Postgres `LISTEN/NOTIFY`, so give it a **direct connection or session pooling**. A transaction pooler such as PgBouncer in transaction mode doesn't work. `DATABASE_POOL_MAX` (default 10) caps connections per process.
+The worker wakes on Postgres `LISTEN/NOTIFY`, so give it a **direct connection or session pooling**. A transaction pooler such as PgBouncer in transaction mode can't carry notifications, so the worker polls every second instead and builds start a little later. `DATABASE_POOL_MAX` (default 10) caps connections per process.
 
 ## Where the image comes from
 

@@ -47,13 +47,11 @@ On success CirCI records the issue key (for example `WEB-45`) on the build and s
 | Creating an issue fails with Jira's error | The **Issue type** doesn't exist in that Jira project. CirCI doesn't check it when you save. Fix the name or leave it empty for `Task` |
 | The integration shows **needs attention** | Jira rejected the credentials later. Connect again |
 
-## Not built
+## Not supported yet
 
 - Status sync, transitions and comments back to Jira.
 - Jira Server and Data Center. Only Jira Cloud sites are accepted.
 - Attaching the diff image to the issue.
 - Choosing assignee, labels or priority in the dialog.
 
-<Aside type="caution" title="Tested against fakes only">
-The Jira edge is faked in the repository's tests and has not been run against Jira Cloud.
-</Aside>
+Not yet verified against Jira Cloud.

@@ -36,9 +36,7 @@ Azure DevOps, Microsoft Teams and Penpot appear in the Add integration dialog as
 
 Integrations are separate from [outgoing webhooks](/integrations/webhooks/), which are a project setting that sends signed JSON to your own services, and from sign-in providers, which let people log in (an instance admin adds them in [Instance settings](/self-hosting/instance-settings/)).
 
-<Aside type="caution" title="Tested against fakes only">
-GitHub, GitLab, Bitbucket, Slack, Linear, Jira and Figma have so far been tested against fakes of their HTTP APIs, not against the live services. The repository's own release checklist asks for one manual run against each real service. Report anything that differs from these pages.
-</Aside>
+The integrations are not yet verified against the live services. Report anything that differs from these pages.
 
 ## Where you add them
 
@@ -60,17 +58,6 @@ An external account connects to one workspace of the instance. A second workspac
 Owners and admins of the workspace connect, map and remove integrations. Other members can look at the integrations and their mappings. Credentials are encrypted with the instance secret before they're stored and are never sent back to the dashboard. See [Members and roles](/using/members-and-roles/).
 
 A GitHub link can also be made from a project's own settings page and by `circi admin github link`; see [GitHub](/integrations/github/).
-
-## The integration SDK
-
-Every integration is one definition in `packages/integrations/src/kinds/<id>/`, listed once in one registry. The definition says:
-
-- the credentials form (the dashboard draws its fields from it) and how to verify them with the provider,
-- what the provider can do (the capabilities: send chat messages, create issues, list and link design frames, act as a git host),
-- how a project maps to a target, and which events it wants,
-- when an error means a person has to act.
-
-The Add dialog, the HTTP routes, the worker job and the mapping page all read that definition, so a new integration needs no route, table or page of its own. Contributors who want to add one should read [Repository layout](/contributing/repo-layout/) and `docs/integration-sdk.md` in the repository.
 
 ## Events
 

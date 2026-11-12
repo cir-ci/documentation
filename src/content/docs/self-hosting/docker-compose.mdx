@@ -4,22 +4,20 @@ description: The compose files, what they run, and what to change for production
 ---
 {/* Source: deploy/docker-compose.yml, deploy/docker-compose.caddy.yml, deploy/docker-compose.s3.yml, deploy/.env.example, deploy/README.md, deploy/Dockerfile */}
 
-import { Aside, FileTree, Steps } from '@astrojs/starlight/components'
+import { Aside, Steps } from '@astrojs/starlight/components'
 
 The `deploy/` folder of the repository is the reference install.
 
-<FileTree>
-
-- deploy/
-  - Dockerfile the app image
-  - docker-compose.yml app and Postgres, local-disk storage
-  - docker-compose.s3.yml overlay: a local MinIO and S3 storage
-  - docker-compose.caddy.yml overlay: Caddy for TLS and sites
-  - Caddyfile
-  - caddy/Dockerfile Caddy with the Route53 DNS module
-  - .env.example copy to .env
-
-</FileTree>
+```text
+deploy/
+├── Dockerfile               the app image
+├── docker-compose.yml       app and Postgres, local-disk storage
+├── docker-compose.s3.yml    overlay: a local MinIO and S3 storage
+├── docker-compose.caddy.yml overlay: Caddy for TLS and sites
+├── Caddyfile
+├── caddy/Dockerfile         Caddy with the Route53 DNS module
+└── .env.example             copy to .env
+```
 
 ## The base file
 

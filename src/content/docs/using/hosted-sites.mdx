@@ -6,13 +6,12 @@ description: "Host a built Storybook, test report or docs next to the screenshot
 
 import { Aside, Steps } from '@astrojs/starlight/components'
 import Kbd from '../../../components/Kbd.astro'
-import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
 CirCI can host the built Storybook, Playwright or Vitest report, coverage report or docs of a commit, so a reviewer opens the real thing next to the screenshots. Sites are served from their own domain and always need sign-in.
 
-<InstanceSettingNote setting="Sites domain">
+<Aside type="note" title="Hosting needs a sites domain">
 Hosting is off until the instance has a sites domain. The domain is set by the environment variable `STATIC_SITES_HOST` and shown, read-only, in Instance settings. The largest site (200 MB by default) is **Largest hosted site** there, or `STATIC_SITES_MAX_MB`, which wins and locks it. The domain must be separate from the dashboard's, with its own wildcard DNS record and certificate. See [Site domains](/self-hosting/site-domains/) and [Instance administration](/using/instance-administration/).
-</InstanceSettingNote>
+</Aside>
 
 ## Turn it on for a project
 
@@ -88,5 +87,5 @@ A site can have **one custom domain**, such as `storybook.acme.com`, that always
 Hosted site versions expire with their project's retention (**Keep builds for**, 30 days by default), except a version a live branch link still serves. See [Retention and garbage collection](/self-hosting/retention-and-gc/) and [Workspace settings](/using/workspace-settings/).
 
 <Aside type="note">
-Not built yet, according to the repository's notes on hosted sites: a site switcher injected into the page, a live view embedded in the review screen, deep links from screenshots to stories, branch expiry and garbage collection of old versions.
+Not supported yet: a site switcher injected into the page, a live view embedded in the review screen, deep links from screenshots to stories, branch expiry and garbage collection of old versions.
 </Aside>

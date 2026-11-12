@@ -19,7 +19,7 @@ It is a self-hosted alternative to services such as Argos: one Docker image, a P
 
 ## What you get
 
-- **Uploads from CI.** The `circi` CLI uploads a folder of PNG screenshots. The `@circi/vitest` plugin takes stable screenshots in Vitest browser mode. Argos SDKs work by changing two environment variables.
+- **Uploads from CI.** The `circi` CLI uploads a folder of PNG screenshots. The `@circi/vitest` plugin takes stable screenshots in Vitest browser mode. The Argos SDKs are designed to work by changing two environment variables; this isn't yet verified with the real SDKs.
 - **A fast comparison.** The worker diffs each screenshot with its baseline in a native Rust engine by default. Screenshots with the same SHA-256 are never opened.
 - **A review dashboard.** Side-by-side, overlay and swipe views. Approve or reject per screenshot or per build, comment on regions, request reviews by rule, and follow it all in the Inbox, saved views and insights.
 - **Flaky screenshot handling.** CirCI notices screenshots that keep flipping back to an image they already had, marks them <StatusChip status="flaky" />, and can let a pull request that only changes flaky screenshots pass.
@@ -32,7 +32,7 @@ It is a self-hosted alternative to services such as Argos: one Docker image, a P
 Teams that want visual review without sending screenshots of internal apps to a third party, and that are comfortable running a container. A small install is one VM with Docker: see [Requirements](/self-hosting/requirements/) and [running costs](/self-hosting/storage/).
 
 <Aside type="note" title="Status">
-Uploads, diffing, the dashboard, accounts, sign-in methods and the integrations described on this site are built. Where a feature is only partly built, or has only been tested against a fake (for example the Argos SDKs), its page says so.
+Uploads, diffing, the dashboard, accounts, sign-in methods and the integrations described on this site are built. Where a feature isn't supported yet, or isn't verified against the real service, its page says so.
 </Aside>
 
 ## Where to go next

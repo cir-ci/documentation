@@ -8,7 +8,7 @@ import ScreenFrame from '../../../components/ScreenFrame.astro'
 import Kbd from '../../../components/Kbd.astro'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
-A **workspace** is your organization in CirCI: its members, projects, integrations and defaults. Workspace settings are where owners and admins shape them. Settings is a closed area: you move between its pages, and its way back leads to the app, but no page in the app links into it.
+A **workspace** is your organization in CirCI: its members, projects, integrations and defaults. Workspace settings are where owners and admins shape them.
 
 ## Where to open them
 
@@ -72,7 +72,7 @@ This workspace shows its projects only to sessions that used a method you accept
 
 A method the instance doesn't allow can't be turned on here: an instance admin sets the outer limit, and a workspace can only narrow it. The server keeps at least one method usable by an owner, so you can't lock everyone out. Because turning a method off can lock people out, the changes wait for **Save** ("Sign-in methods saved"), with **Discard**.
 
-<InstanceSettingNote setting="Sign-in methods">
+<InstanceSettingNote title="The instance sets the outer limit">
 Which methods the instance offers at all is set by an instance admin in Instance settings. A method fixed by an environment variable (`AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED`) shows "Set by" there and can't be changed from the dashboard. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 

@@ -79,11 +79,7 @@ Edit the table files in `packages/db/src/schema/`, then run `pnpm db:generate`, 
 
 ## Performance suite
 
-`pnpm perf` runs the k6 suite against a fresh stack. `pnpm perf:down` tears it down and `pnpm perf:bench` runs the diff microbenchmark. Results are in `docs/perf`.
-
-## Commits
-
-Commit messages end with the project's `Co-Authored-By` line (see `CLAUDE.md`).
+`pnpm perf` runs the k6 suite against a fresh stack. `pnpm perf:down` tears it down and `pnpm perf:bench` runs the diff microbenchmark. Results are in the repository's `docs/perf` folder.
 
 <Aside type="tip">
 `pnpm test:visual` screenshots every `@circi/ui` component in light and dark with `@circi/vitest`, and uploads to a CirCI when `CIRCI_API_URL` and `CIRCI_TOKEN` are set. CirCI tests its own design system with itself.

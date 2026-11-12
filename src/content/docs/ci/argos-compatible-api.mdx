@@ -1,6 +1,6 @@
 ---
 title: Argos-compatible API
-description: Point the Argos SDKs at CirCI by changing two variables.
+description: Point the Argos SDKs at CirCI by changing two variables, designed to work and not yet verified with the real SDKs.
 ---
 {/* Source: docs/reference/argos-migration.md, apps/server/src/http/routes/argos, packages/cli/src/main.ts (argos-env) */}
 
@@ -16,7 +16,7 @@ ARGOS_TOKEN=circi_…          # a CirCI Project token
 `circi argos-env` prints exactly these two lines from `CIRCI_API_URL` and `CIRCI_TOKEN`.
 
 <Aside type="caution" title="Status">
-Built from the SDK's source (`@argos-ci/core` `upload()`) and tested with a client that plays the same requests. It has **not** been run with the real SDKs yet. If an SDK refuses the token's format or sends something unexpected, the error is in the SDK's output and the CirCI server log.
+Designed to work with the SDKs, from the source of `@argos-ci/core` `upload()`; not yet verified with the real SDKs. If an SDK refuses the token's format or sends something unexpected, the error is in the SDK's output and the CirCI server log.
 </Aside>
 
 ## What works

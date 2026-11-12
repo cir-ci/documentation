@@ -72,11 +72,11 @@ Install it on your repositories, then set these on the server:
 </TabItem>
 </Tabs>
 
-If `GITHUB_APP_*` is set in the environment it always wins: the instance page then only shows the App (ID and slug) and hides the create button. An App created from the page is stored in the instance database, and several replicas pick it up when they restart. The `GITHUB_APP_*` variables aren't moving into Instance settings; the manifest flow is the alternative to setting them.
+If `GITHUB_APP_*` is set in the environment it always wins: the instance page then only shows the App (ID and slug) and hides the create button. An App created from the page is stored in the instance database, and several replicas pick it up when they restart. Creating the App from the page is the alternative to setting the variables.
 
 The permissions are the smallest set that works: Checks for the check run and its buttons, Pull requests for the summary comment and its reactions, Metadata because GitHub always grants it.
 
-<InstanceSettingNote setting="GitHub sign-in">
+<InstanceSettingNote title="Set up GitHub sign-in in Instance settings">
 An instance admin adds the GitHub sign-in provider in Instance settings, or sets `AUTH_GITHUB_CLIENT_ID` and `AUTH_GITHUB_CLIENT_SECRET`, which then win and lock it. Register `PUBLIC_URL/api/auth/callback/github` as the callback address on GitHub. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
 </InstanceSettingNote>
 
@@ -220,6 +220,4 @@ The App's webhook is the one entry point. CirCI verifies the signature and handl
 - `issue_comment` created on a pull request: the `/circi` commands. Comments by bots are ignored.
 - `installation` deleted or suspended: flags the connection as needing attention. Created or unsuspended clears it.
 
-<Aside type="caution" title="Tested against fakes only">
-The GitHub edge is faked in the repository's tests and end-to-end suite. It hasn't been run against github.com. See the [overview](/integrations/overview/).
-</Aside>
+Not yet verified against github.com.
