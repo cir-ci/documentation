@@ -23,7 +23,7 @@ Uploads a directory of PNG screenshots as a build.
 | `--shard <n/total>` | This job uploads shard `n` of `total` of one parallel build (for example `2/4`). The build is processed once all shards arrive. |
 | `--nonce <id>` | Ties the shards of one parallel build together. Default: the CI job's run ID. |
 | `--gate <mode>` | Who blocks the merge: `status` (the git host's check; exit 0 on unreviewed changes) or `exit-code` (this job). Default: decided by the server from the project's settings. |
-| `--author <username>` | Who made the change. Default: the CI actor (for example `GITHUB_ACTOR`). |
+| `--author <login>` | Who made the change (their login on the git host). Default: the CI actor (for example `GITHUB_ACTOR`). |
 | `--timeout <seconds>` | How long `--wait` waits (default 600). |
 | `--api-url <url>` | CirCI address. Default: `CIRCI_API_URL`. |
 | `--no-fetch` | Don't run `git fetch` to complete a shallow history. |
