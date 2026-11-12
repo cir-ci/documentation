@@ -10,8 +10,12 @@ interface Props {
   caption?: string
   /** Max width in px of the framed image (default: the full column). */
   width?: number
+  /** Crop to a fixed aspect ratio, `"16 / 10"`, so captures of different pages line up. Keeps the top of the page. */
+  aspect?: string
+  /** `lazy` (default) for anything below the first screen; `eager` for the first image of a page. */
+  loading?: 'lazy' | 'eager'
 }
-const { name, alt, caption, width } = Astro.props
+const { name, alt, caption, width, aspect, loading = 'lazy' } = Astro.props
 const shots = import.meta.glob<{ default: ImageMetadata }>('/src/assets/screens/*.{jpg,png}', { eager: true })
 const find = (scheme: string) => {
   const key = Object.keys(shots).find((k) => k.includes(`/${name}-${scheme}.`))
@@ -20,12 +24,14 @@ const find = (scheme: string) => {
 }
 const dark = find('dark')
 const light = find('light')
+// The placeholder: the captures are the same size in both themes, so the box is reserved before they load.
+const ratio = aspect ?? `${dark.width} / ${dark.height}`
 ---
 
 <figure class="screen-frame" style={width ? `max-width:${width}px` : undefined}>
-  <div class="shot">
-    <Image src={dark} alt={alt} class="shot-dark" widths={[720, 1080, 1440]} sizes="(min-width: 50rem) 46rem, 100vw" />
-    <Image src={light} alt={alt} class="shot-light" widths={[720, 1080, 1440]} sizes="(min-width: 50rem) 46rem, 100vw" aria-hidden="true" />
+  <div class="shot" class:list={{ cropped: Boolean(aspect) }} style={`aspect-ratio:${ratio}`}>
+    <Image src={dark} alt={alt} class="shot-dark" widths={[720, 1080, 1440]} sizes="(min-width: 50rem) 46rem, 100vw" loading={loading} decoding="async" />
+    <Image src={light} alt={alt} class="shot-light" widths={[720, 1080, 1440]} sizes="(min-width: 50rem) 46rem, 100vw" aria-hidden="true" loading={loading} decoding="async" />
   </div>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
@@ -44,6 +50,11 @@ const light = find('light')
     display: block;
     width: 100%;
     height: auto;
+  }
+  .cropped :global(img) {
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
   }
   .shot-light {
     display: none !important;

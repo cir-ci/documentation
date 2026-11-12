@@ -41,12 +41,14 @@ The list on the left groups the screenshots in review order. A group is only sho
 
 | Group | Starts | Contents |
 |---|---|---|
+| Couldn't read | open, listed first | Screenshots the server couldn't read (not a valid PNG). They can't be approved, and counts say "N couldn't be read". See below |
 | Changed | open | Same name as a baseline screenshot, but different pixels (above the project's diff threshold) |
 | Added | open | A screenshot with no baseline |
 | Removed | open | A baseline screenshot the build didn't upload |
 | Flaky | collapsed | Changed screenshots known to be flaky on the default branch. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/) |
-| Failed | open | Screenshots that couldn't be compared |
 | Unchanged | collapsed | Identical or within the threshold |
+
+A screenshot that couldn't be read has nothing to compare and nothing to decide: the viewer shows the file's name and the reason instead of images, and the rest of the build stays reviewable. The build can't pass until it is uploaded again with a valid PNG. What that means for the merge follows the Project's **Unreviewed changes block merging** setting, like a build that failed to process: with it on, the check fails and `circi upload --wait` exits 2; with it off, the check is neutral and `--wait` exits 0 with a warning that names each file.
 
 Each row shows a status icon, the name, the number of comment threads, and a short figure: the percentage of pixels that changed, or "resized" when the dimensions differ. Above the list, "2 of 5 reviewed" counts the screenshots that need a decision and have one. Press <Kbd keys="j" /> and <Kbd keys="k" /> to move through the list; a collapsed group counts as one stop, opened with <Kbd keys="Enter" />.
 

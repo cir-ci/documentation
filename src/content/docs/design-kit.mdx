@@ -12,6 +12,7 @@ import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components'
 import StatusChip from '../../components/StatusChip.astro'
 import BuildFlow from '../../components/BuildFlow.astro'
 import ScreenFrame from '../../components/ScreenFrame.astro'
+import Diagram from '../../components/Diagram.astro'
 import Kbd from '../../components/Kbd.astro'
 import SettingCard from '../../components/SettingCard.astro'
 import CopyCommand from '../../components/CopyCommand.tsx'
@@ -42,6 +43,10 @@ Highlighting a stage:
 
    <CopyCommand client:visible command="npx circi upload ./screenshots --wait" />
 
+   <Aside type="note">An Aside indented under its step stays inside the step: use it for a warning that belongs to that one action. Anything longer than a short paragraph ends the list: close <code>&lt;/Steps&gt;</code>, write the text, and open a new <code>&lt;Steps&gt;</code> that continues the numbering with the <code>start</code> attribute of the list.</Aside>
+
+4. Open the build page.
+
 </Steps>
 
 ## Callouts
@@ -53,7 +58,7 @@ Highlighting a stage:
 
 ## Keys and settings
 
-Press <Kbd keys="Shift+A" /> to approve everything, or <Kbd keys="Mod+K" /> for the command menu.
+Press <Kbd keys="Shift+A" /> to approve everything, or <Kbd keys="Mod+K" /> for the command menu. A sequence uses "then": <Kbd keys="g then i" /> opens the Inbox.
 
 <SettingCard name="PUBLIC_URL" defaultValue="http://localhost:3000" type="URL">
 The address people open in the browser. It is also the base of every link CirCI sends.
@@ -66,6 +71,22 @@ Signs sessions. 32 characters or more.
 ## Screenshot frame
 
 <ScreenFrame name="build-review" alt="The build page for build #22." caption="A real dashboard screenshot, in the reader's theme." width={760} />
+
+Crop captures to one ratio with `aspect` so a run of them lines up (it keeps the top of the page); images load lazily and reserve their box, so long pages don't jump.
+
+<ScreenFrame name="build-review" aspect="16 / 7" alt="The top of the build page, cropped." caption="aspect=&quot;16 / 7&quot; keeps the top of the capture." width={760} />
+
+## Diagram
+
+<Diagram viewBox="0 0 520 120" title="Two boxes" desc="A request box with an arrow to a response box." caption="A themed, accessible inline SVG: draw with the d-* classes.">
+  <rect x="1" y="20" width="200" height="80" rx="10" class="d-box" />
+  <text x="20" y="52" class="d-title">Request</text>
+  <text x="20" y="76" class="d-text">Comes in</text>
+  <path d="M212 60h86m-6 -6l6 6l-6 6" class="d-line" />
+  <rect x="319" y="20" width="200" height="80" rx="10" class="d-box d-box--accent" />
+  <text x="338" y="52" class="d-title">Response</text>
+  <text x="338" y="76" class="d-text">Goes out</text>
+</Diagram>
 
 ## Code
 

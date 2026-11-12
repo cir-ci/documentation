@@ -32,7 +32,7 @@ const code = (text: string) => text.replace(/`([^`]+)`/g, '<code>$1</code>')
             <tr>
               <td>
                 <code>{v.name}</code>
-                {v.instanceSetting && <span class="env-badge" title="Set in Instance settings; the variable is the initial value">Instance settings</span>}
+                {v.instanceSetting && <span class="env-badge" title="Also editable in Instance settings; when set, this variable wins and locks it">Instance settings</span>}
               </td>
               <td>{v.required ? <strong>required</strong> : v.default ? <code>{v.default}</code> : <span class="env-none">none</span>}</td>
               <td set:html={code(v.description)} />

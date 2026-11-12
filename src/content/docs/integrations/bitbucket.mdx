@@ -53,7 +53,7 @@ One per build name. The key is `circi-` plus a short hash of the build name, so 
 | Processing | `INPROGRESS` |
 | No changes, approved, or the Project doesn't block merging | `SUCCESSFUL` |
 | Changes await review and merging is blocked, or rejected | `FAILED` |
-| Some screenshots couldn't be read (`1 screenshot couldn't be read`) | `FAILED` until the build is uploaded again |
+| Some screenshots couldn't be read (`1 screenshot couldn't be read`) | `FAILED` when the Project blocks merging, `SUCCESSFUL` otherwise, until the build is uploaded again |
 
 ### The summary comment
 
@@ -73,7 +73,7 @@ CirCI has no Bitbucket sign-in provider (the sign-in providers are GitHub, GitLa
 
 ## Settings
 
-The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read fails whatever they say.
+The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read follows **Unreviewed changes block merging** too: it fails when that is on and passes, with the count in the description, when it is off.
 
 ### The merge gate in CI
 

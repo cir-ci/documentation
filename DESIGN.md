@@ -77,22 +77,37 @@ In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a
   Put a `CopyCommand` or a fenced block inside a step.
 - Callouts: Starlight's `<Aside type="note|tip|caution|danger">`, mapped to processing, approved, needs review and failed.
   Note is information, tip is good news, caution needs a decision, danger breaks something.
-- `ScreenFrame.astro`: `<ScreenFrame name="build-review" alt="..." caption="..." width={760} />`. Reads
+- `ScreenFrame.astro`: `<ScreenFrame name="build-review" alt="..." caption="..." width={760} />`. `aspect="16 / 10"` crops to a fixed ratio
+  (keeps the top of the capture) so a run of captures lines up; images are lazy and reserve their box (`loading="eager"` for the first one on a page). Reads
   `src/assets/screens/<name>-dark.jpg` and `<name>-light.jpg` and shows the one for the reader's theme. Capture both from the running
   dashboard (`pnpm dev` in the repo) at 1440px wide. Alt text says what the screenshot shows, not "screenshot of".
 - `Kbd.astro`: `<Kbd keys="Shift+A" />`, `<Kbd keys="Mod+K" />` (Mod is Command; Shift, Alt, Ctrl, Enter, Esc also map to symbols).
+  A sequence is `<Kbd keys="g then i" />` (key, release, key), never two `Kbd`s with "then" between them.
+- `Diagram.astro`: a themed, accessible inline SVG (`viewBox`, `title`, `desc`, optional `caption`, `width`). Draw its children with the
+  `d-box`, `d-box--accent`, `d-line`, `d-title`, `d-mono`, `d-text`, `d-fill` classes so both themes work; no inline colours. The title and
+  description are the accessible name, so say what the picture shows, not "diagram of". `BuildFlow` stays its own component (two layouts).
+  Example: the layers in `contributing/repo-layout`.
+- Steps and Asides: an Aside indented under a step stays in the step (one short warning about that action). Anything longer ends the list:
+  close `</Steps>`, write the text, open a new `<Steps>` and carry on with the `start` attribute of the list.
 - `SettingCard.astro`: one variable or setting. `<SettingCard name="PUBLIC_URL" defaultValue="http://localhost:3000" type="URL">`
   description `</SettingCard>`; `required` for required ones. For the full reference keep using `EnvTable`.
 - `CopyCommand.tsx`: one command with a Copy button, `<CopyCommand client:visible command="npx circi upload ./screenshots --wait" />`.
   For several lines use a fenced `sh` block (Expressive Code adds its own copy button).
 - `ReviewCompare.astro` / `.tsx`: the landing page's before / after / diff slider (React island). Landing page only.
 - `EnvTable.astro`: `<EnvTable />` or `<EnvTable group="mail" />`. Reads `src/data/env.ts`.
-- `InstanceSettingNote.astro`: the dashed callout marking passages about settings that are moving into Instance settings.
-  Searching for `instance-setting` and `InstanceSettingNote` finds every spot to update.
+- `InstanceSettingNote.astro`: the dashed callout for a passage about a setting that is edited in Instance settings (sentence-case title).
+  Searching for `InstanceSettingNote` finds every spot. The truth to state everywhere: an environment variable, when set, wins and locks the
+  setting ("Set by <VAR>", and a save is refused); otherwise the saved value; otherwise the default. Changes apply within about 30 seconds
+  on every server process, with no restart. Secrets are write-only and sealed at rest.
 
 Screenshots on disk (`src/assets/screens/`): `build-review-{dark,light}.jpg` (build #22 of the seeded dev Workspace, side by side),
 `hero-before.jpg`, `hero-after.jpg`, `hero-diff.jpg` (the same screenshot's baseline, new version and diff, for the landing page).
 The `.jpg` files are Chrome captures of the dashboard, so they are 1x; add more by the same naming.
+
+## Site address
+
+`astro.config.mjs` sets `site: 'https://docs.circi.dev'` as a **placeholder, to be set** to the real address when the docs are published.
+It exists so Starlight generates `sitemap-index.xml`; the canonical links and the sitemap use it.
 
 ## Landing page
 

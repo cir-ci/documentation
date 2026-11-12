@@ -13,7 +13,7 @@ A **workspace** is your organisation in CirCI: its members, projects, integratio
 ## Where to open them
 
 - **Settings** in the workspace menu (the workspace's name at the top of the sidebar). Owners and admins land on **General**, other members on **Members**, and instance admins on the workspace's hub.
-- <Kbd keys="g" /> then <Kbd keys="s" /> from anywhere.
+- <Kbd keys="g then s" /> from anywhere.
 - <Kbd keys="Mod+K" />, then the page's name, for example "Members" or "Storage".
 
 The hub groups the pages, each with a summary on the right:
@@ -73,7 +73,7 @@ This workspace shows its projects only to sessions that used a method you accept
 A method the instance doesn't allow can't be turned on here: an instance admin sets the outer limit, and a workspace can only narrow it. The server keeps at least one method usable by an owner, so you can't lock everyone out. Because turning a method off can lock people out, the changes wait for **Save** ("Sign-in methods saved"), with **Discard**.
 
 <InstanceSettingNote setting="Sign-in methods">
-Which methods the instance offers at all is set in Instance settings, or by the environment variables (`AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED` and the per-provider `AUTH_*` variables) as initial values. See [Instance administration](/using/instance-administration/).
+Which methods the instance offers at all is set by an instance admin in Instance settings. A method fixed by an environment variable (`AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED`) shows "Set by" there and can't be changed from the dashboard. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 
 ### Single sign-on

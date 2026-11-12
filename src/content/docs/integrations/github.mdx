@@ -77,7 +77,7 @@ If `GITHUB_APP_*` is set in the environment it always wins: the instance page th
 The permissions are the smallest set that works: Checks for the check run and its buttons, Pull requests for the summary comment and its reactions, Metadata because GitHub always grants it.
 
 <InstanceSettingNote setting="GitHub sign-in">
-Sign-in with GitHub is configured in Instance settings, or by `AUTH_GITHUB_CLIENT_ID` and `AUTH_GITHUB_CLIENT_SECRET` as the initial value. Register `PUBLIC_URL/api/auth/callback/github` as the callback address on GitHub. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
+An instance admin adds the GitHub sign-in provider in Instance settings, or sets `AUTH_GITHUB_CLIENT_ID` and `AUTH_GITHUB_CLIENT_SECRET`, which then win and lock it. Register `PUBLIC_URL/api/auth/callback/github` as the callback address on GitHub. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
 </InstanceSettingNote>
 
 ### Connect an installation to a Workspace
@@ -117,7 +117,7 @@ One check per build name, called `CirCI / <build name>` (for example `CirCI / de
 | Approved | `Changes approved (3 changed · 1 added)` | Passes |
 | Rejected | `Changes rejected (3 changed · 1 added)` | Fails |
 | Only flaky screenshots changed | `Only flaky screenshots changed (2 changed)` | Passes when the Project doesn't hold merges for flaky ones |
-| Some screenshots couldn't be read | `1 screenshot couldn't be read` | Fails until the build is uploaded again, whatever was approved |
+| Some screenshots couldn't be read | `1 screenshot couldn't be read` | Fails when the Project blocks merging, neutral otherwise, whatever was approved. Upload the build again to clear it |
 | Processing failed | Processing failed, with the error | Fails, or neutral when the Project doesn't block merging |
 | No changes, but the Project approves by hand | No visual changes: approval required | Action required, with an Approve button |
 
@@ -182,11 +182,11 @@ To block merging, mark the check as required in the repository's branch protecti
 - **Flaky-only changes block merging**: whether changes to flaky screenshots hold the pull request.
 - **Approve default-branch builds automatically**: needs an approved baseline to compare with, so a Project's first build is always reviewed.
 
-A build with screenshots that couldn't be read fails the check whatever these say, because those screenshots were never compared.
+A build with screenshots that couldn't be read follows **Unreviewed changes block merging**, like a build that failed to process: with it on, the check fails until the build is uploaded again; with it off, the check is neutral and still says how many couldn't be read. Approving the rest doesn't change that, because those screenshots were never compared.
 
 The CLI's `--wait` flag decides whether the CI job itself is the gate:
 
-- **With a linked repository** the check is the gate. `circi upload --wait` waits for processing and exits 0 even with unreviewed changes. A green CI job then doesn't mean "reviewed".
+- **With a linked repository** the check is the gate. `circi upload --wait` waits for processing and exits 0 even with unreviewed changes. A green CI job then doesn't mean "reviewed". It exits 2 for a processing error, or for screenshots that couldn't be read in a Project that blocks merging; in a Project that doesn't, it exits 0 with a warning that names each file.
 - **Without a linked repository** the CI job is the gate. It exits 1 until the build is approved, then you re-run the job.
 - `--gate status` or `--gate exit-code` overrides the choice. See [the CLI](/ci/cli/).
 

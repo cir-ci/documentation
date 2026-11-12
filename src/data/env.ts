@@ -1,9 +1,10 @@
 // Source: repo/packages/config/src/schema.ts (names, defaults), packages/config/src/load.ts (rules between variables),
 // repo/README.md Configuration table and deploy/.env.example (wording). Keep in sync with those.
 //
-// `instanceSetting: true` marks a variable that is moving into Instance settings in the dashboard. Its
-// environment value stays as the initial value. When the move is done, update the notes here
-// and in src/content/docs/self-hosting/instance-settings.mdx.
+// `instanceSetting: true` marks a variable whose setting is also editable in Instance settings in the dashboard.
+// A variable that is set wins and locks the setting there ("Set by <VAR>", and a save is refused); otherwise the
+// value saved in the dashboard applies, otherwise the default. Keep in step with
+// src/content/docs/self-hosting/instance-settings.mdx.
 
 export interface EnvVar {
   name: string
@@ -11,7 +12,7 @@ export interface EnvVar {
   default?: string
   required?: boolean
   description: string
-  /** Set in Instance settings (the variable is the initial value). */
+  /** Also editable in Instance settings. Set, the variable wins and locks it there. */
   instanceSetting?: boolean
 }
 
@@ -60,7 +61,7 @@ export const envGroups: EnvGroup[] = [
   {
     id: 'sign-in',
     title: 'Sign-in and workspaces',
-    intro: 'These are moving into Instance settings (see the Instance settings page). The environment variable is the initial value.',
+    intro: 'Also editable in Instance settings. A variable that is set wins and locks the setting there; leave it unset to change it in the dashboard.',
     vars: [
       { name: 'WORKSPACE_CREATION', default: 'admin', instanceSetting: true, description: 'Who can create workspaces in the dashboard: `admin` (instance admins) or `anyone` (every signed-in account).' },
       { name: 'AUTH_PASSWORD_ENABLED', default: 'true', instanceSetting: true, description: 'Email and password sign-in. Setting it to `false` needs email codes to be available (SMTP), or nobody could sign in.' },
@@ -83,7 +84,7 @@ export const envGroups: EnvGroup[] = [
   {
     id: 'mail',
     title: 'Email (SMTP)',
-    intro: 'Moving into Instance settings. Check it with `circi admin mail test --to you@acme.io`.',
+    intro: 'Also editable in Instance settings (the Mail server section). Set `SMTP_HOST` and it wins and locks the section. Check it with `circi admin mail test --to you@acme.io`.',
     vars: [
       { name: 'SMTP_HOST', instanceSetting: true, description: 'Outgoing mail server. Without it, email sign-in codes, invitation mail and "new sign-in" mail are off.' },
       { name: 'SMTP_PORT', default: '587 (465 when SMTP_SECURE is true)', instanceSetting: true, description: '587 uses STARTTLS; 465 implicit TLS.' },
@@ -96,7 +97,7 @@ export const envGroups: EnvGroup[] = [
   {
     id: 'git-hosts',
     title: 'GitHub App and Slack',
-    intro: 'The Slack app is moving into Instance settings. The GitHub App can also be created from Instance settings (manifest flow), see the GitHub page.',
+    intro: 'The Slack app is also editable in Instance settings (set `SLACK_CLIENT_ID` and it wins and locks it). The GitHub App can also be created from Instance settings (manifest flow), see the GitHub page.',
     vars: [
       { name: 'GITHUB_APP_ID', description: 'GitHub App ID. Set `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY` and `GITHUB_APP_WEBHOOK_SECRET` together or not at all.' },
       { name: 'GITHUB_APP_PRIVATE_KEY', description: 'The app\'s PEM private key; `\\n` escapes are fine.' },
@@ -105,7 +106,7 @@ export const envGroups: EnvGroup[] = [
       { name: 'GITHUB_API_TIMEOUT_SECONDS', default: '15', description: 'How long one GitHub API request may take (0.1 to 600).' },
       { name: 'SLACK_CLIENT_ID', instanceSetting: true, description: 'Client ID of the Slack app CirCI posts as.' },
       { name: 'SLACK_CLIENT_SECRET', instanceSetting: true, description: 'Client secret of the Slack app.' },
-      { name: 'SLACK_API_URL', instanceSetting: true, description: 'Override the Slack API address (tests, proxies).' },
+      { name: 'SLACK_API_URL', description: 'Override the Slack API address (tests, proxies).' },
     ],
   },
   {
@@ -113,7 +114,7 @@ export const envGroups: EnvGroup[] = [
     title: 'Hosted sites',
     vars: [
       { name: 'STATIC_SITES_HOST', description: 'A separate, dedicated domain for hosted sites (Storybook, reports). Hosting is off until it is set. Read the cookie rules on the Site domains page first. CirCI refuses a value that equals, contains or shares a parent domain with the dashboard host.' },
-      { name: 'STATIC_SITES_MAX_MB', default: '200', description: 'Largest site upload in MB (1 to 5000).' },
+      { name: 'STATIC_SITES_MAX_MB', default: '200', instanceSetting: true, description: 'Largest site upload in MB (1 to 5000).' },
     ],
   },
   {
@@ -122,9 +123,9 @@ export const envGroups: EnvGroup[] = [
     vars: [
       { name: 'CIRCI_DIFF_ENGINE', default: 'native', description: '`native` runs the pixel comparison in the Rust addon the image ships (about twice the builds per minute under load). If it can not load, the worker logs a warning and uses `js`. `js` runs on the worker\'s event loop. `js-workers` runs the same JavaScript comparison in a pool of worker threads (no native module, about 2.6 times the memory).' },
       { name: 'CIRCI_DIFF_THREADS', default: 'cores - 1', description: 'Threads of the `js-workers` engine (1 to 256). Caps its memory use.' },
-      { name: 'UPLOAD_TIMEOUT_MINUTES', default: '60', description: 'Builds still uploading after this long fail, naming the shards that never arrived. `0` never.' },
-      { name: 'GC_GRACE_HOURS', default: '24', description: 'Files nothing uses any more are deleted after this long. Builds and sites expire after the project\'s retention in days.' },
-      { name: 'JOB_RETENTION_DAYS', default: '14', description: 'Finished background jobs (done or failed) are deleted after this many days. `0` keeps them.' },
+      { name: 'UPLOAD_TIMEOUT_MINUTES', default: '60', instanceSetting: true, description: 'Builds still uploading after this long fail, naming the shards that never arrived. `0` never.' },
+      { name: 'GC_GRACE_HOURS', default: '24', instanceSetting: true, description: 'Files nothing uses any more are deleted after this long. Builds and sites expire after the project\'s retention in days.' },
+      { name: 'JOB_RETENTION_DAYS', default: '14', instanceSetting: true, description: 'Finished background jobs (done or failed) are deleted after this many days. `0` keeps them.' },
       { name: 'JOB_RETRY_BASE_SECONDS', default: '2', description: 'First wait before a failed job (webhook, git check, email) is retried; each further wait doubles. Mostly for tests.' },
       { name: 'JOB_RETRY_MAX_SECONDS', default: '300', description: 'The longest wait between two attempts of a job.' },
     ],
@@ -134,7 +135,7 @@ export const envGroups: EnvGroup[] = [
     title: 'Webhooks and web push',
     vars: [
       { name: 'WEBHOOK_ALLOW_PRIVATE_ADDRESSES', default: 'false', description: 'Allow webhooks to private and loopback addresses. By default they are refused (and an OIDC issuer must be a public https address). Set `true` if your receivers live on your own network.' },
-      { name: 'WEBHOOK_TIMEOUT_SECONDS', default: '10', description: 'How long a webhook receiver may take to answer a delivery (0.1 to 600).' },
+      { name: 'WEBHOOK_TIMEOUT_SECONDS', default: '10', instanceSetting: true, description: 'How long a webhook receiver may take to answer a delivery (0.1 to 600).' },
       { name: 'VAPID_PUBLIC_KEY', description: 'Web push signing key pair. Leave unset and the server makes its own on first use and keeps them in the database. Pin them when several instances share keys, or after a restore. Set both or neither.' },
       { name: 'VAPID_PRIVATE_KEY', description: 'See `VAPID_PUBLIC_KEY`.' },
       { name: 'VAPID_SUBJECT', default: 'PUBLIC_URL', description: 'Contact the push services may use. Must start with `mailto:` or `https://`.' },

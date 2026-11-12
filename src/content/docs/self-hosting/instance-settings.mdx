@@ -1,52 +1,105 @@
 ---
 title: Instance settings
-description: The settings an instance admin can change in the dashboard, and how they relate to environment variables.
+description: What an instance admin changes in the dashboard, which environment variable locks each setting, and how the two work together.
 ---
-{/* Source: apps/web/src/features/instance (InstanceSettingsPage.tsx, HealthPage.tsx, GithubAppSection.tsx), apps/server/src/http/routes/dashboard/instance/settings.ts, packages/db/src/queries/instance-settings.ts, packages/config/src/schema.ts */}
-{/* instance-setting: THIS PAGE IS A MOVING TARGET. Settings are being moved from environment variables into the instance admin UI. Update the table and the notes below when each one lands. Search the docs for "instance-setting" and <InstanceSettingNote> to find every place that needs the same update. */}
+{/* Source: apps/web/src/features/instance (InstanceSettingsPage.tsx, SsoProvidersSection.tsx, SecretField.tsx, HealthPage.tsx, GithubAppSection.tsx), packages/core/src/instance/index.ts (INSTANCE_ENV, bounds, defaults), packages/services/src/instance-config (model.ts, service.ts: precedence, locks, 30 s TTL), apps/server/src/http/routes/dashboard/instance/settings.ts, packages/config/src/schema.ts */}
 
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, Steps } from '@astrojs/starlight/components'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 import ScreenFrame from '../../../components/ScreenFrame.astro'
+import SettingCard from '../../../components/SettingCard.astro'
 
-Instance admins open **Instance** from the sidebar. It holds the settings of the whole installation, next to the instance's accounts, Workspaces and health.
+Instance admins open **Instance** in the sidebar, then **Instance settings**. The page holds the settings of the whole installation, and most of them can be changed there, with no restart.
 
-<ScreenFrame name="host-instance" alt="The Instance page: accounts, all workspaces, Instance settings and Health." caption="The Instance page, in the sidebar's Instance group." width={760} />
+<ScreenFrame name="host-instance-settings" loading="eager" aspect="16 / 10" alt="The Instance settings page. The dashboard address and its old addresses are read-only and name their variables. Password, Email code and Single sign-on are checked under Sign-in methods. Single sign-on providers says there are none yet, and Who can create workspaces is unchecked." caption="Instance settings in a development instance. The settings that wait for Save changes are on the same page as the ones that name a variable." width={760} />
 
-<InstanceSettingNote setting="Environment settings moving into the dashboard">
-These settings are moving from environment variables into Instance settings: who can create workspaces, sign-in methods, limits, SMTP, the Slack app and the instance's single sign-on providers. For each of them, set it in Instance settings, or by the environment variable as the initial value. This page is updated as each one lands. Until then, check the page in your version of the dashboard to see which entries are editable.
+## Which value applies
+
+Every setting has up to three sources, and the first one that exists wins.
+
+1. **The environment variable**, when it is set. The setting is locked: the page shows **Set by VARIABLE**, its control is disabled, and a save through the API is refused with "Set by VARIABLE in the environment: change it there."
+2. **The value saved in the dashboard.**
+3. **The default.**
+
+<InstanceSettingNote setting="Changes apply without a restart">
+A saved setting takes effect within about 30 seconds on every server and worker process, because each one re-reads the stored settings on a timer. The process that served the save uses it at once. Changing an environment variable still needs a restart.
 </InstanceSettingNote>
 
-## What the page lists
+To hand a setting over to the dashboard, remove its variable and restart once. To lock it again, set the variable.
 
-Each entry names the environment variable behind it.
-
-| Section | Setting | Environment variable |
-|---|---|---|
-| Dashboard address | The address, and old addresses that redirect to it | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` |
-| Sign-in methods | Which methods the instance accepts: password, email code, single sign-on | `AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED` |
-| Who can create workspaces | Instance admins only, or everyone | `WORKSPACE_CREATION` |
-| Storage and limits | The storage driver, the grace period before unused files are deleted, the upload timeout, whether webhooks may call private addresses | `STORAGE_DRIVER`, `GC_GRACE_HOURS`, `UPLOAD_TIMEOUT_MINUTES`, `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` |
-| Hosted sites | The sites domain, or "Not set up" | `STATIC_SITES_HOST` |
-| Mail | The SMTP server and sender, and a button that sends a test mail to your own address | `SMTP_*` |
-
-<Aside type="caution">
-Where an entry isn't editable yet, change the environment variable and restart. The page also shows the default retention of new Projects (30 days) beside a `DEFAULT_PROJECT_RETENTION_DAYS` label, but the server doesn't read that variable: the default is built in, and each Project sets its own in its settings.
+<Aside type="note" title="Secrets are write-only">
+A password or client secret is never shown again after it is saved: the page only says that one is saved. Secrets are encrypted before they reach the database (sealed at rest). Leave a secret field empty to keep the saved one, and type a new value to replace it.
 </Aside>
+
+## What you can change
+
+Each section of the page saves with **Save changes**, and **Discard** reverts it. The two exceptions are the single sign-on providers and the GitHub App, which apply from their own dialogs.
+
+### Who can create workspaces
+
+<SettingCard name="Let every signed-in account create workspaces" defaultValue="off (instance admins only)" type="WORKSPACE_CREATION">
+Off, only instance admins create Workspaces, and everyone else joins through an invitation or a verified email domain. On, every signed-in account can.
+</SettingCard>
+
+### Sign-in methods
+
+<SettingCard name="Password, Email code, Single sign-on" defaultValue="all on" type="AUTH_PASSWORD_ENABLED, AUTH_EMAIL_ENABLED, AUTH_SSO_ENABLED">
+The outer limit. Each Workspace can turn methods off for its own people, never on beyond this. Email codes need a mail server, and single sign-on needs at least one provider.
+</SettingCard>
+
+Saving refuses a change that would leave nobody able to sign in, for example turning the password off while email codes have no mail server. The message says which method to keep.
+
+### Single sign-on providers
+
+GitHub, Google, GitLab and OpenID Connect providers for every Workspace. **Add provider** opens a dialog with the provider, the **Name on the sign-in button**, the **Client ID**, the **Client secret**, an **Issuer** for OpenID Connect or a **GitLab address** for a self-managed GitLab, and whether the provider only reports addresses its people own. The dialog shows the redirect address to register at the provider.
+
+A provider set by the `AUTH_*` variables is listed as **Set by AUTH_GITHUB_*** (or the provider's own name), and can't be edited or removed here.
+
+### Mail server
+
+The SMTP **Host**, **Port**, **Use TLS from the start**, **User name**, **Password** and **From address**, and **Send a test mail to your own address**. **Remove the mail server** turns mail off again. With `SMTP_HOST` set the section is locked and shows the server and sender. Without mail, nobody gets sign-in codes, invitations or new sign-in notices.
+
+### Slack app
+
+The **Client ID** and **Client secret** of the Slack app CirCI posts as, and **Remove the Slack app**. With `SLACK_CLIENT_ID` set, the section is locked. See [Slack](/integrations/slack/).
+
+### Storage and limits
+
+| Setting on the page | Variable | Default | Range |
+|---|---|---|---|
+| New projects keep builds for | none (a dashboard setting only) | 30 days | 1 to 3650 |
+| Unused files are deleted after | `GC_GRACE_HOURS` | 24 hours | 0 to 8760 |
+| A build still uploading fails after | `UPLOAD_TIMEOUT_MINUTES` | 60 minutes (0 never) | 0 to 10080 |
+| Finished background jobs are kept for | `JOB_RETENTION_DAYS` | 14 days (0 keeps them) | 0 to 3650 |
+| A webhook receiver may take up to | `WEBHOOK_TIMEOUT_SECONDS` | 10 seconds | 1 to 600 |
+| Largest hosted site | `STATIC_SITES_MAX_MB` | 200 MB | 1 to 5000 |
+
+<ScreenFrame name="host-instance-limits" aspect="16 / 10" alt="The Storage and limits section: Local disk with its variable, then number fields for new project retention, unused files, upload timeout, job retention and webhook timeout, and the Hosted sites section saying Not set up." caption="Storage and limits and Hosted sites. A limit set by its variable shows the variable and a disabled field." width={760} />
+
+**New projects keep builds for** is the retention a new Project starts with. It is a real setting with no environment variable: each Project then changes its own in its settings, and the instance value doesn't touch existing Projects. See [Retention and garbage collection](/self-hosting/retention-and-gc/).
+
+## Read-only on this page
+
+These name their variable and are changed there, with a restart.
+
+| Setting | Variable |
+|---|---|
+| Dashboard address, and the old addresses that redirect to it | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` |
+| Storage driver | `STORAGE_DRIVER` and the `S3_*` settings |
+| Whether webhooks may call private addresses | `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` |
+| Hosted sites domain, or "Not set up" | `STATIC_SITES_HOST` |
+
+Deployment values that don't appear on the page at all: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `HOST`, `PORT`, `TRUSTED_PROXIES` and `CIRCI_DIFF_ENGINE`. The [environment variable reference](/reference/environment-variables/) marks every variable that is also editable in the dashboard.
 
 ## The other Instance pages
 
 | Page | What it does |
 |---|---|
 | **Accounts** | Every account. Change an email, ban or unban. |
-| **Workspaces** | Every Workspace on the instance, deleted ones too, and creating one. Instance admins manage accounts and Workspaces but see the Projects only of the Workspaces they belong to. |
-| **Health** | The same checks as `circi admin doctor`, the services including queue depth, the domains and cookies check, and the **Setup code**. |
+| **Workspaces** | Every Workspace on the instance, deleted ones too, and creating one. Instance admins see a Workspace's Projects only if they belong to it. |
+| **Health** | The same checks as `circi admin doctor`, the background jobs per queue, the domains and cookies check, and the **Setup code**. |
 | **GitHub App** | Create the GitHub App with the manifest flow, or see the one configured. See [GitHub](/integrations/github/). |
 
-<ScreenFrame name="host-health" alt="The Health page: four passing checks, then storage, disk space, database and mail." caption="Health. Run checks again repeats what circi admin doctor reports." width={760} />
+<ScreenFrame name="host-health" aspect="16 / 10" alt="The Health page, scrolled to Domains and cookies, then Background jobs with waiting, running, oldest waiting, failed and retrying counts, the Queues list and the Setup code state." caption="Health. Run checks again repeats what circi admin doctor reports." width={760} />
 
 See [Instance administration](/using/instance-administration/) for how admins use these pages.
-
-## Settings that stay environment variables
-
-Deployment-level values stay environment variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `PUBLIC_URL`, `HOST`, `PORT`, the storage settings, `TRUSTED_PROXIES` and `CIRCI_DIFF_ENGINE`. The [environment variable reference](/reference/environment-variables/) marks the ones that are moving.

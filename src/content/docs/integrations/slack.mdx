@@ -21,7 +21,7 @@ The Slack integration installs a CirCI Slack app into your Slack workspace. Each
 CirCI doesn't ship a Slack app of its own. Your instance uses an app you create at api.slack.com, so the Slack tile in the Add integration dialog says **Not set up on this server** until this is done.
 
 <InstanceSettingNote setting="Slack app">
-Set the Slack app's client ID and client secret in Instance settings, or by `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` as the initial value. Set both or neither: the server refuses to start with only one. `SLACK_API_URL` (default `https://slack.com/api`) points the integration at a different Slack API address and isn't normally needed. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
+An instance admin sets the Slack app's client ID and client secret in Instance settings (the secret is write-only), or by `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET`, which then win and lock the section. Set both variables or neither: the server refuses to start with only one. `SLACK_API_URL` (default `https://slack.com/api`) points the integration at a different Slack API address and isn't normally needed. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
 </InstanceSettingNote>
 
 <Steps>

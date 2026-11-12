@@ -4,6 +4,7 @@ description: The folders of the CirCI repository, the five layers and the rules 
 ---
 {/* Source: CLAUDE.md (Layers, Types, Style), README.md (Layout), docs/architecture-review/layering.md, packages/services/test/layers.test.ts, .oxlintrc.json */}
 
+import Diagram from '../../../components/Diagram.astro'
 import { Aside } from '@astrojs/starlight/components'
 
 CirCI is a pnpm and Turborepo monorepo. Code is split into five layers, and the dependencies between them are checked by a test (`packages/services/test/layers.test.ts`) and by lint overrides in `.oxlintrc.json`, so a wrong import fails before review.
@@ -12,46 +13,42 @@ CirCI is a pnpm and Turborepo monorepo. Code is split into five layers, and the 
 
 Read the diagram from the top: a request enters at the transport layer and each layer calls the one below it. `core` and `api` depend on nothing.
 
-<figure class="layers-figure" style={{ marginBlock: '1.5rem' }}>
-<svg viewBox="0 0 720 520" role="img" aria-labelledby="layers-t layers-d" style={{ width: '100%', height: 'auto', display: 'block' }}>
-  <title id="layers-t">The five layers of the CirCI code base</title>
-  <desc id="layers-d">From top to bottom: transport (apps/server, apps/worker, apps/web), services, core, db and adapters. Each layer calls the one below it.</desc>
+<Diagram viewBox="0 0 720 520" title="The five layers of the CirCI code base" desc="From top to bottom: transport (apps/server, apps/worker, apps/web), services, core, db and adapters. Each layer calls the one below it.">
   <g transform="translate(0 4)">
-    <rect x="1" y="0" width="718" height="80" rx="10" style={{ fill: 'var(--circi-surface-raised)', stroke: 'var(--circi-line-strong)', strokeWidth: 1.25 }} />
-    <text x="22" y="28" style={{ fill: 'var(--circi-text-primary)', fontSize: 17, fontWeight: 600 }}>Transport</text>
-    <text x="22" y="49" style={{ fill: 'var(--circi-text-tertiary)', fontSize: 13.5, fontFamily: 'var(--circi-font-mono)' }}>apps/server · apps/worker · apps/web</text>
-    <text x="22" y="68" style={{ fill: 'var(--circi-text-secondary)', fontSize: 14.5 }}>Parse the request, check who is asking, call a service or a read model, shape the reply</text>
+    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box" />
+    <text x="22" y="28" class="d-title">Transport</text>
+    <text x="22" y="49" class="d-mono">apps/server · apps/worker · apps/web</text>
+    <text x="22" y="68" class="d-text">Parse the request, check who is asking, call a service or a read model, shape the reply</text>
   </g>
-  <path d="M360 88v16m-5 -6l5 6l5 -6" style={{ fill: 'none', stroke: 'var(--circi-text-tertiary)', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }} />
+  <path d="M360 88v16m-5 -6l5 6l5 -6" class="d-line" />
   <g transform="translate(0 112)">
-    <rect x="1" y="0" width="718" height="80" rx="10" style={{ fill: 'var(--circi-surface-raised)', stroke: 'var(--circi-line-strong)', strokeWidth: 1.25 }} />
-    <text x="22" y="28" style={{ fill: 'var(--circi-text-primary)', fontSize: 17, fontWeight: 600 }}>Services</text>
-    <text x="22" y="49" style={{ fill: 'var(--circi-text-tertiary)', fontSize: 13.5, fontFamily: 'var(--circi-font-mono)' }}>packages/services</text>
-    <text x="22" y="68" style={{ fill: 'var(--circi-text-secondary)', fontSize: 14.5 }}>Use cases: open the transaction, call repositories, queue the jobs and notices</text>
+    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box" />
+    <text x="22" y="28" class="d-title">Services</text>
+    <text x="22" y="49" class="d-mono">packages/services</text>
+    <text x="22" y="68" class="d-text">Use cases: open the transaction, call repositories, queue the jobs and notices</text>
   </g>
-  <path d="M360 196v16m-5 -6l5 6l5 -6" style={{ fill: 'none', stroke: 'var(--circi-text-tertiary)', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }} />
+  <path d="M360 196v16m-5 -6l5 6l5 -6" class="d-line" />
   <g transform="translate(0 220)">
-    <rect x="1" y="0" width="718" height="80" rx="10" style={{ fill: 'var(--circi-surface-raised)', stroke: 'var(--circi-accent-main)', strokeWidth: 1.25 }} />
-    <text x="22" y="28" style={{ fill: 'var(--circi-text-primary)', fontSize: 17, fontWeight: 600 }}>Core</text>
-    <text x="22" y="49" style={{ fill: 'var(--circi-text-tertiary)', fontSize: 13.5, fontFamily: 'var(--circi-font-mono)' }}>packages/core</text>
-    <text x="22" y="68" style={{ fill: 'var(--circi-text-secondary)', fontSize: 14.5 }}>Rules with no I/O: baselines, outcomes, limits, review rules</text>
+    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box d-box--accent" />
+    <text x="22" y="28" class="d-title">Core</text>
+    <text x="22" y="49" class="d-mono">packages/core</text>
+    <text x="22" y="68" class="d-text">Rules with no I/O: baselines, outcomes, limits, review rules</text>
   </g>
-  <path d="M360 304v16m-5 -6l5 6l5 -6" style={{ fill: 'none', stroke: 'var(--circi-text-tertiary)', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }} />
+  <path d="M360 304v16m-5 -6l5 6l5 -6" class="d-line" />
   <g transform="translate(0 328)">
-    <rect x="1" y="0" width="718" height="80" rx="10" style={{ fill: 'var(--circi-surface-raised)', stroke: 'var(--circi-line-strong)', strokeWidth: 1.25 }} />
-    <text x="22" y="28" style={{ fill: 'var(--circi-text-primary)', fontSize: 17, fontWeight: 600 }}>Db</text>
-    <text x="22" y="49" style={{ fill: 'var(--circi-text-tertiary)', fontSize: 13.5, fontFamily: 'var(--circi-font-mono)' }}>packages/db</text>
-    <text x="22" y="68" style={{ fill: 'var(--circi-text-secondary)', fontSize: 14.5 }}>queries (read models) · repositories (stores) · queue · schema</text>
+    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box" />
+    <text x="22" y="28" class="d-title">Db</text>
+    <text x="22" y="49" class="d-mono">packages/db</text>
+    <text x="22" y="68" class="d-text">queries (read models) · repositories (stores) · queue · schema</text>
   </g>
-  <path d="M360 412v16m-5 -6l5 6l5 -6" style={{ fill: 'none', stroke: 'var(--circi-text-tertiary)', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }} />
+  <path d="M360 412v16m-5 -6l5 6l5 -6" class="d-line" />
   <g transform="translate(0 436)">
-    <rect x="1" y="0" width="718" height="80" rx="10" style={{ fill: 'var(--circi-surface-raised)', stroke: 'var(--circi-line-strong)', strokeWidth: 1.25 }} />
-    <text x="22" y="28" style={{ fill: 'var(--circi-text-primary)', fontSize: 17, fontWeight: 600 }}>Adapters</text>
-    <text x="22" y="49" style={{ fill: 'var(--circi-text-tertiary)', fontSize: 13.5, fontFamily: 'var(--circi-font-mono)' }}>packages/integrations · storage · diff · sites</text>
-    <text x="22" y="68" style={{ fill: 'var(--circi-text-secondary)', fontSize: 14.5 }}>Talk to GitHub, Slack, S3 and images</text>
+    <rect x="1" y="0" width="718" height="80" rx="10" class="d-box" />
+    <text x="22" y="28" class="d-title">Adapters</text>
+    <text x="22" y="49" class="d-mono">packages/integrations · storage · diff · sites</text>
+    <text x="22" y="68" class="d-text">Talk to GitHub, Slack, S3 and images</text>
   </g>
-</svg>
-</figure>
+</Diagram>
 
 | Layer | Lives in | May import |
 | --- | --- | --- |

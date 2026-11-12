@@ -10,7 +10,7 @@ CirCI deletes what is old and what nothing uses, in the background.
 
 ## Retention
 
-Each project keeps its builds for a number of days, **30 by default** (1 to 3650). Builds older than that, and hosted-site versions past their retention, expire. Change it in the project's settings. Files are deleted after expiry only once nothing references them.
+Each project keeps its builds for a number of days (1 to 3650). Builds older than that, and hosted-site versions past their retention, expire. A new Project starts with the instance's default, **30 days** until an instance admin changes **New projects keep builds for** in Instance settings (it has no environment variable, and it doesn't touch existing Projects). Each Project then changes its own in its settings. Files are deleted after expiry only once nothing references them.
 
 Baselines matter: a build that is still the baseline for others should be kept. Choose a retention longer than the longest time a branch lives.
 
@@ -28,7 +28,7 @@ The worker runs a **retention pass every 6 hours**. One pass:
 
 </Steps>
 
-The grace period (`GC_GRACE_HOURS`, default 24) makes this race-free: a new upload that references a marked file clears the mark, and before deleting, each file is re-checked under a lock. Several processes can run a pass at once.
+The grace period (**Unused files are deleted after** in Instance settings, or `GC_GRACE_HOURS`; default 24 hours) makes this race-free: a new upload that references a marked file clears the mark, and before deleting, each file is re-checked under a lock. Several processes can run a pass at once.
 
 ## Run it by hand
 
@@ -42,6 +42,8 @@ circi admin storage gc --grace-hours 0         # delete unused files without wai
 The dry run doesn't simulate builds and sites that are past retention.
 
 ## Other cleanups
+
+Both are also limits in Instance settings: a variable that is set wins and locks the field, otherwise the saved value applies.
 
 | Variable | Default | What it deletes |
 |---|---|---|

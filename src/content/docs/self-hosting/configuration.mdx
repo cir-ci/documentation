@@ -45,7 +45,7 @@ Some variables only make sense together. The server checks them at start and pri
 ## Where a setting lives
 
 - **Environment variables** are for the deployment: addresses, secrets, storage, timeouts, the diff engine.
-- **Instance settings** in the dashboard hold the settings an instance admin should change without a restart. This is being rolled out: see [Instance settings](/self-hosting/instance-settings/).
+- **Instance settings** in the dashboard hold the settings an instance admin should change without a restart: who can create workspaces, sign-in methods, limits, mail, Slack and single sign-on providers. A variable that is set wins and locks its setting; otherwise the saved value applies, then the default. See [Instance settings](/self-hosting/instance-settings/).
 - **Workspace settings** and **project settings** hold what workspace owners and project admins decide: [Workspace settings](/using/workspace-settings/), [Project settings](/using/project-settings/).
 
 ## Secrets

@@ -1,0 +1,75 @@
+---
+// A themed, accessible inline SVG. Pass the SVG's children in the slot and its `viewBox`; the title and
+// description become the accessible name and description, and `caption` an optional visible caption.
+// Draw with these classes (defined here, themed with the --circi-* tokens, so both schemes work):
+//   .d-box (a panel)  .d-box--accent (the one to look at)  .d-line (an arrow or connector, stroke only)
+//   .d-title (a name)  .d-mono (a path or command)  .d-text (a sentence)  .d-fill (a filled shape)
+// <Diagram viewBox="0 0 720 200" title="..." desc="..."><rect class="d-box" .../></Diagram>
+interface Props {
+  viewBox: string
+  title: string
+  desc: string
+  caption?: string
+  /** Max width in px (default: the full column). */
+  width?: number
+}
+const { viewBox, title, desc, caption, width } = Astro.props
+const uid = Math.random().toString(36).slice(2, 8)
+---
+
+<figure class="diagram" style={width ? `max-width:${width}px` : undefined}>
+  <svg viewBox={viewBox} role="img" aria-labelledby={`dg-t-${uid} dg-d-${uid}`}>
+    <title id={`dg-t-${uid}`}>{title}</title>
+    <desc id={`dg-d-${uid}`}>{desc}</desc>
+    <slot />
+  </svg>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .diagram {
+    margin-block: 1.5rem;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  figcaption {
+    margin-block-start: 0.5rem;
+    font-size: var(--sl-text-sm);
+    color: var(--circi-text-secondary);
+  }
+  .diagram :global(.d-box) {
+    fill: var(--circi-surface-raised);
+    stroke: var(--circi-line-strong);
+    stroke-width: 1.25;
+  }
+  .diagram :global(.d-box--accent) {
+    stroke: var(--circi-accent-main);
+  }
+  .diagram :global(.d-line) {
+    fill: none;
+    stroke: var(--circi-text-tertiary);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .diagram :global(.d-fill) {
+    fill: var(--circi-accent-main);
+  }
+  .diagram :global(.d-title) {
+    fill: var(--circi-text-primary);
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .diagram :global(.d-mono) {
+    fill: var(--circi-text-tertiary);
+    font-size: 13.5px;
+    font-family: var(--circi-font-mono);
+  }
+  .diagram :global(.d-text) {
+    fill: var(--circi-text-secondary);
+    font-size: 14.5px;
+  }
+</style>

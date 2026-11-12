@@ -34,7 +34,7 @@ An integration connects a Workspace to an outside tool. CirCI reports builds to 
 
 Azure DevOps, Microsoft Teams and Penpot appear in the Add integration dialog as **Planned**. Nothing is built for them.
 
-Integrations are separate from [outgoing webhooks](/integrations/webhooks/), which are a Project setting that sends signed JSON to your own services, and from sign-in providers, which let people log in (see [Instance settings](/self-hosting/instance-settings/)).
+Integrations are separate from [outgoing webhooks](/integrations/webhooks/), which are a Project setting that sends signed JSON to your own services, and from sign-in providers, which let people log in (an instance admin adds them in [Instance settings](/self-hosting/instance-settings/)).
 
 <Aside type="caution" title="Tested against fakes only">
 GitHub, GitLab, Bitbucket, Slack, Linear, Jira and Figma have so far been tested against fakes of their HTTP APIs, not against the live services. The repository's own release checklist asks for one manual run against each real service. Report anything that differs from these pages.

@@ -70,12 +70,14 @@ The CLI collects the commit history CirCI needs to pick the baseline, from the *
 |---|---|
 | `0` | Uploaded. With `--wait`: the build passed, or the git host's check is the merge gate. |
 | `1` | With `--wait`: visual changes need review and this job is the gate. Approve them in the dashboard, then re-run the job. |
-| `2` | An error: bad flags or setup, the server couldn't be reached, the build failed to process (the server's reason is printed), or `--wait` timed out. |
+| `2` | An error: bad flags or setup, the server couldn't be reached, the build failed to process (the server's reason is printed), screenshots couldn't be read (see below), or `--wait` timed out. |
+
+A screenshot the server can't read (a file that isn't a valid PNG) is marked **Couldn't read**, and `--wait` names each file and why. It follows the Project's **Unreviewed changes block merging** setting, like a build that failed to process: in a Project that blocks merges the build can't pass and `--wait` exits `2`; otherwise it exits `0` with a warning. Either way, upload the build again with valid PNGs to clear it.
 
 Errors print one line (`error: No such directory: ./screenshotz`). API calls are retried with backoff on network errors and 5xx answers, and time out after 30 seconds each.
 
 <Aside type="caution" title="Which job is the gate?">
-With the Project linked to a git host, `--wait` waits for processing, exits 0 even with unreviewed changes and fails only on processing errors: the CirCI check is the gate, and approving updates it with no re-run. Without a linked repository the CI job is the gate: exit 1 until approved, then re-run. Override with `--gate`.
+With the Project linked to a git host, `--wait` waits for processing, exits 0 even with unreviewed changes and fails only on processing errors (and on unreadable screenshots, in a Project that blocks merges): the CirCI check is the gate, and approving updates it with no re-run. Without a linked repository the CI job is the gate: exit 1 until approved, then re-run. Override with `--gate`.
 </Aside>
 
 ## `circi site upload <dir>` and `circi storybook upload <dir>`

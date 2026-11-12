@@ -11,7 +11,7 @@ import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 CirCI can host the built Storybook, Playwright or Vitest report, coverage report or docs of a commit, so a reviewer opens the real thing next to the screenshots. Sites are served from their own domain and always need sign-in.
 
 <InstanceSettingNote setting="Sites domain">
-Hosting is off until the instance has a sites domain. Set it in Instance settings, or by the environment variable `STATIC_SITES_HOST` as the initial value; `STATIC_SITES_MAX_MB` sets the largest site (200 MB by default). The domain must be separate from the dashboard's, with its own wildcard DNS record and certificate. See [Site domains](/self-hosting/site-domains/) and [Instance administration](/using/instance-administration/).
+Hosting is off until the instance has a sites domain. The domain is set by the environment variable `STATIC_SITES_HOST` and shown, read-only, in Instance settings. The largest site (200 MB by default) is **Largest hosted site** there, or `STATIC_SITES_MAX_MB`, which wins and locks it. The domain must be separate from the dashboard's, with its own wildcard DNS record and certificate. See [Site domains](/self-hosting/site-domains/) and [Instance administration](/using/instance-administration/).
 </InstanceSettingNote>
 
 ## Turn it on for a project

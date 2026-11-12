@@ -3,15 +3,14 @@ title: Environment variables
 description: Every environment variable CirCI reads, its default and what it does.
 ---
 {/* Source: packages/config/src/schema.ts (names and defaults), packages/config/src/load.ts (rules between variables), README.md (Configuration), deploy/.env.example. The tables are generated from src/data/env.ts: edit that file, not the page. */}
-{/* instance-setting: variables marked "Instance settings" are moving into the instance admin UI. Their environment value stays as the initial value. */}
 
 import EnvTable from '../../../components/EnvTable.astro'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
 Values are read once at start. Booleans accept `true`, `false`, `1`, `0`, `yes` and `no`. An empty value counts as unset. A bad value stops the process with a list of problems. Guidance is in [Configuration](/self-hosting/configuration/).
 
-<InstanceSettingNote setting="Settings moving to the dashboard">
-Variables with the **Instance settings** badge are being moved into the instance admin UI: who can create workspaces, sign-in methods, SMTP, the Slack app and the instance's single sign-on providers. Set them in Instance settings, or by the environment variable as the initial value. See [Instance settings](/self-hosting/instance-settings/).
+<InstanceSettingNote setting="Instance settings badge">
+A variable with the **Instance settings** badge is also editable in the dashboard: who can create workspaces, sign-in methods and providers, the five limits (grace period, upload timeout, job retention, largest site, webhook timeout), the mail server and the Slack app. When the variable is set it wins and locks the setting ("Set by VARIABLE"); otherwise the saved value applies, otherwise the default. Saved changes apply within about 30 seconds, with no restart. The default retention of new Projects is a dashboard setting with no variable. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 
 The Docker Compose file only passes through the variables it lists: see [Docker Compose](/self-hosting/docker-compose/).

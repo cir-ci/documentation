@@ -3,7 +3,6 @@ title: Instance administration
 description: "What instance admins manage: accounts, all workspaces, instance settings, the GitHub App and health checks."
 ---
 {/* Source: apps/web/src/features/instance (InstanceHubPage.tsx, hub-model.ts, AccountsPage.tsx, WorkspacesPage.tsx, InstanceSettingsPage.tsx, HealthPage.tsx, GithubAppSection.tsx, CreateWorkspaceDialog.tsx, ChangeEmailDialog.tsx, AddressChangeBanner.tsx), apps/web/src/features/setup, packages/config/src/schema.ts */}
-{/* instance-setting: this page names settings that are moving from environment variables into Instance settings. Search the docs for "instance-setting" to find every place to update. */}
 
 import { Aside } from '@astrojs/starlight/components'
 import ScreenFrame from '../../../components/ScreenFrame.astro'
@@ -43,28 +42,24 @@ Every workspace with its size, each opening its settings hub. **New workspace** 
 
 ## Instance settings
 
-<ScreenFrame name="use-instance-settings" alt="The Instance settings page. Dashboard address shows the dashboard's address and the old addresses that redirect to it. Sign-in methods allowed on this instance has Password, Email code and Single sign-on checked. Single sign-on providers has an Add provider button and says there are none yet." caption="The top of Instance settings in a development instance. Edits wait for Save changes at the bottom of the page." />
+<ScreenFrame name="host-instance-settings" aspect="16 / 10" alt="The top of Instance settings: the dashboard address with its variable, the three sign-in methods checked, an empty list of single sign-on providers and the workspace creation checkbox." caption="The top of Instance settings in a development instance. Edits wait for Save changes at the bottom of each section." width={760} />
 
-<InstanceSettingNote setting="Instance settings">
-Settings that used to be environment variables are moving into this page: who can create workspaces, sign-in methods, limits, SMTP, the Slack app and the instance's single sign-on providers. For each, set it in Instance settings, or by the environment variable as the initial value. See [Instance settings](/self-hosting/instance-settings/) for the current state.
+<InstanceSettingNote setting="Environment variables win">
+A setting fixed by an environment variable shows **Set by VARIABLE** and can't be edited here: a save is refused, so change the variable and restart. Otherwise what you save applies within about 30 seconds on every server process, with no restart, and secrets are write-only and sealed at rest. See [Instance settings](/self-hosting/instance-settings/) for every setting, its variable and its default.
 </InstanceSettingNote>
 
-<Aside type="note">
-A value fixed by an environment variable shows the variable behind it and can't be edited here: change the variable and restart. The address, the storage driver and the private-webhook switch are shown this way. The rest is edited on the page, apart from the single sign-on providers and the GitHub App, which apply from their own dialogs.
-</Aside>
+Most of the page waits for **Save changes**, with **Discard** to revert. The single sign-on providers and the GitHub App apply from their own dialogs.
 
-Everything else on the page waits for **Save changes** at the bottom, with **Discard** to revert.
-
-| Section | Shows | Variable |
+| Section | What you set | Variable that locks it |
 |---|---|---|
-| Dashboard address | The address every outgoing link uses, and old addresses that redirect to it | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` |
-| Sign-in methods allowed | Password, email code and single sign-on providers: the outer limit, which each workspace can only narrow | `AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_*` |
-| Who can create workspaces | Instance admins only, or every signed-in account | `WORKSPACE_CREATION` (`admin` or `anyone`, default `admin`) |
-| Single sign-on providers | GitHub, Google, GitLab and OpenID Connect providers for every workspace. Providers set by `AUTH_*` variables are listed read-only; the others are added, changed and removed in a dialog | `AUTH_*` |
-| Mail server | The SMTP server, the sender, and **Send test mail** to your own address | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_FROM` |
-| Slack app | The client ID and secret of the instance's Slack app | |
-| Storage and limits | Storage driver, retention for new projects, grace period for unused files, upload timeout, job retention, webhook timeout, private webhook addresses | `STORAGE_DRIVER`, `GC_GRACE_HOURS`, `UPLOAD_TIMEOUT_MINUTES`, `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` |
-| Hosted sites | The sites domain and largest site, or "Not set up" | `STATIC_SITES_HOST`, `STATIC_SITES_MAX_MB` |
+| Dashboard address | Read-only: the address every outgoing link uses, and old addresses that redirect to it | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` |
+| Sign-in methods allowed | Password, email code and single sign-on: the outer limit, which each Workspace can only narrow. Saving refuses a change that leaves nobody able to sign in | `AUTH_PASSWORD_ENABLED`, `AUTH_EMAIL_ENABLED`, `AUTH_SSO_ENABLED` |
+| Single sign-on providers | GitHub, Google, GitLab and OpenID Connect providers for every Workspace, added, changed and removed in a dialog. Providers set by `AUTH_*` variables are listed read-only | `AUTH_*` |
+| Who can create workspaces | Instance admins only, or every signed-in account | `WORKSPACE_CREATION` |
+| Mail server | The SMTP server and sender, and **Send a test mail to your own address** | `SMTP_HOST` and the other `SMTP_*` |
+| Slack app | The client ID and secret of the instance's Slack app | `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET` |
+| Storage and limits | The storage driver (read-only), then the retention new Projects start with (30 days, no variable), the grace period for unused files, the upload timeout, job retention and webhook timeout | `STORAGE_DRIVER`, `GC_GRACE_HOURS`, `UPLOAD_TIMEOUT_MINUTES`, `JOB_RETENTION_DAYS`, `WEBHOOK_TIMEOUT_SECONDS` |
+| Hosted sites | The sites domain (read-only) or "Not set up", and the largest site | `STATIC_SITES_HOST`, `STATIC_SITES_MAX_MB` |
 
 Without mail, nobody gets sign-in codes or invitations by email. See [Configuration](/self-hosting/configuration/) and [Environment variables](/reference/environment-variables/).
 

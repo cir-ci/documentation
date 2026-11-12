@@ -49,7 +49,7 @@ GitLab sends the secret in the `X-Gitlab-Token` header. CirCI refuses deliveries
 On the integration's page, choose the **GitLab project** each CirCI Project reports to, written as the path with its namespace, for example `acme/web` or `acme/team/web`. The list comes from the repositories the token can read; you can also type the path. A Project reports to one git host at a time.
 
 <InstanceSettingNote setting="GitLab sign-in">
-Linking a GitLab login (needed for commands) requires GitLab sign-in to be configured on the instance. Set it in Instance settings, or by `AUTH_GITLAB_CLIENT_ID` and `AUTH_GITLAB_CLIENT_SECRET` as the initial value, plus `AUTH_GITLAB_URL` for a self-managed GitLab (default gitlab.com). See [Instance settings](/self-hosting/instance-settings/).
+Linking a GitLab login (needed for commands) requires GitLab sign-in to be configured on the instance. An instance admin adds a GitLab provider in Instance settings (with the GitLab address for a self-managed GitLab), or sets `AUTH_GITLAB_CLIENT_ID` and `AUTH_GITLAB_CLIENT_SECRET` (plus `AUTH_GITLAB_URL`), which then win and lock it. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 
 ## What appears where
@@ -64,7 +64,7 @@ One status per build name, `CirCI / <build name>`. Its description is the same t
 | No changes, approved, or the Project doesn't block merging | `success` | No visual changes; Changes approved (3 changed · 1 added); or `3 changed · 1 added: review required` |
 | Changes await review and merging is blocked | `failed` | `3 changed · 1 added: review required` |
 | Rejected | `failed` | Changes rejected (3 changed · 1 added) |
-| Some screenshots couldn't be read | `failed` | `1 screenshot couldn't be read`, until the build is uploaded again |
+| Some screenshots couldn't be read | `failed`, or `success` when merging isn't blocked | `1 screenshot couldn't be read`, until the build is uploaded again |
 | Processing failed | `failed`, or `success` when merging isn't blocked | Processing failed |
 
 ### The summary note
@@ -85,7 +85,7 @@ CirCI puts a thumbs-up reaction on the note when it acted. When it didn't, it re
 
 ## Settings
 
-The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read fails whatever they say.
+The **Merge gate** settings on the CirCI Project page apply as they do for GitHub: **Unreviewed changes block merging**, **Flaky-only changes block merging** and **Approve default-branch builds automatically**. A build with screenshots that couldn't be read follows **Unreviewed changes block merging** too: it fails when that is on and passes, with the count in the description, when it is off.
 
 A person may use commands when they have linked their GitLab login in the **Signed in with** section of their CirCI **Profile** and can see the Project (a member, or an owner or admin of its Workspace). CirCI matches the GitLab user ID, never the email.
 

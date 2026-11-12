@@ -6,7 +6,9 @@ import { defineConfig } from 'astro/config'
 
 // The documentation of CirCI. The sidebar is explicit so the order is ours; every slug below is
 // a file under src/content/docs (see DESIGN.md for the page conventions).
+// `site` is a placeholder until the docs have their address: it makes Starlight generate sitemap-index.xml.
 export default defineConfig({
+  site: 'https://docs.circi.dev',
   server: { port: 4321 },
   integrations: [
     starlight({

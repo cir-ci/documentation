@@ -34,8 +34,9 @@ A **build** is one upload of screenshots for one commit. It passes through four 
 
 4. **Merge gate.** What blocks the merge depends on whether the project is linked to a repository on a git host.
 
-   - **Linked (GitHub today with buttons and commands; GitLab and Bitbucket with statuses and comments):** the CirCI check is the gate. Mark it as required in branch protection. `circi upload --wait` waits for processing, exits 0 even with unreviewed changes (so a green CI job isn't confused with a visual review) and fails only on processing errors. Approving in the dashboard or on GitHub updates the check within seconds, with no re-run.
+   - **Linked (GitHub today with buttons and commands; GitLab and Bitbucket with statuses and comments):** the CirCI check is the gate. Mark it as required in branch protection. `circi upload --wait` waits for processing, exits 0 even with unreviewed changes (so a green CI job isn't confused with a visual review) and fails only on processing errors or, in a Project that blocks merges, on screenshots that couldn't be read. Approving in the dashboard or on GitHub updates the check within seconds, with no re-run.
    - **Not linked:** the CI job is the gate. `--wait` exits 1 while changes need review. After approval, re-run the job.
+   - A screenshot the server can't read is marked **Couldn't read** and can't be approved. It follows the Project's blocking setting, like a build that failed to process: in a Project that blocks merges the check fails and `--wait` exits 2; otherwise the check is neutral and `--wait` exits 0 with a warning. Upload the build again to clear it.
    - `--gate status` or `--gate exit-code` overrides the choice.
 
 </Steps>

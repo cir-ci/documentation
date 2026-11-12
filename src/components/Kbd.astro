@@ -1,5 +1,6 @@
 ---
 // A keyboard key, styled like the app's Kbd. <Kbd keys="Shift+A" />  <Kbd keys="Mod+K" />
+// A sequence is written with "then": <Kbd keys="G then I" /> (press G, release, press I).
 // Mod is Command (the app's shortcut key); the screen-reader text spells the keys out.
 interface Props {
   keys: string
@@ -14,24 +15,42 @@ const SYMBOL: Record<string, [string, string]> = {
   enter: ['↵', 'Enter'],
   esc: ['Esc', 'Escape'],
 }
-const parts = Astro.props.keys.split('+').map((k) => {
-  const hit = SYMBOL[k.toLowerCase()]
-  return { text: hit ? hit[0] : k, name: hit ? hit[1] : k, symbol: Boolean(hit && hit[0].length === 1) }
-})
+const chord = (keys: string) =>
+  keys.split('+').map((k) => {
+    const hit = SYMBOL[k.toLowerCase()]
+    return { text: hit ? hit[0] : k, name: hit ? hit[1] : k, symbol: Boolean(hit && hit[0].length === 1) }
+  })
+const steps = Astro.props.keys.split(/\s+then\s+/i).map(chord)
 ---
 
-<kbd class="keys"
+<span class="sequence"
   >{
-    parts.map((p) => (
-      <kbd class="key">
-        <span aria-hidden="true" class:list={{ symbol: p.symbol }}>{p.text}</span>
-        <span class="sr-only">{p.name}</span>
-      </kbd>
+    steps.map((parts, i) => (
+      <>
+        {i > 0 && <span class="then">then</span>}
+        <kbd class="keys">
+          {parts.map((p) => (
+            <kbd class="key">
+              <span aria-hidden="true" class:list={{ symbol: p.symbol }}>{p.text}</span>
+              <span class="sr-only">{p.name}</span>
+            </kbd>
+          ))}
+        </kbd>
+      </>
     ))
-  }</kbd
+  }</span
 >
 
 <style>
+  .sequence {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+  .then {
+    color: var(--circi-text-tertiary);
+    font-size: 0.8125rem;
+  }
   .keys {
     display: inline-flex;
     gap: 2px;
