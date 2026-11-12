@@ -25,6 +25,9 @@ export default defineConfig({
       ],
       customCss: ['./src/styles/circi-theme.css', './src/styles/docs.css', './src/styles/landing.css'],
       components: {
+        Head: './src/components/overrides/Head.astro',
+        Header: './src/components/overrides/Header.astro',
+        Sidebar: './src/components/overrides/Sidebar.astro',
         SiteTitle: './src/components/overrides/SiteTitle.astro',
         ThemeSelect: './src/components/overrides/ThemeSelect.astro',
         PageTitle: './src/components/overrides/PageTitle.astro',

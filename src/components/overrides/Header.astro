@@ -1,0 +1,15 @@
+---
+// Starlight's header (logo, search, theme control), kept between pages: the client router moves the
+// same DOM into the next page instead of drawing it again, so nothing in it can flash or lose state.
+import Default from '@astrojs/starlight/components/Header.astro'
+---
+
+<div class="persist" transition:persist="circi-header">
+  <Default {...Astro.props}><slot /></Default>
+</div>
+
+<style>
+  .persist {
+    display: contents;
+  }
+</style>

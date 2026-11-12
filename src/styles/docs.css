@@ -443,3 +443,17 @@ kbd:not(.key):not(.keys) {
   background: var(--circi-action-hover);
   color: var(--circi-text-primary);
 }
+
+/* Page changes (Astro's client router): the header and sidebar are kept, the content fades quickly.
+   No animation at all when the reader prefers reduced motion. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 120ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

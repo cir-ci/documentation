@@ -1,0 +1,42 @@
+---
+// The navigation tree, kept between pages (open groups, scroll). `data-sidebar` marks it for the script
+// below, which moves the current-page highlight to the new page after a swap.
+import Default from '@astrojs/starlight/components/Sidebar.astro'
+---
+
+<div class="persist" data-sidebar transition:persist="circi-sidebar">
+  <Default {...Astro.props}><slot /></Default>
+</div>
+
+<style>
+  .persist {
+    display: contents;
+  }
+</style>
+
+<script>
+  // The persisted tree is the old page's, so after a swap it must follow the new one: the link of the new
+  // page gets aria-current and its groups open. The scroll container (#starlight__sidebar) is the new page's (Starlight draws
+  // it outside the tree), so its scroll position is carried over by hand.
+  const path = (url: string | URL) => new URL(url, location.href).pathname.replace(/\/$/, '') || '/'
+  let target = ''
+  let scroll = 0
+  const scroller = () => document.getElementById('starlight__sidebar')
+
+  document.addEventListener('astro:before-swap', (event) => {
+    target = path(event.to)
+    scroll = scroller()?.scrollTop ?? 0
+  })
+  document.addEventListener('astro:after-swap', () => {
+    const tree = document.querySelector('[data-sidebar]')
+    if (!tree) return
+    tree.querySelectorAll('a[aria-current]').forEach((a) => a.removeAttribute('aria-current'))
+    const current = [...tree.querySelectorAll<HTMLAnchorElement>('a[href]')].find((a) => path(a.href) === target)
+    if (current) {
+      current.setAttribute('aria-current', 'page')
+      for (let d = current.closest('details'); d; d = d.parentElement?.closest('details') ?? null) d.open = true
+    }
+    const s = scroller()
+    if (s) s.scrollTop = scroll
+  })
+</script>

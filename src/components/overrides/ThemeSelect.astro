@@ -23,6 +23,7 @@
   const parse = (v: unknown): Theme => (v === 'light' || v === 'dark' ? v : 'auto')
   const load = (): Theme => parse(typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme'))
   const apply = (t: Theme) => {
+    document.documentElement.dataset.themePref = t
     document.documentElement.dataset.theme =
       t === 'auto' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : t
   }
@@ -77,7 +78,11 @@
   button:hover {
     color: var(--circi-text-primary);
   }
-  button[aria-pressed='true'] {
+  /* The selected button comes from the root's data-theme-pref, set before first paint by the head script,
+     so it is right on every load and after every navigation. aria-pressed mirrors it for assistive tech. */
+  :global(html[data-theme-pref='auto']) button[data-value='auto'],
+  :global(html[data-theme-pref='light']) button[data-value='light'],
+  :global(html[data-theme-pref='dark']) button[data-value='dark'] {
     background: var(--circi-surface-overlay);
     box-shadow: 0 0 0 1px var(--circi-line-subtle);
     color: var(--circi-text-primary);
