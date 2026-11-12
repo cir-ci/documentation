@@ -1,0 +1,85 @@
+---
+title: Monitoring
+description: The health endpoints, what the logs say, what the Health page and the doctor check, and what is worth alerting on.
+---
+{/* Source: apps/server/src/http/routes/health.ts, apps/server/src/composition (server-options.ts, doctor.ts, runtime.ts, shutdown.ts), apps/server/src/cli/commands/doctor.ts, apps/worker/src (run-job.ts, sweeps.ts, claim-loop.ts, listen.ts), apps/server/src/http/routes/dashboard/instance/health.ts, packages/db/src/queue/jobs.ts, deploy/Dockerfile, packages/config/src/schema.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+CirCI gives you three things to watch: two HTTP probes for the process, structured logs, and the checks behind `circi admin doctor` and **Instance** › **Health**. The background queue has its own numbers on the Health page.
+
+## Health endpoints
+
+Both answer without a sign-in and don't write a log line per request, because probes poll them every few seconds.
+
+| Endpoint | Answers | Use it for |
+|---|---|---|
+| `GET /healthz` | `200` with `{ "status": "ok" }` while the process serves. | Liveness: restart the container when it stops answering. |
+| `GET /readyz` | `200` with `{ "status": "ok", "checks": { "database": "ok", "storage": "ok" } }`, or `503` with `"status": "fail"` and `fail` against the check that failed. | Readiness: take the instance out of a load balancer while a dependency is down. |
+
+`/readyz` runs the two checks at once. Each has a 2 second timeout, so a hung database or storage can't hang the probe. A failing check is also logged as a warning, `readiness check failed`, with the check's name and the error.
+
+`/readyz` doesn't say whether a worker is running or whether jobs are piling up. Watch the queue on the Health page for that (below).
+
+The image's own `HEALTHCHECK` calls `/healthz` every 15 seconds, with a 3 second timeout, 20 seconds of start period and 3 retries. It reads `PORT` (default 3000).
+
+## Logs
+
+The server and the worker log JSON lines to standard output (they use pino), each with `"service": "circi"`. In Docker Compose, `docker compose logs -f circi` follows them. The `authorization` and `cookie` request headers are removed from log lines.
+
+`LOG_LEVEL` is one of `fatal`, `error`, `warn`, `info` (the default), `debug` and `trace`.
+
+On a stop signal the process logs `shutting down`, closes, and exits `0`. If closing fails or takes longer than 10 seconds it exits `1`, logging `error during shutdown` or `shutdown timed out, exiting`.
+
+### Lines worth knowing
+
+| Level | Message | Means |
+|---|---|---|
+| warn | `No accounts yet. Open <URL> and set up CirCI with the setup code <code>` | A fresh install: finish [sign-in and setup](/getting-started/sign-in-and-set-up/). |
+| warn | `The dashboard address changed from <old> to <new>. Finish the address-change checklist.` | `PUBLIC_URL` moved. The checklist is on **Instance** › **Health**. |
+| warn | `lost a database connection` | The pool reconnects; `/readyz` reports an outage while it lasts. |
+| warn | `readiness check failed` | `/readyz` returned `503`; the line names the check. |
+| warn | `lost the job notification connection; polling until it is back` | The worker is still working, by polling; jobs start a little later. `job notifications are back` follows. |
+| warn | `lost the lease on a running job`, `could not extend a job lease` | A job ran longer than its lease, or the database was unreachable. Its result is dropped if another worker claimed it. |
+| warn | `failed builds that stopped uploading` | Builds whose upload never completed were failed after `UPLOAD_TIMEOUT_MINUTES`. |
+| warn | `failed jobs whose lease expired too many times` | A job kept killing its worker (for example out of memory). |
+| error | `could not claim a job` | The worker can't read the queue; check the database. |
+| error | `retention pass failed`, `review sweep failed`, `could not expire stalled builds`, `could not prune finished jobs` | A periodic sweep failed; the next run tries again. |
+| error | `the give-up of an expired job failed` | A job past its retries couldn't be marked failed. |
+| info | `retention pass finished`, `deleted finished jobs`, `told reviewers about overdue requests` | Routine sweeps. |
+
+Each job logs its queue and job ID, so a failing build can be followed from the build ID to its `process-build` job.
+
+## Checks: the doctor and the Health page
+
+`circi admin doctor` and the **Run checks again** button on **Instance** › **Health** run the same checks. Each finding is `ok`, `info` (a note), `warn` (look at it) or `fail` (something CirCI needs doesn't work). The command prints one line per finding, with a `fix:` line under a warning, and exits `1` if any finding is a warning or a failure, so it can run in a deploy script or a scheduled job.
+
+```sh
+docker compose exec circi circi admin doctor
+```
+
+| Check | Fails or warns when |
+|---|---|
+| **Database** | Fails if it isn't reachable, if fewer migrations are applied than this version ships (`Run circi migrate`, or restart: the server migrates on start unless `--no-migrate` is set), or if a newer version already migrated it. |
+| **Storage** | Fails if the storage isn't reachable and writable. |
+| **Disk space** | Local storage only: warns under 10% free or under 2 GB free. |
+| **Mail** | Fails if SMTP doesn't accept a login (nothing is sent: `circi admin mail test --to <address>` sends a real message). An info note if SMTP isn't set. |
+| **Dashboard address** | Warns if `PUBLIC_URL` is plain `http`, because sign-in cookies need https. |
+| **Domains and cookies** | Warns when a host sets cookies for a whole domain or serves content on the sites domain's apex. Best effort: it only checks hosts it can reach. See [Site domains](/self-hosting/site-domains/). |
+
+**Instance** › **Health** also shows **Background jobs**, per queue: waiting, running, the oldest waiting job, retrying (with the most retried) and failed. See [Scaling the worker](/self-hosting/scaling-the-worker/); each job and what it does is in [Background jobs](/reference/background-jobs/).
+
+## What to alert on
+
+- `/readyz` returning `503` for more than a minute or two: the database or the storage is down. Run the doctor to see which.
+- `/healthz` not answering: the process is down. The image's health check marks the container unhealthy.
+- Free space on local storage: the doctor warns below 10% or 2 GB, but alert earlier on your own volume. See [Retention and garbage collection](/self-hosting/retention-and-gc/).
+- A growing queue: the oldest waiting job in a queue keeps getting older, or failed jobs rise. Check the worker is running and has room: [Scaling the worker](/self-hosting/scaling-the-worker/).
+- Log lines at `error`, and the `warn` lines for lost leases and expired leases above.
+- A failing scheduled `circi admin doctor`.
+
+<Aside type="note">
+Finished jobs, done or failed, are deleted after `JOB_RETENTION_DAYS` (default 14; `0` keeps them). A job that fails is retried with a doubling wait: `JOB_RETRY_BASE_SECONDS` (2) up to `JOB_RETRY_MAX_SECONDS` (300). See [Environment variables](/reference/environment-variables/).
+</Aside>
+
+If something is failing and you don't know what, [Troubleshooting](/self-hosting/troubleshooting/) goes from the symptom to the cause.

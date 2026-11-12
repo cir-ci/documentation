@@ -1,0 +1,99 @@
+---
+title: FAQ
+description: Short answers to the questions people ask first, each with the page that has the details.
+---
+{/* Source: README.md, docs/reference/argos-migration.md, docs/reference/running-costs.md, packages/cli/src/files.ts, packages/cli/src/ci-env.ts, packages/core/src/builds/limits.ts, packages/core/src/builds/flaky.ts, apps/server/src/http/routes/argos, existing pages of this site */}
+
+## Getting screenshots in
+
+### What takes the screenshots?
+
+Your own tests do. CirCI compares and reviews screenshots; it doesn't capture them. `circi upload <dir>` uploads every `*.png` under a folder, so any tool that writes PNG files works. The [Vitest plugin](/ci/vitest/) captures them from Vitest's browser mode, and the [Argos SDKs](/ci/argos-compatible-api/) work by changing two variables. See [The CLI](/ci/cli/).
+
+### Which image formats work?
+
+PNG only. A file that isn't a valid PNG is marked "Couldn't read" and can't be approved, and the Argos-compatible API refuses JPEG. A single file may be up to 25 MiB.
+
+### Which CI systems are supported?
+
+The CLI reads the commit, branch, pull request and base branch from GitHub Actions, GitLab CI, Bitbucket Pipelines, Gitea and Forgejo Actions, CircleCI, Buildkite, Jenkins and Azure Pipelines. On any other system, or to override what's detected, pass the values as flags. See [CI examples](/ci/ci-examples/).
+
+### Does CirCI choose the browsers?
+
+No. A screenshot is a file with a name, and the browser, viewport and test are optional metadata that can travel with it in a `<file>.png.json` sidecar. To keep several browsers apart, upload one build per browser with `--name`: each name has its own baselines. See [Vitest](/ci/vitest/#one-build-per-browser-and-shards).
+
+### I have a monorepo or several apps. How do I set it up?
+
+Make one [project](/getting-started/create-a-project/) per thing you test. Each has its own CI token, baselines, rules and settings, and one workspace holds them all. Within a project, use `--name` to separate builds of the same commit (a mobile build and a desktop one, say). See [Several builds per commit](/ci/ci-examples/#several-builds-per-commit).
+
+### Can I switch from Argos?
+
+Yes for the upload side: the Argos SDKs upload to CirCI when `ARGOS_API_BASE_URL` and `ARGOS_TOKEN` point at it. Old builds aren't imported, so the first approved build on your default branch becomes the baseline. It's built from the SDKs' source and has not been verified against the real SDKs. See [Argos-compatible API](/ci/argos-compatible-api/).
+
+## Baselines and reviews
+
+### Why is every screenshot "Added" on my first build?
+
+A project's first build has nothing to compare with, so all its screenshots are added and need review, even on the default branch. It's never approved automatically. Approve it once and later builds compare against it. See [How a build flows](/introduction/how-a-build-flows/#which-baseline).
+
+### How does CirCI choose the baseline?
+
+For a pull request it walks the history from the merge base with the base branch. For a default-branch build it walks from the commit before. If the history isn't available it falls back to the newest eligible build on the default branch, and the build page says which source it used. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
+
+### Who can approve changes?
+
+Any workspace member who can see the project. Changing settings, rules, tokens and integrations needs an owner or an admin. See [Members and roles](/using/members-and-roles/).
+
+### Will an unreviewed change block my merge?
+
+It can. By default, unreviewed changes keep the check red. With a linked repository the git host's check is the gate and you mark it required in branch protection; otherwise `circi upload --wait` is, and it exits `1`. Each project can turn this off. See [How a build flows](/introduction/how-a-build-flows/#merge-gate).
+
+### Can I take back an approval?
+
+Yes. Decisions act at once and the toast has **Undo**. See [Reviewing a build](/using/reviewing-a-build/).
+
+### A screenshot changes on every run. What can I do?
+
+A screenshot is called flaky when its image keeps returning to one it already had in the last 10 default-branch commits (3 flip-flops by default), or when two builds of the same commit produced different images. Flaky screenshots go to a triage queue instead of blocking review. You can also draw an [ignore region](/using/baselines-and-ignore-regions/#ignore-regions) over the part that moves, or raise the project's diff threshold ([How screenshots are compared](/introduction/how-screenshots-are-compared/)). See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+
+### Can I get notified in Slack, or file an issue from a build?
+
+Yes: Slack notices per project, Linear and Jira issues from a build, Figma frames next to a screenshot, and signed webhooks for your own receivers. See [Integrations](/integrations/overview/) and [Webhooks](/integrations/webhooks/).
+
+## Running it
+
+### Where does my data live?
+
+In your own Postgres (builds, reviews, settings) and your own storage (every screenshot, diff and thumbnail), which is local disk or any S3-compatible bucket. Back up both. See [Database](/self-hosting/database/), [Storage](/self-hosting/storage/) and [Backups](/self-hosting/backups/).
+
+### What does it need to run?
+
+One container image and Postgres, plus storage. A small VM is enough to start. See [Requirements](/self-hosting/requirements/) and [Docker Compose](/self-hosting/docker-compose/).
+
+### How much does it cost to run?
+
+Mostly storage and its egress, then CPU for comparing images. Storage grows with changed screenshots rather than with builds, because files are stored once by their hash. Shorter retention and cheaper object storage are the biggest levers. See [Performance](/self-hosting/performance/) and [Retention and garbage collection](/self-hosting/retention-and-gc/).
+
+### How long are builds kept?
+
+A project keeps its builds for 30 days by default, and you can change it per project. Files nothing references any more are deleted after a grace period. The newest approved baseline on the default branch, for each build name, never expires. See [Retention and garbage collection](/self-hosting/retention-and-gc/).
+
+### Do I need an email server?
+
+No, but without SMTP there are no sign-in codes, no invitations and no email notifications. Passwords and single sign-on still work. See [Configuration](/self-hosting/configuration/).
+
+### Does it need a domain and https?
+
+The dashboard needs https on a real host, because sign-in cookies need it. Plain `http` is fine on localhost only. Hosted sites also need their own separate domain. See [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/) and [Site domains](/self-hosting/site-domains/).
+
+### How do I upgrade?
+
+Back up, start the new image and let it migrate. Run the same version of every process. See [Upgrades and migrations](/self-hosting/upgrades-and-migrations/).
+
+### Something is wrong. Where do I look?
+
+Run `circi admin doctor`, then read [Troubleshooting](/self-hosting/troubleshooting/). For probes and logs, see [Monitoring](/self-hosting/monitoring/). For the messages the CLI and API return, see [Errors and exit codes](/reference/errors-and-exit-codes/).
+
+### Can I use it on my phone?
+
+The dashboard has a phone layout and can be installed as an app. See [Mobile and the installed app](/using/mobile-and-installed-app/).

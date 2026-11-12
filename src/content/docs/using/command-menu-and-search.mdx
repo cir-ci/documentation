@@ -1,0 +1,82 @@
+---
+title: Command menu and search
+description: Go to a page, run an action on the page you're on, and search builds, screenshots, people and more from one field, with prefixes and project scope.
+---
+{/* Source: apps/web/src/features/command (model.ts, query.ts, pages.ts, results.ts, settings.ts, recent.ts), apps/web/src/lib/stores/recent-store.ts, recent-searches-store.ts, apps/server/src/http/routes/dashboard/inbox/search.ts, packages/db/src/queries/search.ts, search-extras.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+import Kbd from '../../../components/Kbd.astro'
+
+<Kbd keys="Mod+K" /> opens the command menu from anywhere in the dashboard. It is one field that does three jobs: it takes you to a page or a project, it runs an action on the page you're on, and it searches everything in the workspace you can see. Every key it understands is in [Keyboard shortcuts](/reference/keyboard-shortcuts/#in-the-command-menu).
+
+## With nothing typed
+
+The menu lists, in this order, whatever applies:
+
+1. **Actions of the page you're on**, under its name (`Build #148`, `Reviews`, `Inbox`): approve, reject, request review, comment, snooze, mark read, delete, copy link. At most six, and only those the page can act on, each with its key.
+2. **Recent**: up to five things you opened lately in this workspace, then up to three recent searches and **Clear recent searches**.
+3. **Needs you**: reviews waiting on you, triage items assigned to you and unread notices, each with its count.
+4. **Go to**: Inbox, Reviews, Triage, Projects, Insights and Settings, then your pinned projects and your saved views.
+5. **Switch and change**: **Switch project…**, **Switch workspace…** (when you have more than one), **New project** and **Invite people** (owners and admins), **New workspace** (where allowed), **Theme…**, **Keyboard shortcuts** (not on a phone) and **Sign out**.
+
+Recent remembers builds, projects, baselines, triage items and saved views, 20 at most, per workspace. It and the recent searches (8 per workspace) live in this browser only; they don't follow you to another device.
+
+**Switch project…**, **Switch workspace…** and **Theme…** open a nested list: a chip names it, the field finds a row, the current choice has a check. <Kbd keys="←" />, <Kbd keys="Backspace" /> in the empty field and <Kbd keys="Esc" /> go back. Choosing a project keeps you in the same section when it is Triage, Baselines or Sites, and otherwise opens its builds.
+
+## Search
+
+Type to search. The text is matched case-insensitively anywhere in a name, and what you typed is taken literally (`%` and `_` are ordinary characters). It is cut at 100 characters. Within a kind, an exact match ranks first, then a prefix, then the start of a `/` segment, then any other match; ties go to the newest.
+
+Pages, actions and projects in the menu match by their words. Settings pages show only when your text names them (a `Settings · Members` row), so the menu doesn't fill with them.
+
+| Kind | Group | Matches |
+|---|---|---|
+| Builds | Builds | The build number or pull request number (`#148` or `148`), a commit (a hexadecimal start of 4 to 40 characters), the build name (except the default one, `default`), the author's login or name |
+| Branches | Branches | The branch name |
+| Screenshots | Screenshots | A screenshot's name in any build, shown with its newest build |
+| Baselines | Baselines | A screenshot's name among baselines: approved or unchanged complete builds on the default branch |
+| Triage | Triage | Waiting (not snoozed) triage items by screenshot name, kind (`flaky`, `no baseline`, `failed build`), branch, project name, commit start or build number. Needs at least two characters, and looks through the queues of up to 30 projects |
+| Inbox | Inbox | Your own notices: who caused them, the project, branch, build name, a comment snippet, a rejection reason or the kind of notice |
+| Review requests | Review requests | Requests you made or were asked, by branch, build name, project, reviewer or requester |
+| Saved views | Saved views | The name of one of your saved views |
+| People | People | Name or email of workspace members (see below) |
+| Projects | Projects | A project's name or slug |
+
+Pull request titles aren't stored, so a pull request is found by its number only.
+
+Each group shows its best three. **Show all N builds** (and the like) turns the search into that kind, so the group fills the list. When one result is clearly the best, it stands alone at the top. Typing a build number while a project is on screen shows a row for that build of the project even before the search returns.
+
+### Prefixes and chips
+
+A first character that is a prefix becomes a chip and narrows what is searched:
+
+| Type | Chip | Searches |
+|---|---|---|
+| `#` | Builds | Builds only |
+| `/` | Screenshots | Screenshot names and baselines |
+| `>` | Commands | Pages, actions and settings only: no search of your data |
+| `@` | People | People only |
+
+Remove a chip with <Kbd keys="Backspace" /> in the empty field, or with its own button.
+
+### Scope to a project
+
+On a project's page the menu is scoped to that project: a chip like `Web app · #148` shows beside the field and search looks only in that project. A last row, **Search all projects**, widens it (<Kbd keys="Mod+Enter" /> does the same). Remove the chip with <Kbd keys="Backspace" /> to widen it as well, and the page's actions go with it.
+
+You can scope any search by typing `in:web` or `project:web` followed by a space; the project's name or slug must match exactly. <Kbd keys="Tab" /> completes a partly typed `in:we` to the first project that starts with it. The scope becomes a chip.
+
+## Who sees what
+
+- Search covers only workspaces you belong to and, in them, only the projects you can see, with the same visibility as the projects list. Someone outside the workspace gets "not found".
+- **Inbox** and **Review requests** results are your own.
+- **People** are the workspace members whose name or email match. Owners and admins find everyone; a member finds themselves and the people in projects they can see. Scoped to a project, only that project's members.
+- A workspace that requires a sign-in method (see [Workspace settings](/using/workspace-settings/)) doesn't answer a search from a session signed in another way.
+- **Settings** is a closed area: inside settings, the menu lists settings pages and the way back out, and nothing of the rest of the app, whatever you type. Outside it, settings pages come up only when you name them.
+
+## Row actions
+
+Highlight a row and press <Kbd keys="Mod+." /> to list what you can do to it without opening it. Approving or rejecting a build, requesting a review, snoozing, assigning a triage item to yourself, marking a notice read, copying the link and opening in a new tab appear for the rows they apply to. Rejecting asks for the reason in the menu. <Kbd keys="Mod+Enter" /> opens a row in a new tab and <Kbd keys="Mod+Shift+C" /> copies its link. A highlighted row can also show a short peek of what it is.
+
+<Aside type="note">
+The search is also an endpoint of the dashboard's own API, `GET /api/workspaces/<workspace>/search`, which takes `q`, `project`, `kinds` (a comma-separated list) and `limit` (1 to 50, default 5). It answers the signed-in session; it isn't part of the CI API.
+</Aside>

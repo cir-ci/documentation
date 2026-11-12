@@ -28,6 +28,37 @@ A project that someone can't see doesn't exist for them: they get "not found" ra
 
 Separately from these, an **instance admin** runs the whole installation: accounts, all workspaces, health and instance settings. It isn't a workspace role. See [Instance administration](/using/instance-administration/).
 
+## Who can do what
+
+The table above is the short version. This one lists every kind of action by the role the server checks. "Anyone who sees the project" means an owner, an admin, or a member added to that project. A person who can't see a project gets "not found" for all of it.
+
+| Action | Who |
+|---|---|
+| Create a workspace | Instance admins; every signed-in person when the instance setting **Who can create workspaces** is **anyone**. Not someone signed in through a workspace's own single sign-on |
+| Delete a workspace | Owners. Typing the workspace's address confirms it. It disappears at once and is purged after 30 days unless an instance admin restores it |
+| Change workspace settings, picture, merge gate and triage defaults | Owners and admins |
+| Sign-in methods, the workspace's single sign-on, email domains | Owners and admins |
+| Connect, change or remove integrations; import repositories | Owners and admins |
+| Invite, remove people, change roles | Owners and admins. Only an owner removes an owner |
+| Create a project | Owners and admins |
+| Change a project's settings, appearance, GitHub link, hosted sites and custom domains | Owners and admins |
+| Add webhooks, regenerate their secrets, remove them | Owners and admins |
+| Rotate the project's CI token | Owners and admins. Anyone who sees the project sees facts about the current token (never the token itself) |
+| Delete a project | Owners and admins |
+| Create, edit, reorder and delete review rules; set the triage rotation | Owners and admins. Anyone who sees the project reads the rules |
+| Add and remove ignore regions | Owners and admins |
+| Approve, reject, request a review, comment | Anyone who sees the project |
+| Triage: assign, snooze, dismiss, re-run a comparison | Anyone who sees the project |
+| See baselines, hosted sites and the project's integration links (such as Figma frames) | Anyone who sees the project |
+| Add, remove or auto-link a project's integration links | Owners and admins |
+| Edit a comment or move its region | Its author only |
+| Delete a comment | Its author, owners and admins |
+| Put off or bring back a review request | The reviewer it was assigned to |
+| Take back an action with Undo | The person who did it |
+| Add anyone to a project, or remove anyone | Owners and admins. A member can remove only themselves |
+
+An **instance admin** runs the installation (accounts, every workspace's existence, instance settings, health, the GitHub App) and isn't a workspace role: inside a workspace, what someone can do follows their membership. An instance admin is never refused by a workspace's sign-in method switches, so a change of methods can't lock out the people who run the server. See [Instance administration](/using/instance-administration/) and [Authentication](/self-hosting/authentication/).
+
 ## The Members page
 
 Open it from **Settings** in the workspace menu, then **Members**. It's the one workspace settings page every member can open. Each person is a row with their name and email, tags for how they sign in (for example a password or a connected account), the projects they're in, and their role. The header counts people, and the find field filters by name, email or role.

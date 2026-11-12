@@ -1,0 +1,132 @@
+---
+title: Writing an integration
+description: Add a chat, tracker, design or git host integration by writing one definition and listing it in the registry.
+---
+{/* Source: docs/integration-sdk.md, packages/integrations/src/sdk (definition.ts, define.ts, registry.ts, errors.ts), packages/integrations/src/kinds/slack, packages/integrations/test/sdk, packages/integrations/test/support, packages/core/src/integrations/events.ts, apps/web/src/features/integrations/logos.tsx */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+An integration is declared once, as an `IntegrationDefinition`, and listed once in a registry. The catalog, the HTTP routes, the worker job, the dashboard's connect form and its mapping page all read that definition. Adding an integration writes no route, table, migration, job or page.
+
+Read the definition closest to what you add: `kinds/slack/` for chat, `kinds/linear/` and `kinds/jira/` for trackers that connect with a form, `kinds/figma/` for the design tool with project links, and `kinds/github/`, `kinds/gitlab/` and `kinds/bitbucket/` for git hosts. For what each one does for users, see [Integrations](/integrations/overview/).
+
+## What to write
+
+| File | What goes in it |
+|---|---|
+| `packages/integrations/src/kinds/<id>/definition.ts` | The definition: `export const <id> = defineIntegration({ … })`. |
+| `packages/integrations/src/kinds/<id>/client.ts` | The provider's HTTP client. Where there is text to build, `messages.ts` holds pure builders. |
+| `packages/integrations/src/sdk/registry.ts` | Import the definition and add it to the list in `new IntegrationRegistry([…])`. One line. |
+| `apps/web/src/features/integrations/logos.tsx` | One entry in `MARKS`, keyed by the definition's `logo`. |
+| `packages/integrations/test/support/harnesses.ts` | One harness for the definition; a test fails for a registered definition without one. |
+
+Only if the integration needs an app of its own on the instance (an OAuth client, as the GitHub App): a key in `IntegrationDefinition.InstanceConfig` (`sdk/definition.ts`), its entry in `@circi/config` and its line in `apps/server/src/lifecycle/integration-config.ts`.
+
+A definition that can't work (no logo, no way to connect, a select mapping without `listTargets`, a credential field without a label) throws when its module loads. `test/sdk/registry.test.ts` checks every registered definition.
+
+The folder layout, and which imports are allowed, follow [Repository layout](/contributing/repo-layout/): `integrations` imports at most `core` and `api`, never the database, services or fastify, and its errors carry no HTTP status. An app or service that needs a client imports an explicit subpath such as `@circi/integrations/git` or `/github`; add a subpath (a `kinds/<id>/index.ts` and an `exports` entry) only when something really needs that kind's client.
+
+## The definition
+
+| Field | What it is |
+|---|---|
+| `id` | The stored `integrations.kind`: lowercase letters, digits and dashes. The registry validates it. |
+| `group` | `git`, `chat`, `design` or `tracker`: where it sits in the Add dialog and the list. |
+| `name`, `description` | Shown on the tile and in labels. |
+| `logo` | The key into the dashboard's `MARKS` table. |
+| `credentials` | A zod object. Each field carries `.meta({ label, secret, description, placeholder })` and the connect form is rendered from it. `z.object({})` means there is nothing to type (OAuth only). |
+| `available(ctx)` | Whether this instance can connect it now, for example an OAuth app is configured. Default true. |
+| `connect(input, ctx)` | Verifies the form's values with the provider and returns `{ externalId, displayName, credentials }`. `credentials` is the text that is sealed and stored: a token, or JSON for several fields. |
+| `oauth` | `{ available, authorizeUrl, exchange }`: the install flow. The generic routes sign the `state`, check it on the callback and store the result. Installing the same account again replaces its credentials and clears "needs attention". |
+| `needsAttention(error)` | The reason to show when an error means a person has to act (a revoked token, an uninstalled app); `null` for anything else, which the job retries. |
+| `events` | The domain events it handles. |
+| `capabilities` | Typed optional members: `chat.send`, `tracker.create`, `design` (`listFrames`, `render`, `comment`, `linkFor`) and `git`. |
+| `mapping` | How a project maps to it. Required by `tracker`, `design` and `git`. |
+| `links` | Project-wide links it keeps, rendered as a table on the generic page. Needs a `mapping`. |
+| `exclusive` | `{ account?: true, project?: 'kind' \| 'group' }`. `account`: the same external account connects in one workspace of the instance, a second one gets a 409. `project`: a project maps to one connection of the kind, or to one git host of the group; mapping to another moves it. |
+| `replaceOnReconnect` | Connecting an account the workspace already has replaces its credentials and clears "needs attention", instead of a 409. The git hosts use it. |
+| `secretless` | The connection keeps no secret. GitHub does this: the App's credentials are instance configuration, and the installation ID is the external ID. Capabilities get `''` as credentials. |
+
+`ctx` is `{ authSecret, publicOrigin, config, fetch? }`: the instance, never a database. `fetch` exists so a test can point the provider's client at a fake.
+
+### Errors from `connect`
+
+Throw one of these from `connect`, `exchange` or a `resolve`. The generic route maps each to a status.
+
+| Error | Status | Means |
+|---|---|---|
+| `InvalidCredentialsError` | 400 | The person's to fix: the token or form values are wrong. |
+| `IntegrationUnreachableError` | 502 | The provider is down or confused. |
+| `IntegrationConflictError` | 409 | The account is already connected somewhere it can't be. |
+| `InvalidInputError` | 400 | A typed value isn't usable. |
+
+### Mapping
+
+A project maps to one target per integration. It's stored in `integration_projects.external_ref`, with the settings below in `extra` (the target's name is in `extra.name`).
+
+- **`target`** is `{ label, kind, placeholder?, validate?(ref), resolve?(ref, { credentials }, ctx) }`, with `kind` one of `text`, `select` or `repository`. A `select` target needs `listTargets(credentials, ctx)`: the channels, teams or projects the account offers. A `repository` target is for git hosts only (it needs the `git` capability): typed as `owner/name`, with the host's repositories as suggestions. `resolve` runs after `validate`, checks a typed value with the provider and returns the reference to store and the target's name. Figma uses it to turn a pasted file address into a file key.
+- **`fields`** are settings besides the target, each drawn as a control: `events` (checkboxes over domain events, with `defaults` for a newly mapped project), `text` and `toggle`. The server builds a strict schema from them and fills defaults.
+- **`handles(extra, event)`** is optional. By default, with an `events` field it uses the stored list (or the defaults); without one, every event the definition handles.
+
+The dashboard receives all of this as plain data (`Integration.CatalogEntry`, credential field specs, `MappingSpec`), never code.
+
+## Domain events
+
+Events are a closed union in `@circi/core` (`INTEGRATION_EVENTS`):
+
+| Event | When |
+|---|---|
+| `review.requested` | Someone is asked to review a build (`again` is set for a repeat request). |
+| `review.overdue` | A requested review is overdue. |
+| `build.rejected` | A reviewer rejected the build's changes (the payload carries the reason). |
+| `build.approved` | A reviewer approved the build's changes. |
+| `build.completed` | The build finished (queued with the `build.completed` webhook). |
+
+A service queues an event once, inside its transaction, with `queueIntegrationEvent`. It fans out to each integration of the project's workspace that is healthy (not "needs attention"), whose definition handles the event and whose mapping wants it: one `integration-event` job each, deduplicated and committed with the change, so there is no job if the transaction rolls back.
+
+The worker re-reads the mapping, opens the credentials and calls the capability. When `needsAttention(error)` returns a reason, it flags the integration and stops. Any other error throws, and the queue retries.
+
+To add an event: put it in `INTEGRATION_EVENTS` with its label, queue it from the service that causes it, and list it in the `events` of the definitions that handle it.
+
+## Credentials, OAuth and attention
+
+- Credentials are sealed with the instance secret before storage and never sent to the dashboard. The worker and the target-listing route open them and hand the plaintext to the definition.
+- A form-connected integration connects through `POST /workspaces/:workspace/integrations/:kind/connect`: owners and admins only; the body is validated with `credentials`, `connect` runs, the result is sealed and stored, and the same account twice is a 409.
+- An OAuth integration: `GET …/:kind/install` returns the provider's address, with a `state` that binds workspace, user and kind. The provider returns to `/api/integrations/:kind/callback`, which redirects to the integration's page (`?connect=connected`) or back to the list (`?connect=denied` or `failed`).
+- When listing targets or delivering an event fails with an error `needsAttention` recognizes, the integration is flagged with that reason. The page shows a banner and, for OAuth integrations, a **Reinstall** button. No events are queued for it until it's reconnected.
+
+## Project links
+
+A definition that keeps project-wide links, as Figma does for frames, declares a `links` section. The generic page renders it under each mapped project: a table (subject, what was linked, **Auto** or **Manual**, **Remove**), an add form and an optional **Link automatically** button.
+
+```ts
+links: {
+  kind: 'figma-frame', label: 'Frame links', targetLabel: 'Frame',
+  fields: [{ key: 'pattern', label: 'Screenshot name' }, { key: 'url', label: 'Frame address' }],
+  subject: 'pattern',   // the field that is the link's subject
+  autoLink: true,       // needs the `design` capability
+  resolve(values, { credentials, mappingRef }, ctx) // -> { ref, url?, title?, payload? }
+}
+```
+
+`resolve` turns the form's values into the link, for example by parsing a pasted address or asking the provider for a name. With `autoLink`, the project's screenshot names are matched to `design.listFrames(…)` by name: case and separators are ignored, ambiguous names get no link, and existing links are never replaced. Changing a project's target drops the automatic links made for the old one; manual ones stay.
+
+## Git hosts
+
+A git host is a definition with the `git` capability. Everything the pipeline does for a host reads it, so another host is one definition and one registry line.
+
+- **`git.provider(ctx)`** returns the host's adapter: the status or check run, the summary comment, `verifyWebhook` and `listRepositories`.
+- **`git.webhook`** has `deliveryId(headers, rawBody)` (handled once per ID, `null` is refused), `events(headers, payload)` (normalized events) and an optional `secret(ctx)` shown to owners and admins.
+- **`respond(answer, ctx)`** posts a reaction or a reply on the host.
+
+The normalized events are `pull_request`, `command` (`/circi approve`, `reject` or `rerun` in a comment, with the commenter's host account ID) and `check_action` (Approve or Reject pressed on a GitHub check run). One handler serves every host. It matches a host account to exactly one member by account ID, never by email.
+
+Webhooks arrive at `POST /api/integrations/:kind/webhook` (and the alias `POST /webhooks/:kind`, which installed GitHub Apps already point at). GitHub's secret is the App's. GitLab's and Bitbucket's are derived from the instance secret and shown with the webhook address on the integration's page.
+
+<Aside type="note">
+Not every check is enforced yet. Saving a `select` target isn't checked against `listTargets`, and a `repository` isn't checked against the host's list: the page only offers what the account lists.
+</Aside>
+
+## Tests
+
+Each client is tested against a fake of the provider's HTTP edge (`packages/integrations/test/kinds/<id>/`); the definition only wires it to the SDK. A test that needs a host fakes it with `Context.gitProviders` (by definition ID) or with the provider's `fetch`: nothing talks to a real host. The shared contract tests in `test/sdk/` and `test/support/` run for every registered definition, so a new one adds its harness and gets them. See [Tests](/contributing/tests/).

@@ -92,3 +92,5 @@ This is an implementation detail of the CLI; prefer `circi upload` over writing 
 - **Webhooks out:** a project's signed `build.completed` and `build.reviewed` events: [Webhooks](/integrations/webhooks/).
 - **Health:** `GET /healthz` answers `{ "status": "ok" }` while the process serves. `GET /readyz` also checks the database and storage, each with a timeout so a hung dependency can't hang the probe.
 - **Sign-in methods:** `GET /api/auth-methods`.
+
+Every field, status code and retry rule of these endpoints is in the [CI API reference](/reference/ci-api/); the messages and exit codes are in [Errors and exit codes](/reference/errors-and-exit-codes/); sizes and counts in [Limits](/reference/limits/).

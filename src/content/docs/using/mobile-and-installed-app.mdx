@@ -1,0 +1,74 @@
+---
+title: Mobile and the installed app
+description: How the dashboard changes on a phone, how to install it as an app, how its tabs work, and what the service worker keeps for offline.
+---
+{/* Source: apps/web/src/lib/use-phone.ts, app/PhoneTabs.tsx, app/PhoneMore.tsx, app/PhoneTabSwitcher.tsx, app/Sidebar.tsx, app/shell-model.ts, lib/tabs.ts, lib/stores/tab-store.ts, lib/prompt-rules.ts, features/pwa (start.ts, platform.ts, InstallBanner.tsx, AddToHomeScreenSheet.tsx), sw/logic.ts, sw/sw.ts, public/manifest.webmanifest */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+import Kbd from '../../../components/Kbd.astro'
+
+The dashboard is one app for every screen size. Below 820 pixels wide it switches to a phone layout, and it can be installed as an app on a computer or a phone. This page covers both. Push notifications are in [Account settings](/using/account-settings/#push).
+
+## Navigation
+
+On a wide screen the sidebar has **Inbox** with a search button (<Kbd keys="Mod+K" />), **Projects**, the workspace switcher, **Reviews** and **Insights**, then **Pinned** projects, the other projects (ten at most, then **All projects (N)**) and **Your views**. Counts show unread notices and reviews waiting on you; the open project expands to its pages. <Kbd keys="Mod+\" /> hides and shows it.
+
+Below 820 pixels there is no sidebar. A bar at the bottom replaces it:
+
+| Tab | Does |
+|---|---|
+| **Inbox** | Opens the Inbox, with the unread count |
+| **Reviews** | Opens Reviews, with the count waiting on you |
+| **Projects** | Shows up to three of your projects' tiles (the project's name when you have exactly one) and opens a menu of your projects |
+| **More** | Opens a menu: the workspaces (the open one marked) and **New workspace** where allowed, **Insights**, your pinned views, one **Settings** entry (the workspace's, or your account's when you're in none), **Sign out** |
+
+A project's Triage, Baselines and Sites are icons and tabs on its own pages instead of sidebar entries.
+
+What changes on other pages:
+
+- A selected notification opens over the list rather than beside it.
+- On a build page the screenshot list and the discussion open as sheets from a bar at the bottom. **Approve all**, **Request review** and **Copy link** are in its **More actions** menu.
+- Ignore regions are shown but can't be drawn or edited. Do that on a larger screen.
+- There is no **Keyboard shortcuts** page or menu entry.
+
+## Install the app
+
+Any browser that can install a web app can install the dashboard. It then opens in its own window, without the browser's address bar.
+
+CirCI offers once it has reason to: a banner in the Inbox appears from your second visit on this device, or after your first approval, never on the first load. **Not now** hides it for 14 days, and after the third **Not now** it stays hidden. **Install app** in the account menu is there whenever the dashboard isn't installed yet and the browser can install it.
+
+<Steps>
+
+1. **Choose Install** in the banner or **Install app** in the account menu.
+
+2. **Confirm in the browser's own prompt.** The dashboard keeps the browser's prompt until you ask for it, so it never pops up by itself.
+
+</Steps>
+
+### On an iPhone or iPad
+
+Safari has no install prompt. Choosing **Install** shows the steps: tap Share in the Safari toolbar, choose **Add to Home Screen**, open CirCI from the Home Screen and turn on notifications there. Only Safari can do this; Chrome, Firefox, Edge and Opera on iOS can't. Push notifications work only once CirCI runs from the Home Screen.
+
+## Tabs in the installed app
+
+The installed app has its own tabs, like a browser's, in a strip at the top. On a phone, the number of open tabs sits in the page header and opens a switcher of cards: tap one to switch, swipe it sideways or use its × to close it, and hold it for **Pin**, **Close** and **Close others**.
+
+- A desktop window holds at most 12 tabs and a phone 8. At most 5 can be pinned.
+- Each tab keeps its own history, 50 addresses at most, so going back stays inside the tab. Going back past a tab's first page returns to the tab it was opened from.
+- ⌘-click, Ctrl-click and middle-click on an in-app link open it in a new tab.
+- Tabs are kept in this browser for the signed-in person, along with the recently closed ones that <Kbd keys="Mod+Shift+T" /> reopens.
+
+The keys are listed under Tabs in [Keyboard shortcuts](/reference/keyboard-shortcuts/#tabs). They exist only in the installed app.
+
+## Offline
+
+In a production build, a service worker is registered. It keeps the app's own files so the dashboard opens when the network is down, and it shows push notifications.
+
+- Pages load from the network first, so a new version appears on the next load. When the network fails, the kept copy of the app shell is shown.
+- The built assets (`/assets/…`, content-hashed) are served from the cache first, up to 200 of them, oldest dropped first. Icons and the manifest are served from the cache while a fresh copy loads behind them.
+- Nothing from `/api`, `/v1`, `/v2`, `/webhooks` or `/internal` is ever kept: those hold people's data. Offline, the app opens but its data doesn't load.
+- Tapping a push notification marks its Inbox item read, then focuses a window already on that page, else reuses an open app window, else opens one.
+
+<Aside type="note">
+The dev server (`pnpm dev`) has no service worker, so none of the offline behavior or push can be tried there. A browser that refuses the worker still runs the dashboard.
+</Aside>

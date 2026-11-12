@@ -1,0 +1,136 @@
+---
+title: Keyboard shortcuts
+description: Every keyboard shortcut of the dashboard, by where it works, and the rules for when a key counts.
+---
+{/* Source: apps/web/src/lib/shortcuts.ts (the registry), lib/stores/shortcut-store.ts, lib/FindField.tsx, lib/list-keys.ts, app/use-tab-shortcuts.ts, app/ShortcutsDialog.tsx, features/account/ShortcutsPage.tsx, features/command/CommandMenu.tsx, features/regions/RegionLayer.tsx, features/builds/Composer.tsx */}
+
+import { Aside } from '@astrojs/starlight/components'
+import Kbd from '../../../components/Kbd.astro'
+
+Every shortcut of the dashboard is declared once, in one list. The same list draws the `?` dialog, **Keyboard shortcuts** in account settings and the actions in the [command menu](/using/command-menu-and-search/), so they agree. The keys are fixed: nothing in the dashboard lets you change them.
+
+On Windows and Linux, ⌘ is <Kbd keys="Ctrl" /> and ⌥ is <Kbd keys="Alt" />.
+
+## When a key counts
+
+- A key with <Kbd keys="Mod" /> works anywhere, even while you type.
+- A plain key (a letter, <Kbd keys="Enter" />, <Kbd keys="Space" />, a digit) is ignored while focus is in a text field, a select or a dialog, and while any comment or reply box holds text you haven't sent. Typing is never taken over.
+- A two-key shortcut such as <Kbd keys="g then i" /> is a sequence: press the first key, release, and press the second within one second.
+- A key that a page doesn't use does nothing there. <Kbd keys="a" /> only approves on a build page.
+- <Kbd keys="Enter" /> on a focused link follows the link rather than the list shortcut.
+- The **Tabs** keys exist only in the installed app. In a browser tab they are neither active nor listed. See [Mobile and the installed app](/using/mobile-and-installed-app/).
+- On a phone there is no shortcuts page, and the command menu doesn't list **Keyboard shortcuts**.
+
+## General
+
+| Key | Does |
+|---|---|
+| <Kbd keys="Mod+K" /> | Open the command menu |
+| <Kbd keys="?" /> | Show the list of shortcuts |
+| <Kbd keys="Mod+\" /> | Hide or show the sidebar |
+| <Kbd keys="Mod+Shift+C" /> | Copy the link to this page |
+
+## Go to
+
+| Key | Opens |
+|---|---|
+| <Kbd keys="g then i" /> | Inbox |
+| <Kbd keys="g then r" /> | Reviews |
+| <Kbd keys="g then p" /> | Projects |
+| <Kbd keys="g then t" /> | Triage |
+| <Kbd keys="g then s" /> | Settings |
+
+Each goes where the sidebar's entry goes.
+
+## Lists
+
+These work on a page that lists rows: Inbox, Reviews, a project's builds and Triage. A key a page has no use for is ignored.
+
+| Key | Does |
+|---|---|
+| <Kbd keys="j" /> / <Kbd keys="k" /> | Next and previous item |
+| <Kbd keys="Enter" /> | Open |
+| <Kbd keys="Mod+Enter" /> | Open in a new tab (installed app only) |
+| <Kbd keys="Space" /> | Peek at the item |
+| <Kbd keys="f" /> | Filter the list |
+| <Kbd keys="Shift+V" /> | Display options |
+| <Kbd keys="x" /> | Select or deselect the item |
+| <Kbd keys="h" /> | Snooze |
+| <Kbd keys="Shift+R" /> | Request review |
+| <Kbd keys="/" /> | Move focus to the page's find field |
+
+In a find field, <Kbd keys="Esc" /> empties it, and when it is already empty it leaves it.
+
+## Inbox
+
+| Key | Does |
+|---|---|
+| <Kbd keys="u" /> | Mark read or unread |
+| <Kbd keys="Backspace" /> | Delete the notification (with Undo) |
+
+See [Inbox and reviews](/using/inbox-and-reviews/).
+
+## Build review
+
+These work on a build page. See [Reviewing a build](/using/reviewing-a-build/).
+
+| Key | Does |
+|---|---|
+| <Kbd keys="a" /> | Approve the screenshot |
+| <Kbd keys="Shift+A" /> | Approve all |
+| <Kbd keys="r" /> | Reject the screenshot, with a reason |
+| <Kbd keys="c" /> | Write a comment |
+| <Kbd keys="Mod+Enter" /> | Send the comment, or confirm the dialog you're typing in |
+| <Kbd keys="1" /> | Side by side |
+| <Kbd keys="2" /> | Overlay |
+| <Kbd keys="3" /> | Diff |
+| <Kbd keys="4" /> | Slider |
+| <Kbd keys="5" /> | Design, only when the project has the Figma integration |
+
+While you draw a region with the keyboard tool (the crosshair button), <Kbd keys="←" />, <Kbd keys="→" />, <Kbd keys="↑" /> and <Kbd keys="↓" /> move it, <Kbd keys="Shift" /> with an arrow resizes it, <Kbd keys="Enter" /> confirms and <Kbd keys="Esc" /> cancels. <Kbd keys="Esc" /> also cancels a region you're adjusting and a comment you're writing in a reply box. See [Comments and regions](/using/comments-and-regions/).
+
+## Triage
+
+| Key | Does |
+|---|---|
+| <Kbd keys="m" /> | Assign to me |
+| <Kbd keys="d" /> | Dismiss |
+
+See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+
+## Tabs
+
+Installed app only.
+
+| Key | Does |
+|---|---|
+| <Kbd keys="Alt+t" /> | New tab |
+| <Kbd keys="Alt+w" /> | Close tab |
+| <Kbd keys="Mod+Shift+T" /> | Reopen the closed tab |
+| <Kbd keys="Alt+1" /> to <Kbd keys="Alt+8" /> | Go to the first eight tabs |
+| <Kbd keys="Alt+9" /> | Go to the last tab |
+| <Kbd keys="Alt+←" /> / <Kbd keys="Alt+→" /> | Previous and next tab |
+| <Kbd keys="Alt+p" /> | Pin or unpin the tab |
+| <Kbd keys="Alt+Shift+←" /> / <Kbd keys="Alt+Shift+→" /> | Move the tab left or right |
+
+Option keys are ignored while you type in a field, since they type characters there.
+
+## In the command menu
+
+These only apply while the menu is open. See [Command menu and search](/using/command-menu-and-search/).
+
+| Key | Does |
+|---|---|
+| <Kbd keys="↑" /> / <Kbd keys="↓" /> | Move through the rows, wrapping at both ends |
+| <Kbd keys="Enter" /> | Choose the highlighted row |
+| <Kbd keys="Mod+Enter" /> | Open the row in a new tab; on **Search all projects**, widen the search |
+| <Kbd keys="Mod+." /> | List the highlighted row's own actions |
+| <Kbd keys="Mod+Shift+C" /> | Copy the link of the highlighted row |
+| <Kbd keys="Tab" /> | Complete an unfinished `in:` project name |
+| <Kbd keys="Backspace" /> | In the empty field, remove the last chip; in a nested list, go back |
+| <Kbd keys="←" /> | In a nested list with an empty field, go back |
+| <Kbd keys="Esc" /> | Go back one nested list, then close the menu |
+
+<Aside type="note">
+The page's actions in the menu (approve, snooze and so on) are the shortcuts above, and a row shows its key at the right.
+</Aside>

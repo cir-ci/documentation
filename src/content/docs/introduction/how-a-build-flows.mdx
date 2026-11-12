@@ -27,7 +27,7 @@ A **build** is one upload of screenshots for one commit. It passes through four 
 2. **Compare.** When the last shard of the build arrives, the build moves to <StatusChip status="processing" /> and the worker (the background process that compares screenshots, started with the server by default) pairs screenshots by name with the baseline.
 
    - A screenshot only in this build is <StatusChip status="added" />, only in the baseline <StatusChip status="removed" />, with the same hash <StatusChip status="unchanged" /> (no work), and otherwise it's diffed.
-   - A different image size is always a change, whatever the share of changed pixels. Otherwise a change is a change when it's bigger than the project's diff threshold.
+   - A different image size is always a change, whatever the share of changed pixels. Otherwise a change is a change when it's bigger than the project's diff threshold. [How screenshots are compared](/introduction/how-screenshots-are-compared/) has the detail.
    - The worker writes a diff image and thumbnails, and sets the build's conclusion.
 
 3. **Review.** If anything changed, the build is <StatusChip status="needs-review" />. People open it in the dashboard (or from the GitHub check) and approve or reject each screenshot, or the whole build. Screenshots known to be <StatusChip status="flaky" /> are marked so reviewers can skip them. See [Reviewing a build](/using/reviewing-a-build/).

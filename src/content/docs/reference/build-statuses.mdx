@@ -1,0 +1,130 @@
+---
+title: Build and screenshot statuses
+description: The fields behind a build's state, how its review status and conclusion are derived, what each screenshot status means, and how the result becomes a merge gate outcome and a check.
+---
+{/* Source: packages/db/src/schema/enums.ts, packages/core/src/builds/{outcome,approvable,failure}.ts, packages/core/src/reviews/review-status.ts, packages/services/src/pipeline/process.ts, packages/db/src/repositories/{builds-result,reviews}.ts, packages/integrations/src/git/render.ts, apps/web/src/features/builds/{build-state,diff-status}.ts, packages/ui/src/StatusIcon.tsx */}
+
+import { Aside } from '@astrojs/starlight/components'
+import StatusChip from '../../../components/StatusChip.astro'
+
+What you see on a build is built from three stored fields. This page defines them, shows how the screen turns them into a state, and gives the rules that turn them into a merge gate outcome. For the walk through uploading, comparing and reviewing, see [How a build flows](/introduction/how-a-build-flows/), and for the screen itself [Reviewing a build](/using/reviewing-a-build/).
+
+## The three fields of a build
+
+| Field | Values | Meaning |
+|---|---|---|
+| Status | `pending`, `uploading`, `processing`, `complete`, `error`, `expired` | Where the build is in its life |
+| Conclusion | `no_changes`, `changes_detected`, or none yet | What the comparison found. Set when processing finishes |
+| Review status | `pending`, `approved`, `rejected` | What reviewers decided, derived from the screenshots |
+
+```
+pending ─▶ uploading ─▶ processing ─▶ complete
+                │             │
+                └─────────────┴──▶ error          complete ─▶ expired (retention)
+```
+
+- **`pending`, `uploading`.** The build exists and CI is still sending files. When the last shard of the build is finalized, it moves to `processing`.
+- **`processing`.** A worker is comparing. A re-run sets it back to `processing`, clears its conclusion and review status, supersedes the earlier decisions on its screenshots, and queues a new job.
+- **`complete`.** Compared. The conclusion is set, and the build can be reviewed.
+- **`error`.** Processing failed after all its attempts, or the upload never finished (the build stopped receiving files and the [stalled-builds sweep](/reference/background-jobs/#sweeps) failed it). The message says which; Insights groups failures by those messages.
+- **`expired`.** Retention deleted its screenshots. See [Retention and garbage collection](/self-hosting/retention-and-gc/).
+
+## What the dashboard calls a build
+
+The list and the build page show one word, chosen from the three fields in this order. The first row that fits wins.
+
+| Shown | When | Glyph |
+|---|---|---|
+| Uploading | Status is `pending` or `uploading` | <StatusChip status="processing" glyph /> |
+| Processing | Status is `processing` | <StatusChip status="processing" glyph /> |
+| Failed | Status is `error` | <StatusChip status="failed" glyph /> |
+| Expired | Status is `expired` | none (grey) |
+| Rejected | Review status is `rejected` | <StatusChip status="rejected" glyph /> |
+| No changes | Conclusion is `no_changes` | <StatusChip status="approved" glyph /> |
+| Approved | Review status is `approved` | <StatusChip status="approved" glyph /> |
+| Needs review | Anything else: a finished build with changes nobody has settled | <StatusChip status="needs-review" glyph /> |
+
+The build page shows **No baseline** instead of Needs review when there was nothing to compare with. Rejected wins over No changes: a project that approves builds by hand can reject one that had no changes.
+
+## How the review status is derived
+
+A person decides per screenshot, and the build's review status follows from the decisions on its changed screenshots:
+
+- Any changed screenshot rejected: **rejected**.
+- Otherwise, at least one changed screenshot, and every one of them approved: **approved**.
+- Otherwise: **pending**.
+
+Changed here means the screenshots that need a decision: changed, added, removed. Unchanged screenshots need none. Screenshots that couldn't be read can't be decided at all. Approving or rejecting the whole build decides every changed screenshot. A new decision on a screenshot supersedes the earlier one, which stays in the activity as history.
+
+A build with no changes has no screenshots to decide. In a project that doesn't approve no-change builds on its own, a person's decision on such a build is the build's decision.
+
+### When nobody decides
+
+The worker sets a build's review status when it finishes processing in three cases, with no person involved:
+
+- **Default branch.** A build on the default branch (not from a pull request) with changes becomes **approved** when the project approves default-branch builds automatically, there was a baseline to compare with, and no screenshot couldn't be read. Its screenshots are recorded as approved automatically, shown with the grey <StatusChip status="auto-approved" glyph /> glyph and counted as Auto-approved in Insights.
+- **A re-run of a decided commit.** If the same commit's exact screenshots were approved before, the new build is approved. If they were rejected, the rejection and its reasons carry over. An approved re-run is not carried over when a screenshot couldn't be read.
+- **No changes.** A build with no changes is not approved by a review at all: nothing is asked of anyone. Whether it passes the gate on its own is the project's **Approve builds with no changes automatically** setting.
+
+A project's first build never gets automatic approval, since it has no baseline: everything in it is added and someone reviews it once.
+
+## Screenshot statuses
+
+Each screenshot of a build is compared with the baseline screenshot of the same name.
+
+| Status | Shown as | Meaning |
+|---|---|---|
+| `unchanged` | <StatusChip status="unchanged" /> | Same bytes as the baseline, or different bytes that differ by no more than the project's threshold. No decision needed |
+| `changed` | Changed | Differs by more than the threshold, or has a different size, which is always a change |
+| `added` | <StatusChip status="added" /> | Only in this build |
+| `removed` | <StatusChip status="removed" /> | Only in the baseline |
+| `failed` | Couldn't read | The file isn't a valid image. It can't be approved or rejected |
+| flaky | <StatusChip status="flaky" /> | Not a stored status: a label added to a changed screenshot that keeps flipping back on the default branch. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/) |
+
+The conclusion is `no_changes` only when every screenshot is unchanged. Added, removed and unreadable screenshots all make it `changes_detected`.
+
+The glyph of a changed, added or removed screenshot follows its decision once there is one: pending shows needs review (or its own added or removed glyph), then approved or rejected. Flaky keeps its own glyph whatever the review. Unchanged is neutral, and Couldn't read stays failed because nothing can be decided. A build that isn't complete, or has expired, shows its screenshots as pending.
+
+## The merge gate outcome
+
+From the build's fields and the project's settings, CirCI computes one outcome: **pending**, **pass** or **fail**, with a one-line summary. `circi upload --wait`, the git host's check and the commit status all use it, so they can't disagree. The first row that fits wins. "Blocking" is the project's **Unreviewed changes block merging** setting.
+
+| Build | Blocking | Outcome | Summary |
+|---|---|---|---|
+| Uploading, pending or processing | any | pending | "Build is processing" and so on |
+| Failed or expired | on | fail | "Build failed to process" or "Build expired" |
+| Failed or expired | off | pass, with a warning | "Build could not be checked" |
+| Complete, with screenshots that couldn't be read | on | fail | "N screenshots couldn't be read" |
+| Complete, with screenshots that couldn't be read | off | pass, with a warning | The same |
+| Rejected | any | fail | "Changes rejected" |
+| No changes, project approves by hand, not yet approved | on | fail | "No visual changes; waiting for approval" |
+| No changes, project approves by hand, not yet approved | off | pass, with a warning | "No visual changes" |
+| No changes | any | pass | "No visual changes" |
+| Approved | any | pass | "Changes approved" |
+| Only flaky screenshots changed, and flaky changes don't block | any | pass | "Only flaky screenshots changed" |
+| Changes, not decided | on | fail | "Visual changes need review" |
+| Changes, not decided | off | pass, with a warning | "Visual changes to review" |
+
+How `--wait` turns this into an exit code, and the `--gate` options, are in [CLI](/ci/cli/#--wait-and-exit-codes) and [How a build flows](/introduction/how-a-build-flows/#merge-gate).
+
+### The check on the git host
+
+For a project linked to a repository, the check run shows the same state. In the table, **blocking** is the project setting above.
+
+| Build | Check | Title |
+|---|---|---|
+| Failed | failure (neutral when not blocking) | "Processing failed" |
+| Not complete | in progress | "Processing screenshots…" |
+| No changes, project approves by hand | action required (success when not blocking), with an Approve button | "No visual changes: approval required" |
+| No changes | success | "No visual changes" |
+| Has screenshots that couldn't be read | failure (neutral when not blocking) | "N screenshots couldn't be read" |
+| Approved | success | "Changes approved (counts)" |
+| Rejected | failure | "Changes rejected (counts)" |
+| Only flaky changes, and they don't block | success | "Only flaky screenshots changed (counts)" |
+| Changes, not decided | action required (success when not blocking) | "counts: review required" |
+
+A check only holds a merge when the repository marks it required. The Approve and Reject buttons, and the `/circi approve` and `/circi reject` comments, apply to the builds a person can decide: a finished build with changes, or a finished no-change build in a project that approves those by hand. A build that is still processing, failed or expired, or finished with nothing to review, has nothing to decide. See [GitHub](/integrations/github/).
+
+<Aside type="note">
+The words above are the ones in the code. The git host may render a conclusion with its own wording, for example GitHub's "Action required".
+</Aside>

@@ -61,6 +61,8 @@ export default defineConfig({
             'introduction/what-is-circi',
             'introduction/how-a-build-flows',
             'introduction/key-concepts',
+            'introduction/how-screenshots-are-compared',
+            'introduction/faq',
           ],
         },
         {
@@ -94,6 +96,8 @@ export default defineConfig({
               items: [
                 'self-hosting/configuration',
                 'self-hosting/instance-settings',
+                'self-hosting/authentication',
+                'self-hosting/security',
                 'self-hosting/storage',
                 'self-hosting/database',
               ],
@@ -102,6 +106,8 @@ export default defineConfig({
               label: 'Operate',
               collapsed: true,
               items: [
+                'self-hosting/troubleshooting',
+                'self-hosting/monitoring',
                 'self-hosting/upgrades-and-migrations',
                 'self-hosting/backups',
                 'self-hosting/retention-and-gc',
@@ -123,6 +129,7 @@ export default defineConfig({
                 'using/comments-and-regions',
                 'using/review-requests-and-rules',
                 'using/inbox-and-reviews',
+                'using/undo',
               ],
             },
             {
@@ -139,9 +146,11 @@ export default defineConfig({
               items: [
                 'using/insights',
                 'using/saved-views',
+                'using/command-menu-and-search',
               ],
             },
             'using/hosted-sites',
+            'using/mobile-and-installed-app',
             {
               label: 'Settings',
               collapsed: true,
@@ -210,6 +219,13 @@ export default defineConfig({
           collapsed: true,
           items: [
             'reference/http-api',
+            'reference/ci-api',
+            'reference/errors-and-exit-codes',
+            'reference/limits',
+            'reference/build-statuses',
+            'reference/notifications',
+            'reference/background-jobs',
+            'reference/keyboard-shortcuts',
             'reference/admin-cli',
             'reference/environment-variables',
             'reference/glossary',
@@ -222,6 +238,7 @@ export default defineConfig({
             'contributing/repo-layout',
             'contributing/local-development',
             'contributing/tests',
+            'contributing/writing-an-integration',
           ],
         },
       ],

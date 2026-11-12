@@ -1,0 +1,198 @@
+---
+title: CI API reference
+description: Every endpoint under /v1 and /v2 with its fields, status codes and retry rules, plus the health and proxy endpoints.
+---
+{/* Source: apps/server/src/http/routes/v1 (builds.ts, files.ts, project.ts, sites.ts, schemas.ts), apps/server/src/http/routes/argos (routes.ts, schemas.ts, uploads.ts), apps/server/src/http/routes/health.ts, apps/server/src/http/routes/internal.ts, apps/server/src/http/hooks/project-token.ts, apps/server/src/http/lib (errors.ts, validation.ts), packages/core/src/builds (limits.ts, outcome.ts), packages/db/src/repositories (builds-create.ts, builds-shards.ts), packages/services/src/uploads, packages/cli/src/api.ts, packages/sites/src */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+The [HTTP API overview](/reference/http-api/) says what each group of paths is for and shows the upload sequence. This page is the detail: every field, status code and retry rule of the endpoints a script can call. For CI, prefer [`circi upload`](/ci/cli/); it does everything below, including the retries.
+
+## Conventions
+
+**Authentication.** Every `/v1` call carries the project's CI token as `Authorization: Bearer circi_…`. A token belongs to one project and can only act on it. A missing, malformed or revoked token answers `401` with `www-authenticate: Bearer` and no handler runs. Tokens have no request rate limit. Rotating the token is described in [Project settings](/using/project-settings/#ci-token).
+
+**Bodies.** Requests and replies are JSON (`content-type: application/json`), except file and site uploads. The JSON endpoints that list screenshots take bodies up to 16 MB.
+
+**Errors.** Every failure is `{ "error": "<sentence>" }`. A validation failure (`400`) also carries `fields`, an object from field name to the sentence about that field, for example `{ "error": "Branch must be 255 characters or fewer", "fields": { "branch": "Branch must be 255 characters or fewer" } }`. Several problems are joined with `; ` in `error`. An unexpected failure answers `500` with `Internal server error` and no detail; the cause is in the server log. The status codes and what to do about them are listed in [Errors and exit codes](/reference/errors-and-exit-codes/).
+
+**Idempotency.** `POST /v1/builds` accepts an `Idempotency-Key` header (1 to 128 characters). Sent again with the same value in the same project, it returns the build the first call created instead of making another, which makes a resend after a lost answer safe. `circi upload` sends a fresh random key per call and reuses it on every resend. Other calls are safe to repeat by their own design, noted below.
+
+## `GET /v1/project`
+
+The project the token belongs to.
+
+| Field | Meaning |
+|---|---|
+| `workspace` | The workspace's slug. |
+| `slug`, `name` | The project's slug and name. |
+| `defaultBranch` | The branch whose builds become the baselines. |
+| `dashboardUrl` | The project's page in the dashboard. |
+
+## `POST /v1/builds`
+
+Creates a build, or joins the shard of one, and says which files to send. Answers `201`.
+
+| Field | Required | Meaning |
+|---|---|---|
+| `commitSha` | Yes | The head commit, 7 to 64 hex characters (stored lowercase). |
+| `files` | Yes | Every distinct screenshot file of this upload: `{ sha256, size, contentType }`. `sha256` is 64 lowercase hex characters, `size` a positive integer up to 25 MB, `contentType` exactly `image/png`. At most 10,000. |
+| `name` | No | The build name. Letters, digits, `.`, `_`, `-`, starting with a letter or digit, at most 64 characters. Default `default`. Each name has its own baselines. |
+| `branch`, `baseBranch` | No | Up to 255 characters each; `null` allowed. |
+| `prNumber` | No | A positive integer, or `null`. |
+| `mergeBaseSha` | No | The commit where the branch left the base branch. |
+| `ancestorShas` | No | Commits from the head backward, used to find the baseline. At most 2,000. |
+| `ancestryStatus` | No | `ok`, `missing` or `truncated`. When left out it is `ok` if `ancestorShas` isn't empty, otherwise `missing`. |
+| `parallel` | No | `{ nonce, total }` for a sharded build: `nonce` 1 to 128 characters, the same in every shard; `total` 1 to 1,000. A second create with the same project, name, commit and nonce joins the first build instead of making a new one. |
+| `author` | No | Who made the change, as the CI reports it: `login` (up to 255 characters), `email` (up to 320), `provider` (up to 64), `providerId` (up to 128). The server matches it to a member where it can. |
+
+The reply holds the build and what to upload:
+
+```json
+{
+  "build": {
+    "id": "6f1c…",
+    "number": 42,
+    "name": "default",
+    "status": "uploading",
+    "conclusion": null,
+    "reviewStatus": "pending",
+    "url": "https://ci.acme.io/acme/web-app/builds/42"
+  },
+  "uploads": [
+    { "sha256": "…", "url": "…", "method": "PUT", "headers": { "content-type": "image/png" }, "auth": "token" }
+  ]
+}
+```
+
+`uploads` lists only the files the server doesn't hold verified yet, so it can be empty. Send each file exactly as its entry says: the `method`, the `url`, and the `headers`. With local-disk storage the URL is `PUT /v1/files/:sha256` on this server and `auth` is `token`: add the bearer token. With S3 the URL is presigned and bound to the file's checksum and length, and `auth` is `none`: send no token.
+
+## `PUT /v1/files/:sha256`
+
+Uploads one file through the API (local-disk storage). The body is the raw bytes, with `content-type: image/png` or `application/octet-stream`. The bytes are hashed while streaming and stored only if they hash to `:sha256`.
+
+| Status | Meaning |
+|---|---|
+| `201` | Stored. `{ "sha256": "…", "status": "verified" }`. |
+| `200` | The server already had this file verified; the body was discarded. Same JSON. |
+| `404` | No build has asked for this file. Create the build first. |
+| `413` | The file is over 25 MB. |
+| `415` | The body isn't sent as `image/png` or `application/octet-stream`. |
+| `422` | The bytes hash to something else. The message says which hash. |
+
+## `POST /v1/builds/:id/finalize`
+
+Tells the server which screenshots one shard holds. `:id` is the build's `id`.
+
+| Field | Required | Meaning |
+|---|---|---|
+| `screenshots` | Yes | `{ name, sha256, metadata? }` per screenshot, at most 10,000. `name` is 1 to 512 characters without line breaks or NUL; names must be unique within the build. `metadata` is a JSON object (browser, viewport, test name). |
+| `shardIndex` | No | Which shard this is, 1 to 128 characters. Default `0`. `circi upload` sends the shard's zero-based index. |
+
+The shard's screenshots are replaced in one transaction, so repeating the call with the same body lands on the same state; a finalize that already succeeded answers the same success again. The build starts processing when the last shard arrives.
+
+```json
+{ "build": { "…": "…" }, "complete": true, "shardsReceived": 4, "shardsTotal": 4 }
+```
+
+| Status | Meaning |
+|---|---|
+| `200` | Accepted. `complete` is `true` once every shard has arrived. |
+| `400` | A screenshot name is invalid or appears twice. |
+| `404` | No such build in this project. |
+| `409` | Either some files weren't uploaded or failed verification (`{ "error": "2 file(s) weren't uploaded or failed verification", "missing": ["<sha256>", …] }`: send those files again, then finalize again), or the build is already past uploading and can't take other screenshots, or another shard already uploaded a screenshot with one of these names. |
+
+With S3 the server checks each stored object's checksum before accepting the shard.
+
+## `GET /v1/builds/:id/status`
+
+What `--wait` polls. Optional query `gate=status` or `gate=exit-code` asks for a gate mode.
+
+| Field | Meaning |
+|---|---|
+| `build` | The build, as above. |
+| `counts` | `added`, `removed`, `changed`, `unchanged`, `failed` and `total`: screenshots by comparison result. `failed` are screenshots the server couldn't read. |
+| `unreadable` | `{ name, reason }` for each screenshot that couldn't be read. |
+| `outcome` | `{ state, summary, warning? }`. `state` is `pending` while the build is processing, then `pass` or `fail`. |
+| `gate` | `status` when the git host's check is the merge gate, `exit-code` when the job is. Without `gate` in the query it is `status` for a project that reports to a git host and `exit-code` otherwise. |
+| `errorMessage` | Why processing failed, or `null`. |
+
+`build.status` is one of `pending`, `uploading`, `processing`, `complete`, `error` or `expired`. `conclusion` is `no_changes`, `changes_detected` or `null` until the build is complete. `reviewStatus` is `pending`, `approved` or `rejected`.
+
+The `outcome` follows the project's merge settings. For a build that isn't processing any more:
+
+| Situation | `state` | `summary` |
+|---|---|---|
+| Failed to process or expired, project blocks merges | `fail` | Build failed to process, Build expired |
+| The same, project doesn't block | `pass` | Build could not be checked, with a `warning` |
+| Screenshots couldn't be read, project blocks | `fail` | N screenshots couldn't be read |
+| The same, project doesn't block | `pass` | The same, with a `warning` |
+| Rejected | `fail` | Changes rejected |
+| No changes | `pass` | No visual changes |
+| No changes, the project's setting for approving no-change builds automatically is off, and nobody approved | `fail` (or `pass` with a `warning` when the project doesn't block) | No visual changes; waiting for approval |
+| Approved | `pass` | Changes approved |
+| Only flaky screenshots changed, flaky screenshots don't block | `pass` | Only flaky screenshots changed |
+| Changes not reviewed, project blocks | `fail` | Visual changes need review |
+| The same, project doesn't block | `pass` | Visual changes to review, with a `warning` |
+
+A `404` means no such build in the project.
+
+## `POST /v1/sites` and `GET /v1/sites/served`
+
+`POST /v1/sites` uploads a built static site as a `.tar.gz` body (`content-type: application/gzip`). The CLI's `circi site upload` packs the folder and calls it; see [Hosted sites](/using/hosted-sites/) for what the sites are. The query:
+
+| Parameter | Meaning |
+|---|---|
+| `commit` | Required. The full commit SHA, 12 to 64 hex characters. |
+| `name` | Which of the project's sites this is. Letters, digits, `.`, `_`, `-`, at most 64. Default `site`. |
+| `kind` | `auto` (default), `storybook`, `vitest-report`, `playwright-report`, `coverage`, `docs` or `generic`. `auto` recognizes Storybook, Playwright report, Vitest report and coverage output by their files, and otherwise uses `generic`; `docs` is never detected. |
+| `branch` | The branch, up to 255 characters. |
+| `branch_tip` | What `git ls-remote` says the branch points at. |
+| `descends` | `true` when the CLI checked that this commit descends from the one the branch address serves now. |
+| `fork` | `true` for a fork's pull request; such an upload never moves a branch address. |
+| `spa` | `true` to serve unknown paths with the entry page. Default off. |
+
+The archive may hold only regular files and directories. The server refuses a symbolic or hard link, a device, an absolute path, a `..` segment, a backslash, a duplicate path, a path under the reserved `_circi/` prefix, more than 20,000 files, more than the **Largest hosted site** limit when unpacked (200 MB by default, see [Limits](/reference/limits/)), and an archive that expands to more than 100 times its compressed size. The entry page (`index.html`; for a coverage report `lcov-report/index.html` when there is no top-level one) must exist at the top level.
+
+The reply is `201`:
+
+| Field | Meaning |
+|---|---|
+| `site` | `name`, `kind` and `slug` of the site. |
+| `version` | `commitSha`, `fileCount` and `totalBytes` of what was stored. |
+| `addresses` | `commit`, the address of this commit's version, and `branch` when the branch address now serves it. |
+| `branchMoved` | Whether the branch address moved to this commit. |
+| `replaced` | Whether this replaced an earlier upload of the same commit. |
+
+Repeating an upload of the same commit replaces that version, so a resend is harmless. Errors: `404` when hosting isn't set up on the server (no `STATIC_SITES_HOST`), `403` when **Host static sites** is off for the project, `415` when the body isn't gzip, `413` for a size or expansion limit, `400` for an unsafe archive or one with no files or no entry page.
+
+`GET /v1/sites/served?name=<site>&branch=<branch>` answers `{ "commit": "<sha>" }` with the commit the branch address serves, or `{ "commit": null }` when it serves none yet.
+
+## The Argos-compatible API (`/v2`)
+
+The paths and what works are in [Argos-compatible API](/ci/argos-compatible-api/). The shapes, for debugging an SDK:
+
+| Call | Request | Reply |
+|---|---|---|
+| `GET /v2/project` | Token. | `{ id, defaultBaseBranch, hasRemoteContentAccess: false }`. |
+| `POST /v2/baseline` | Token. `{ commits: [≤2,000 SHAs], name? }`. | `{ baseline: { id, commit, commitSha, branch } }`, or `{ baseline: null }` when none of the commits has a baseline. |
+| `POST /v2/builds` | Token. `commit`, `screenshots` (`{ key, contentType? }`, key a SHA-256, at most 10,000), and optionally `branch`, `name`, `prNumber`, `referenceBranch`, `referenceCommit`, `parentCommits` (≤2,000), `parallel`, `parallelNonce`, `author`. Body at most 4 MB. | `201` with `{ build: { id, url, number, status }, screenshots: [{ key, postUrl, fields: {} }], pwTraces: [] }`. |
+| `POST /v2/uploads/:buildId/:sha256` | No token. Multipart form with one file, at most 25 MB. | `204`. `404` if the build didn't ask for that file, `413` if too large, `422` if the bytes hash to something else, `400` if it isn't a multipart form. |
+| `PUT /v2/builds/:id` | Token. `screenshots` (`{ key, name, metadata? }`), `parallel`, `parallelTotal`, `parallelIndex`, `final`. Body at most 4 MB. | `{ build: { id, url, number, status } }`. `400` with `missing` when files weren't uploaded; `404` for an unknown build. |
+
+Differences from `/v1`: a name that isn't a valid build name is cleaned up instead of refused (other characters become `-`, then it is cut to 64); screenshots arrive in several `PUT` calls and the shard ends with the one that has `final: true`; a parallel build starts with room for 1,000 shards and takes its real total from `parallelTotal`; a `parallelTotal` below 1 (manual finalization) is refused with `400`.
+
+## Health and proxy endpoints
+
+These take no token.
+
+| Call | Answer |
+|---|---|
+| `GET /healthz` | `200` `{ "status": "ok" }` while the process serves. |
+| `GET /readyz` | `200` `{ "status": "ok", "checks": { "<name>": "ok" } }` when the database and storage answer, otherwise `503` with `"status": "fail"` and `fail` on the checks that didn't. Each check times out after 2 seconds. |
+| `GET /api/auth-methods` | The sign-in methods on offer. |
+| `GET /internal/tls-ask?domain=<host>` | For the reverse proxy only. `200` when the host is a verified custom domain of a site, `404` for anything else, an empty body either way. A request carrying `X-Forwarded-For` or `Forwarded` is refused with `404`, and more than 300 answers in a minute, across the whole instance, get `429` with `retry-after: 60`. See [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/). |
+
+<Aside type="note">
+`/healthz` and `/readyz` aren't logged on each request, so a probe every few seconds doesn't fill the log.
+</Aside>
