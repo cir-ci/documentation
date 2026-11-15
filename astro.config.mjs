@@ -1,15 +1,30 @@
 // @ts-check
 import mdx from '@astrojs/mdx'
+import { satteri } from '@astrojs/markdown-satteri'
 import react from '@astrojs/react'
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
+
+// Wraps every Markdown table in `div.table-wrap` at build time (the wrapper has the border, radius and sideways
+// scroll, so the table inside can fill it; see docs.css). Tables from Astro components, like EnvTable, make their own.
+const wrapTables = {
+  name: 'wrap-tables',
+  element: {
+    filter: ['table'],
+    /** @param {any} node @param {any} ctx */
+    visit(node, ctx) {
+      ctx.wrapNode(node, { type: 'element', tagName: 'div', properties: { className: ['table-wrap'] }, children: [] })
+    },
+  },
+}
 
 // The documentation of CirCI. The sidebar is explicit so the order is ours; every slug below is
 // a file under src/content/docs (see DESIGN.md for the page conventions).
 // `site` is a placeholder until the docs have their address: it makes Starlight generate sitemap-index.xml.
 export default defineConfig({
-  // Smart punctuation would turn `--wait` into an en dash and break copied commands.
-  markdown: { smartypants: false },
+  // Smart punctuation would turn `--wait` into an en dash and break copied commands, so it is off (the same
+  // output as the former `markdown.smartypants: false`, which is deprecated in favor of the processor's option).
+  markdown: { processor: satteri({ features: { smartPunctuation: false }, hastPlugins: [/** @type {any} */ (wrapTables)] }) },
   site: 'https://docs.circi.dev',
   server: { port: 4321 },
   integrations: [

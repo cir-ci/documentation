@@ -40,9 +40,16 @@ const reserve = Math.round((lines.length + 1) * 25.5) + 30
     overflow-x: auto;
     min-height: var(--ft-reserve);
     padding: 0.875rem 1rem;
-    background: var(--circi-surface-raised);
     border: 1px solid var(--circi-line-strong);
     border-radius: var(--circi-radius-popup);
+    /* Where the tree is wider than the box, a fade at the cut edge says there is more to scroll to (it follows the
+       scroll position and disappears at the end, so nothing is faded when it all fits). */
+    background:
+      linear-gradient(to right, var(--circi-surface-raised) 30%, transparent) left center / 2rem 100% no-repeat local,
+      linear-gradient(to left, var(--circi-surface-raised) 30%, transparent) right center / 2rem 100% no-repeat local,
+      linear-gradient(to right, var(--circi-line-strong), transparent) left center / 0.5rem 100% no-repeat scroll,
+      linear-gradient(to left, var(--circi-line-strong), transparent) right center / 0.5rem 100% no-repeat scroll,
+      var(--circi-surface-raised);
   }
   .drawing :global(svg) {
     display: block;

@@ -96,12 +96,9 @@ A screenshot is judged on the project's default branch over the **10** most rece
 | Email address change | The confirmation link is valid for 1 hour |
 | Signed file links (screenshots, diffs) | Valid for between 1 and 2 hours: a link ends at the end of a fixed one-hour window |
 | Session lookup cache | A signed cookie stands in for the session lookup for 30 seconds |
-| Rate limits | The sign-in endpoints are limited per client address in production. Project CI tokens have none. |
+| Session | 7 days, extended on use (at most once a day). No setting |
+| Sign-in rate limit (production) | Password sign-in and other `/sign-in`, `/sign-up`, change-password and change-email requests: 3 per 10 seconds per client address. Emailed-code requests: 3 per 60 seconds. Other auth endpoints: 100 per 10 seconds. No setting. Project CI tokens have no rate limit |
 | Deleted workspace | Restorable for 30 days, then purged |
-
-<Aside type="note">
-The exact request counts of the sign-in rate limit are better-auth's defaults and aren't fixed in CirCI's code, so they aren't listed here.
-</Aside>
 
 ## Background jobs, webhooks and the server
 

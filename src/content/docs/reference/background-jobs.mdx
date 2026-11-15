@@ -52,17 +52,28 @@ A lane claims one job at a time with `FOR UPDATE SKIP LOCKED`, so several lanes 
 
 Beside the queue, every worker process runs interval sweeps. Each sweep takes a Postgres advisory lock named `sweep:<name>`: only one process runs a given sweep at a time, a pass that starts while the previous one is still running is skipped, and none is queued.
 
-| Sweep | Every | Does |
+| Sweep | Every (default) | Does |
 |---|---|---|
 | `stalled-builds` | 5 minutes | Fails builds that were still uploading after `UPLOAD_TIMEOUT_MINUTES` (default 60; 0 turns it off) |
-| `retention` | 6 hours | One [retention and garbage-collection](/self-hosting/retention-and-gc/) pass: deleted workspaces past 30 days, expired builds and sites, expired undo records, unreferenced files |
+| `retention` | 6 hours | One [retention and garbage-collection](/self-hosting/retention-and-gc/) pass: deleted workspaces past 30 days, expired builds and sites, expired undo records, unreferenced files; files must be unused for `GC_GRACE_HOURS` (default 24) first |
 | `review` | 5 minutes | Notifies reviewers of review requests that passed their due time, once each |
 | `triage-assign` | 5 minutes | Gives triage items nobody has to the person on triage, for projects that turned it on |
 | `expired-leases` | 30 seconds | Fails jobs whose lease expired with no attempts left |
 | `prune-jobs` | 1 hour | Deletes done and failed jobs older than `JOB_RETENTION_DAYS` (default 14; 0 keeps them) |
 | `triage-backfill` | Once at start | Fills in the triage counts of projects that existed before they were kept |
 
-The upload timeout, garbage-collection grace period, job retention and webhook timeout are [instance settings](/self-hosting/instance-settings/) as well as environment variables, so they change without a restart. The sweep intervals, the lock time and the lane counts have no setting.
+All the timings on this page are defaults built into the worker. The only ones an environment variable changes are these, none of them a sweep interval:
+
+| Timing | Default | Variable |
+|---|---|---|
+| Wait before the first retry, doubling each time | 2 seconds | `JOB_RETRY_BASE_SECONDS` |
+| Longest wait between two attempts | 5 minutes | `JOB_RETRY_MAX_SECONDS` |
+| Upload timeout of a build | 60 minutes | `UPLOAD_TIMEOUT_MINUTES` |
+| Grace period before an unused file is deleted | 24 hours | `GC_GRACE_HOURS` |
+| How long finished jobs are kept | 14 days | `JOB_RETENTION_DAYS` |
+| Time a webhook receiver has to answer | 10 seconds | `WEBHOOK_TIMEOUT_SECONDS` |
+
+The upload timeout, garbage-collection grace period, job retention and webhook timeout are [instance settings](/self-hosting/instance-settings/) as well as environment variables, so they change without a restart. The sweep intervals, the lease (10 minutes) and its heartbeat, the poll interval (5 seconds with the `NOTIFY` listener, 1 second without) and the lane counts (2 build lanes and 1 other) have no setting.
 
 ## Seeing what's stuck
 
