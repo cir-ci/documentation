@@ -20,12 +20,12 @@ const wrapTables = {
 
 // The documentation of CirCI. The sidebar is explicit so the order is ours; every slug below is
 // a file under src/content/docs (see DESIGN.md for the page conventions).
-// `site` is a placeholder until the docs have their address: it makes Starlight generate sitemap-index.xml.
+// `site` is the public address (GitHub Pages, custom domain circi.dev at the root, so no `base`); it makes Starlight generate sitemap-index.xml.
 export default defineConfig({
   // Smart punctuation would turn `--wait` into an en dash and break copied commands, so it is off (the same
   // output as the former `markdown.smartypants: false`, which is deprecated in favor of the processor's option).
   markdown: { processor: satteri({ features: { smartPunctuation: false }, hastPlugins: [/** @type {any} */ (wrapTables)] }) },
-  site: 'https://docs.circi.dev',
+  site: 'https://circi.dev',
   server: { port: 4321 },
   integrations: [
     starlight({
@@ -251,12 +251,14 @@ export default defineConfig({
           label: 'Contributing',
           collapsed: true,
           items: [
+            'contributing/how-to-contribute',
             'contributing/repo-layout',
             'contributing/local-development',
             'contributing/tests',
             'contributing/writing-an-integration',
           ],
         },
+        'roadmap',
       ],
     }),
     react(),

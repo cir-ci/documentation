@@ -91,7 +91,7 @@ CirCI makes outbound requests only to services you configure:
 | Sign-in providers | When a person signs in with one |
 | Browser push services | Notifications; the payload is encrypted for the browser (RFC 8291), so the push service only carries ciphertext |
 
-The code has no analytics or error-reporting client and no update check. Profile pictures fall back to Gravatar when the account you sign in with has none (see [Account settings](/using/account-settings/#details)).
+The code has no analytics or error-reporting client and no update check. Profile pictures come from the account you sign in with, with a generated avatar when it has none, so no avatar service is contacted (see [Account settings](/using/account-settings/#details)).
 
 <Aside type="caution">
 What is not covered here: the security of your own host, database, storage and reverse proxy, and your CI's handling of the project token. Treat a CI token like a deploy key: keep it in the CI provider's secret store, and rotate it from **Project settings** if it leaks.

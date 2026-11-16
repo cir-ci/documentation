@@ -1,0 +1,169 @@
+---
+title: How to contribute
+description: How to report a bug, propose a feature or send a pull request, including the AI disclosure rule, the conventions and the checks a change must pass.
+---
+{/* Source: CLAUDE.md (Layers, Style, Tests, commit conventions), package.json scripts. Adapted from Ghostty's CONTRIBUTING.md and AI_POLICY.md (MIT). */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+import CopyCommand from '../../../components/CopyCommand.tsx'
+
+This page describes how to contribute to CirCI. It is for anyone thinking of opening an **issue**, a **discussion** or a **pull request**. For the development environment itself, see [Local development](/contributing/local-development/); for the code's structure, see [Repo layout](/contributing/repo-layout/).
+
+<Aside type="note">
+CirCI is maintained by a small team. A few minutes spent reading this page saves a round trip for you and for us. Thank you for contributing.
+</Aside>
+
+## The critical rule
+
+**You must understand your code.** If you can't explain what your change does, and how it interacts with the rest of the system, without the help of an AI tool, don't submit it.
+
+Using AI to write code is fine. You can gain that understanding by questioning an agent that has the codebase until you grasp the edge cases and effects of your change. What isn't fine is submitting generated code you haven't understood.
+
+## AI assistance
+
+- **Disclose all AI use.** Say which tool you used (Claude Code, Cursor, Copilot, ...) and how much of the work it did. The pull request template has a field for it.
+- **A human reads and edits everything.** An issue, a discussion or a pull request written with AI must have been reviewed and trimmed by you before you send it. AI is verbose; the reader's time isn't free.
+- **A person owns the change.** If a reviewer asks why a line is there, you answer, not your tool.
+- **No AI-generated media** (images, video, audio, screenshots of the dashboard). Text and code are the only generated content we accept.
+
+A pull request that looks like unreviewed generated output is closed without review. Repeated low-effort submissions lead to a block on further contributions.
+
+These rules apply to outside contributions. CirCI's own code is written with plenty of AI assistance; the rules are about the people, not the tools.
+
+## Where does it go?
+
+### I found a bug
+
+Search the [issues](https://github.com/cir-ci/repo/issues) and [discussions](https://github.com/cir-ci/repo/discussions) first, closed ones too: it may be fixed already. If there's an open report that matches yours, don't comment unless you have something new to add. Use a reaction instead, which shows support without sending everyone a notification.
+
+If nobody has reported it, open an issue with the **Bug report** form and fill it in completely: the CirCI version, how you run it (Docker Compose or from source), what you did, what you expected and what happened. Logs and a reproduction make the difference between a fix this week and a question back to you. Redact tokens and secrets.
+
+Report security problems privately through the repository's Security tab ("Report a vulnerability"), never in a public issue.
+
+### I have an idea
+
+Search first, then open a discussion in the **Ideas** category. Describe the problem you have before the solution you picture. When a discussion reaches a well-understood, actionable item, a maintainer turns it into an issue.
+
+### I have a question
+
+Open a discussion in **Q&A**. If CirCI behaves unexpectedly, that's a bug report, not a question: use the issue form so we get the details we need.
+
+### I want to work on something
+
+Every open issue is actionable. Pick one and say so in a comment; if you need guidance, ask there. Issues labeled `good first issue` are friendly to newcomers.
+
+### I've implemented something
+
+1. If an issue exists for it, open the pull request straight away and link the issue.
+2. If there's no issue, open a discussion and link to your branch.
+3. If you open a pull request for something nobody discussed, it may be closed or sit unreviewed for a long time. The odds are against you.
+
+Pull requests aren't the place to design a feature. Don't open a draft pull request to start that conversation; use a discussion and link your branch.
+
+## General patterns
+
+**Issues are actionable.** The issue tracker lists work that is ready to be done. Questions and open-ended ideas live in discussions until they're well defined, so everything in the tracker can be picked up.
+
+**Pull requests implement an issue.** Small fixes (a typo, an obvious bug, a docs correction) can go straight to a pull request. For anything non-trivial, the issue comes first: it's where we agree on the shape of the change before you write it. A pull request for an accepted issue, implemented as described, is merged with a high degree of certainty.
+
+## Development setup
+
+You need Node 26 (`nvm install && nvm use` reads `.nvmrc`), pnpm 12 and, for `pnpm dev` and the end-to-end tests, Docker.
+
+<Steps>
+
+1. **Fork and clone the repository, then install.**
+
+   <CopyCommand client:visible command="pnpm install" />
+
+2. **Install Chromium once.** Component tests run in headless Chromium.
+
+   <CopyCommand client:visible command="pnpm exec playwright install chromium" />
+
+3. **Start the local QA environment.** The dashboard opens on http://localhost:5173 with seeded data.
+
+   <CopyCommand client:visible command="pnpm dev" />
+
+</Steps>
+
+Before you open a pull request, format and run the gate:
+
+```sh
+pnpm format       # oxfmt
+pnpm gate         # format check, lint, typecheck, tests and build (no Docker)
+pnpm gate:full    # gate plus the end-to-end tests (needs Docker and Chromium)
+```
+
+`pnpm gate` is cached by inputs, so a second run on an unchanged tree is instant. The pull request's CI runs the same commands. Run the end-to-end tests when you change the server, the worker, storage or anything the dashboard reaches through them. [Local development](/contributing/local-development/) has the details.
+
+## The conventions, in short
+
+The full list lives in `CLAUDE.md` at the root of the repository. The rules that most often come up in review:
+
+- **Layers.** Transport (the server's routes and CLI, the worker, the dashboard) calls services; services open the transaction, call repositories and queue the jobs and notices that follow; `core` holds rules with no I/O; `db` has read models (`queries/`) and stores (`repositories/`); adapters (integrations, storage, diff, sites) talk to the outside. Dependencies point downward, and a test (`packages/services/test/layers.test.ts`) fails when one doesn't. A change that triggers something (a webhook, a check run, a notice) belongs in a service, in one transaction.
+- **Integrations** import at most `core` and `api`, and their errors carry no HTTP status. See [Writing an integration](/contributing/writing-an-integration/).
+- **Types** that belong to something are namespaces: `createBuild.Input`, `Row.Props`, `Build.Detail`. A namespace holds only types.
+- **Imports** use the package's `#` aliases (`#lib/*`, `#features/*`), not `../../..`.
+- **CSS** lives in CSS modules and `.css` files, with the `--circi-` design tokens, never in strings and never copied hex values.
+- **Copy** uses contractions with the straight apostrophe, US spelling, "screenshot" (never "snapshot"), "ID", sentence case, and "Delete" for gone for good versus "Remove" for taking out of a list. Every action tells the person what happened in a toast; an action that can be taken back acts at once and the toast carries Undo.
+- **Settings** is a closed area: no link crosses between settings and the rest of the dashboard.
+- **Dashboard components** come from `@circi/ui`; one primary button per area.
+
+## Commit messages
+
+- The subject says what changed and why it matters, in the present tense, with no trailing period. It can be long when the change has several parts; start with the area (`Server:`, `Dashboard:`, `Docs:`) when that helps.
+- The body explains the behavior: what a person sees or what the system now guarantees, then the reasoning behind choices a reviewer might question. Wrap nothing by hand; write paragraphs.
+- Commits are focused. A refactor and a feature are separate commits.
+- If AI helped, keep the tool's `Co-Authored-By` trailer or add a line saying so.
+
+## Tests are required
+
+A change comes with tests, in the smallest kind that covers it (see [Tests](/contributing/tests/)):
+
+- A rule in `packages/core`, a helper or an `api.ts`: a `*.test.ts` in the package's `test/` folder.
+- A route: a server route test with `buildServer` and `app.inject`.
+- A service or repository: a test on PGlite, with the real migrations.
+- A component or a page: a `*.browser.test.tsx` in Vitest browser mode. Don't add `@testing-library`.
+- A bug that only the real stack reproduces: a regression test in its owning package, and an end-to-end test if it needs the stack.
+
+External services (GitHub, GitLab, Slack, ...) are faked at their edge. If your change was tested only against a fake, say so in the pull request.
+
+## Continuous integration
+
+CircleCI runs on every push and pull request. The `gate` job runs `pnpm gate`, the same command you run locally. The `e2e` job (the end-to-end tests on Docker) and `compose-smoke` (the shipped Compose files) run on pushes to `main` and nightly. A pull request needs `gate` to pass.
+
+## Documentation and screenshots
+
+A change to behavior, a flag, an exit code, an environment variable or a screen updates its page in this documentation, in the same pull request or a linked one to the [documentation repository](https://github.com/cir-ci/documentation).
+
+## License of your contributions
+
+CirCI is licensed under the [GNU General Public License, version 3](https://www.gnu.org/licenses/gpl-3.0.html), and so is this documentation. By submitting a contribution you agree that it is licensed under the same terms. Don't submit code you don't have the right to license that way (for example, copied from a project with an incompatible license).
+
+## Acknowledgment
+
+Adapted from [Ghostty's contributing guide](https://github.com/ghostty-org/ghostty/blob/main/CONTRIBUTING.md) and [AI usage policy](https://github.com/ghostty-org/ghostty/blob/main/AI_POLICY.md), © Mitchell Hashimoto and Ghostty contributors, MIT License:
+
+```text
+MIT License
+
+Copyright (c) 2024 Mitchell Hashimoto, Ghostty contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

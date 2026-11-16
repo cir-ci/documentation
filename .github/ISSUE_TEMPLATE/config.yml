@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: A bug in CirCI itself
+    url: https://github.com/cir-ci/repo/issues/new/choose
+    about: Bugs in the product go to the main repository.
+  - name: Question or idea about CirCI
+    url: https://github.com/cir-ci/repo/discussions
+    about: Questions and feature ideas are discussions in the main repository.

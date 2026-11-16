@@ -1,0 +1,29 @@
+name: Documentation problem
+description: A page is wrong, unclear, missing or broken.
+labels: [documentation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping the docs. Search the [issues](https://github.com/cir-ci/documentation/issues) first, closed ones too. If one matches, add a reaction instead of a comment.
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The address of the page, for example https://circi.dev/ci/cli/
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing
+      description: What you read, what you expected, and what the correct text or behavior is, if you know. If the product does something different from what the page says, give the CirCI version.
+    validations:
+      required: true
+  - type: checkboxes
+    id: ai
+    attributes:
+      label: AI assistance
+      options:
+        - label: I used no AI tool to write this, or I reviewed and edited what it wrote.
+          required: true

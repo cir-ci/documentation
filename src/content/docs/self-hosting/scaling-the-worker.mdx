@@ -2,7 +2,7 @@
 title: Scaling the worker
 description: One process, or the server and workers split apart.
 ---
-{/* Source: apps/server/src/cli/server.ts, apps/worker/src (runner.ts, claim-loop.ts, sweeps.ts), packages/config/src/schema.ts, docs/perf/2026-11-11-diff-engines.md, docs/reference/running-costs.md */}
+{/* Source: apps/server/src/cli/server.ts, apps/worker/src (runner.ts, claim-loop.ts, sweeps.ts), packages/config/src/schema.ts, docs/reference/running-costs.md */}
 
 import { Aside, Tabs, TabItem } from '@astrojs/starlight/components'
 import SettingCard from '../../../components/SettingCard.astro'
@@ -25,7 +25,7 @@ circi serve      # HTTP API and dashboard
 circi worker     # background jobs
 ```
 
-Run any number of each from the same image, against the same Postgres and storage. In compose that is two services with `command: ['serve']` and `command: ['worker']`.
+Run any number of each from the same image, against the same Postgres and storage. In compose that is two services with `command: ['serve']` and `command: ['worker']`. A worker serves no HTTP, so the image's health check passes for it as long as the process runs.
 
 </TabItem>
 </Tabs>

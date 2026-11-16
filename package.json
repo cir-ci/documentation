@@ -2,7 +2,12 @@
   "name": "circi-documentation",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0-only",
   "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=26"
+  },
   "scripts": {
     "dev": "astro dev --port 4321",
     "start": "astro dev --port 4321",

@@ -1,0 +1,67 @@
+---
+title: Roadmap
+description: What is planned for CirCI, grouped by area. Plans can change, and nothing here has a date.
+---
+{/* Source: the open items of the former internal plans, checked against the code on 2026-11-16 */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+This page lists what is planned and not built yet. It has no dates, and the order inside a group isn't a promise. Anything not listed here either exists or isn't planned.
+
+<Aside type="note" title="Tested against simulated services">
+CirCI's integrations with GitHub, GitLab, Bitbucket, Slack, Linear, Jira and Figma, email delivery (SMTP) and OpenID Connect sign-in have been tested against simulated services that copy the providers' responses, not against the live services. Expect rough edges the first time you connect a real account, and report what you find.
+</Aside>
+
+## Reviewing
+
+- Thumbnails in a build's screenshot list.
+- Long lists that render only the rows on screen, so builds with thousands of screenshots stay fast.
+- Panning and zooming that stay in sync between the images of a comparison.
+- Triage keys to accept a screenshot as the baseline (**B**) and to add an ignore region (**I**).
+- A bulk action bar on the workspace-wide builds list.
+- Watch a build to be notified about it.
+- Recent projects in the command menu and the sidebar.
+- Escalation of overdue review requests.
+- The CirCI version shown in the dashboard.
+- Profile pictures from Gravatar, as a fallback to the account's own picture.
+
+## Integrations
+
+- **GitHub**: handle repositories added to or removed from an installation, thumbnails in check summaries, grouped (debounced) check updates, a mode that needs only write access to the repository, and updating the App's webhook address by itself.
+- **GitLab and Bitbucket**: closing a pull request closes its review requests, and setup guides for making the check required.
+- **Bitbucket**: sign in with Bitbucket.
+- **Jira**: choose the issue type when creating an issue.
+- **Figma**: compare a screenshot with its frame, use frames as baselines, and post results to Figma.
+- **More providers**: Gitea and Forgejo for git hosting; Azure DevOps, Microsoft Teams and Penpot.
+- **Argos**: a test of the Argos-compatible API against Argos's real SDK.
+
+## Hosted sites
+
+- A switcher between a project's sites inside a hosted site.
+- A live view embedded in the build page, and a **Sites** panel on it.
+- A commit view with a card for each site.
+- Renaming a site's slug.
+- Deep links from a screenshot to the page it shows.
+- `circi upload --site` to host a site from the command line.
+- Faster uploads of sites to S3 storage, file by file.
+- Sites that expire when their branch is deleted.
+
+## Platform
+
+- An SDK method to upload a test report, and a Storybook mode for `@circi/vitest`.
+- A `POST /v1/ancestry` endpoint for CI systems that can't give the full git history.
+- CloudFront as a front for stored files.
+- Quotas for storage and builds.
+- A Helm chart for Kubernetes.
+- Prometheus metrics.
+- Backup documentation that covers more setups, and a limit on webhooks per project.
+- Sign-in with SAML, authenticator-app (TOTP) two-factor sign-in, and a confirmation code sent by email before an account is linked to an OpenID Connect identity.
+
+## Apps and browsers
+
+- A desktop app, built with Tauri.
+- Visual testing in WebKit and Firefox, besides Chromium.
+
+## Quality
+
+- Visual regression tests of the dashboard itself, run by CirCI.

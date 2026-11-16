@@ -125,7 +125,7 @@ The `.jpg` files are Chrome captures of the dashboard, so they are 1x; add more 
 
 ## Site address
 
-`astro.config.mjs` sets `site: 'https://docs.circi.dev'` as a **placeholder, to be set** to the real address when the docs are published.
+`astro.config.mjs` sets `site: 'https://circi.dev'` (GitHub Pages with the custom domain `circi.dev` at the root, so there is no `base`; `public/CNAME` keeps the domain on each deploy).
 It exists so Starlight generates `sitemap-index.xml`; the canonical links and the sitemap use it.
 
 ## Landing page
