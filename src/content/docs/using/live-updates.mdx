@@ -1,0 +1,37 @@
+---
+title: Live updates
+description: How the dashboard updates in place when builds, reviews, comments, notifications or triage change, and what isn't live.
+---
+{/* Source: apps/web/src/lib/live.ts, live-keys.ts, stores/live-store.ts, apps/server/src/http/routes/dashboard/live.ts, apps/server/src/http/lib/live-hub.ts, packages/api/src/live.ts, packages/core/src/live/index.ts, packages/services/src/live/index.ts, packages/db/src/queue/live.ts */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+An open page updates by itself when something it shows changes. You don't reload to see a build finish processing, a decision someone else made, a new comment, a notification or a triage item that changed.
+
+## What is live
+
+| Change | Updates |
+|---|---|
+| A build starts, is uploaded, or finishes processing or fails | The build page, the project's builds list, workspace build lists, Triage, Reviews, the Inbox and the sidebar's counts |
+| A review decision, a review request, a snooze or a bulk review | The build, builds lists, Triage, Reviews, the Inbox and the sidebar |
+| A comment is added, edited, deleted or moved | The build's Comments and Activity tabs |
+| A notification arrives or is read, snoozed, brought back or deleted | The Inbox and the sidebar's counts |
+| A triage item is assigned, snoozed, dismissed or opened, or an ignore region changes | Triage and the project's ignore regions |
+
+Only what is on screen refetches at once; the other pages are marked out of date and load fresh data when you open them.
+
+Other changes, such as settings, members, integrations and webhooks, aren't pushed. A page shows them the next time it loads its data. Your own changes in the page you're on show at once, as before.
+
+## How it works
+
+The dashboard opens one connection to `GET /api/live` and keeps it open: Server-Sent Events, a plain HTTP response that stays open. An event says only what changed (the kind, and the workspace, project and build it concerns), never the data. The page then asks for the data it needs through the usual requests, so the stream shows you only what you're allowed to see, and a changed permission or an ended session is picked up within about 25 seconds.
+
+Every change that CirCI commits sends a Postgres `NOTIFY` when its transaction commits, and every server process listens for it. A change handled by one server instance therefore reaches dashboards connected to any other, with no extra service in between.
+
+If the connection drops, the browser reconnects, and the dashboard then refreshes everything on screen once, since it can't know what it missed. A tab that has been hidden for a minute closes its connection and catches up when you return to it.
+
+If the stream isn't available, the dashboard falls back to polling: a build that's still processing is checked every few seconds, and the sidebar's counts every minute or so. The stream is refused (503) when the server has no working notification connection to Postgres. A transaction pooler is the usual cause; see [Database](/self-hosting/database/#connection-rules).
+
+<Aside type="note">
+The stream sends a heartbeat every 25 seconds and the header `X-Accel-Buffering: no`. A reverse proxy in front of CirCI must pass it through without buffering or an early timeout; see [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/#live-updates-need-an-unbuffered-stream).
+</Aside>

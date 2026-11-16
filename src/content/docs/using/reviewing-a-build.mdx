@@ -33,7 +33,7 @@ The header shows the build's state:
 | <StatusChip status="failed" /> | The build errored. The message is shown under the header. |
 | Expired | Its screenshots were deleted under the project's retention. See [Project settings](/using/project-settings/). |
 
-Next to the status the header can show the review target (for example "22h left" or "Overdue 22h"), and an eye with the number of people watching the build: its author and whoever was asked to review, with "you're watching" when you are one of them.
+The status, review target and watchers sit on a row of their own under the title. Next to the status the header can show the review target (for example "22h left" or "Overdue 22h"), and an eye with the number of people watching the build: its author and whoever was asked to review, with "you're watching" when you are one of them.
 
 ## Use the screenshot list
 
@@ -56,16 +56,17 @@ Right-click a row for Open, Open in new tab, Copy link, Copy name, Approve, Reje
 
 ## Look at a change
 
-The build page has four compare modes, chosen with the buttons above the image or the keys <Kbd keys="1" /> to <Kbd keys="4" />:
+The build page has three compare modes, chosen with the buttons above the image or the keys <Kbd keys="1" /> to <Kbd keys="3" />. A fourth, **Design**, is on <Kbd keys="4" /> when the project has the Figma integration (see [Figma](/integrations/figma/)).
 
 | Key | Mode | Shows |
 |---|---|---|
 | <Kbd keys="1" /> | Side by side | Baseline and new screenshot next to each other |
-| <Kbd keys="2" /> | Overlay | The new screenshot with the changed pixels in red on top; the Diff layer slider sets how visible the red is |
-| <Kbd keys="3" /> | Diff | Only the changed pixels |
-| <Kbd keys="4" /> | Slider | A divider you drag between baseline and new screenshot |
+| <Kbd keys="2" /> | Diff | The changed pixels in red over this build. The **This build** pill at the bottom right of the image sets how much of the build shows under them: 0% is the changed pixels alone |
+| <Kbd keys="3" /> | Slider | A divider you drag between baseline and new screenshot |
 
-Zoom is Fit or 100%, with buttons to step in and out. The **View options** menu (the ⋯ button) has a **Checkerboard** background for transparent screenshots, and, for owners and admins, the **Dragging draws** choice described in [Comments and regions](/using/comments-and-regions/). The up and down arrows walk the list. Click an image to enlarge it.
+Diff and Slider share three controls. <Kbd keys="[" /> and <Kbd keys="]" /> show less or more of this build, 10% at a time (the new value is announced, "This build 80%"), and holding <Kbd keys="Alt" /> (Option on a Mac) shows this build in full until you let go. The keys work while the pill's slider or the Slider's handle has focus. In Slider they move the divider: this build is on the right, so <Kbd keys="]" /> moves it left. Old links to the Overlay mode, which was merged into Diff, open Diff.
+
+Zoom is Fit or 100%, with buttons to step in and out. **Fit** fills the width of the viewer: a small screenshot is scaled up and a large one down, so a build with a single image fills it too. The **View options** menu (the ⋯ button) has a **Checkerboard** background for transparent screenshots, and, for owners and admins, the **Dragging draws** choice described in [Comments and regions](/using/comments-and-regions/). The up and down arrows walk the list. Click an image to enlarge it. The enlarged view steps through the baseline, this build and, in Diff, the changed pixels, in that order.
 
 ## Decide
 
@@ -83,7 +84,7 @@ Decisions are made per screenshot. Each acts at once and shows a toast with **Un
 
 - **Approve** (<Kbd keys="a" />) approves the screenshot on screen and moves on to the next one that still needs a decision.
 - **Reject** (<Kbd keys="r" />) asks for a reason first. The screenshot is marked rejected, which holds back the merge, and it never becomes a baseline. The reason goes to the build's author in their Inbox and to the pull request. A project can make the reason optional; see [Project settings](/using/project-settings/).
-- **Approve all** (<Kbd keys="Shift+A" />) approves every changed screenshot that has no decision yet.
+- **Approve all** (<Kbd keys="Shift+A" />) approves every changed screenshot that has no decision yet. The button carries the count when there is more than one: "Approve all 3".
 
 In the reason field, <Kbd keys="Mod+Enter" /> sends it. Approve and Reject only appear on a finished build with changes. A decision can be changed later: the latest one counts.
 
@@ -101,7 +102,7 @@ With a repository linked, the pull request check follows the build. By default u
 
 Three tabs sit beside the image.
 
-- **Details**: two groups. **Build** has the pull request, commit, branch, when it was uploaded, and the baseline it was compared with and how it was chosen ("where this branch started", or the latest build on the default branch when git history wasn't available). **People** lists everyone who was asked to review and by whom ("Assigned automatically" when a [review rule](/using/review-requests-and-rules/) did). Below that: how the selected screenshot changed over recent default-branch builds ("This screenshot on main"), linked issues, and **Decisions**, every decision made so far with its reason.
+- **Details**: two groups. **Build** has the pull request, commit, branch, when it was uploaded, and the baseline it was compared with and how it was chosen ("where this branch started", or the latest build on the default branch when git history wasn't available). **People** lists everyone who was asked to review and by whom ("Assigned automatically" when a [review rule](/using/review-requests-and-rules/) did). Below that: how the selected screenshot changed over recent default-branch builds ("This screenshot on main"), linked issues, and **Decisions**, every decision made so far with its reason. Identical decisions (the same outcome, person and reason) collapse into one line with a count, such as "Approved by Olivia Owner, 6 times", and **By screenshot** gives several screenshots decided the same way one line ("Approved 6 of 6 by …").
 - **Activity**: what happened to the build, oldest first: upload, checks, review requests, decisions, comments and issues created.
 - **Comments**: see [Comments and regions](/using/comments-and-regions/).
 
@@ -126,7 +127,8 @@ On a project's builds list, press <Kbd keys="x" /> to select builds (or select r
 | <Kbd keys="Shift+A" /> | Approve all |
 | <Kbd keys="r" /> | Reject, with a reason |
 | <Kbd keys="c" /> | Write a comment |
-| <Kbd keys="1" /> to <Kbd keys="4" /> | Compare mode |
+| <Kbd keys="1" /> to <Kbd keys="3" /> | Compare mode (<Kbd keys="4" /> is Design, with the Figma integration) |
+| <Kbd keys="[" /> / <Kbd keys="]" /> | Show less or more of this build in Diff and Slider |
 | <Kbd keys="Mod+Enter" /> | Send a comment or confirm the dialog you are typing in |
 | <Kbd keys="?" /> | Show every shortcut (the full list is in [Keyboard shortcuts](/reference/keyboard-shortcuts/)) |
 

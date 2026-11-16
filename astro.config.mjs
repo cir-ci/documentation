@@ -145,6 +145,7 @@ export default defineConfig({
                 'using/review-requests-and-rules',
                 'using/inbox-and-reviews',
                 'using/undo',
+                'using/live-updates',
               ],
             },
             {

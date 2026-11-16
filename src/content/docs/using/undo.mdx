@@ -17,9 +17,9 @@ Most undoable actions are recorded by the server, which hands the dashboard a on
 |---|---|---|
 | Approve or reject screenshots, or a whole build | Build page, Reviews, Inbox | Restores the earlier decisions and the build's review status. Review requests the decision closed reopen, and the notifications it sent to others are deleted. The check run and webhooks follow the undo as they followed the decision |
 | Ask for a review | Build page | Dismisses the requests it opened and deletes the notifications it sent |
-| Snooze a review request | Reviews | Restores the earlier snooze |
-| Assign a triage item, snooze it, or dismiss it | Triage | Restores the item's earlier assignee, snooze or dismissal |
-| Mark a notification read or unread, snooze it, delete it | Inbox | Restores the earlier state |
+| Snooze or unsnooze a review request | Reviews | Restores the earlier snooze, or puts it back to sleep |
+| Assign a triage item, snooze it, unsnooze it, or dismiss it | Triage | Restores the item's earlier assignee, snooze or dismissal |
+| Mark a notification read or unread, snooze it, unsnooze it, delete it | Inbox | Restores the earlier state |
 
 The same actions from the command menu (<Kbd keys="Mod+K" />) carry the same Undo.
 
@@ -50,7 +50,7 @@ An undone review decision stays in the build's activity as history: the undone d
 
 ## What can't be undone
 
-- **Unsnooze** and **Dismiss** on a review request.
+- **Dismiss** on a review request.
 - **Re-run comparison** in Triage.
 - Approving or rejecting several builds at once from the builds list. The server keeps no single token for a decision on many builds, so the toast has no Undo.
 - Anything that asks for a confirmation first: removing a member, a domain or a provider, and deleting anything.

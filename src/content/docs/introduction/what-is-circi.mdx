@@ -21,7 +21,7 @@ It's a self-hosted alternative to services such as Argos: one Docker image, a Po
 
 - **Uploads from CI.** The `circi` CLI uploads a folder of PNG screenshots. The `@circi/vitest` plugin takes stable screenshots in Vitest browser mode. The Argos SDKs are designed to work by changing two environment variables; this isn't yet verified with the real SDKs.
 - **A fast comparison.** The worker diffs each screenshot with its baseline in a native Rust engine by default. Screenshots with the same SHA-256 are never opened.
-- **A review dashboard.** Side-by-side, overlay and swipe views. Approve or reject per screenshot or per build, comment on regions, request reviews by rule, and follow it all in the Inbox, saved views and insights.
+- **A review dashboard.** Side-by-side, diff and slider views. Approve or reject per screenshot or per build, comment on regions, request reviews by rule, and follow it all in the Inbox, saved views and insights.
 - **Flaky screenshot handling.** CirCI notices screenshots that keep flipping back to an image they already had, marks them <StatusChip status="flaky" />, and can let a pull request that only changes flaky screenshots pass.
 - **A merge gate.** With a git host linked, each build is a **CirCI** check with Approve and Reject buttons. Without one, the CI job fails until the changes are approved.
 - **Integrations.** GitHub, GitLab and Bitbucket (checks or statuses, pull request comments), Slack, Linear, Jira, Figma and signed outgoing webhooks.

@@ -35,9 +35,14 @@ Select a row and use the pane's buttons or the keys. Each action takes effect at
 | Re-run comparison | | Failed items only. Compares the build again; it can't be undone |
 | Assign to me / Unassign me | <Kbd keys="m" /> | Takes the item or gives it back |
 | Snooze | <Kbd keys="h" /> | Until next push, Tomorrow, Next week, or a Custom date |
+| Unsnooze | <Kbd keys="h" /> | On a snoozed item: brings it back into the queue |
 | Dismiss | <Kbd keys="d" /> | Takes the item out of the queue |
 
 "Until next push" wakes the item when a new build arrives on the default branch. If you don't choose a time, a snooze lasts the number of days in the project's **Snoozed items come back after** setting. Right-click a row for the same actions.
+
+### Snoozed items
+
+Snoozed items leave the queue and the count and wait in a **Snoozed** group at the end of the list, collapsed until you open it. Each row says when it wakes ("Snoozed until Mon", "until next push"). On a snoozed item the pane has **Unsnooze** where Snooze was, and <Kbd keys="h" />, the right-click menu and the [command menu](/using/command-menu-and-search/) offer Unsnooze too. It acts at once and the toast, "Unsnoozed", has **Undo**. A link to a snoozed item opens the Snoozed group with that item selected, so a shared link still works. While the group is open, <Kbd keys="j" /> and <Kbd keys="k" /> walk its rows too.
 
 When an item leaves the queue the next row is selected, so you can keep going with the keyboard.
 
@@ -59,7 +64,7 @@ CirCI looks at the last **10 commits** on the default branch (several builds of 
 Flaky screenshots show up in several places:
 
 - the **Flaky** group (collapsed) on the build page, instead of Changed. See [Reviewing a build](/using/reviewing-a-build/);
-- a banner on the project's builds page, and a chip on the screenshot's row on the Baselines page. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/);
+- a banner on the project's builds page, and a chip on the screenshot's row on the Baselines page (when its triage item is snoozed, the chip's tooltip says until when). See [Baselines and ignore regions](/using/baselines-and-ignore-regions/);
 - a **Flaky** chip on review requests;
 - the "Flakiest screenshots" list and flaky chart in [Insights](/using/insights/);
 - an Inbox notice, "Flaky screenshot found", for the person on triage that week.

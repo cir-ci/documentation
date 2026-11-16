@@ -38,12 +38,15 @@ You need Node 26 (`nvm install && nvm use` reads `.nvmrc`), pnpm 12 and, for `pn
 | Postgres and Mailpit | Docker containers (Compose project `circi-dev`) | Mailpit catches every email the server sends |
 | The server and worker | `circi all` from source under `node --watch`, so a change restarts it | Port 3000 |
 | The dashboard | Vite with hot reload. It proxies every server path to the server | Port 5173 (`PUBLIC_URL`) |
+| A webhook receiver | A tiny server that answers every webhook delivery and logs it | Port 4747 (`CIRCI_DEV_HOOKS_PORT`) |
 
 On the first run it seeds `owner@example.com` and `member@example.com` (password `circi-dev-password`), the workspace `acme`, the project `web-app` and builds in different review statuses, so every screen has something to show.
 
+The seeded projects have webhooks that deliver to the receiver. It answers `204`, and logs each delivery as a `[hooks]` line with its event, its delivery ID and whether the signature checked out. The signature is checked only for the webhooks the seed created, whose secrets it saved for the receiver; a webhook you add in the dashboard logs "signature not checked" rather than an invalid one. One seeded webhook points at `/fail/always`, which answers `500`, so failed deliveries and retries show in the dashboard's webhook list. Bodies over 1 MiB get `413`. The failing webhook exists in a fresh seed only: an existing dev database doesn't get it until `pnpm dev:reset`.
+
 ```sh
 pnpm dev          # Ctrl+C stops it and keeps the data
-pnpm dev:reset    # delete the dev database and files; the next pnpm dev seeds again
+pnpm dev:reset    # delete the dev database and files; the next pnpm dev seeds again (a fresh seed)
 ```
 
 To run the server from source against your own Postgres:

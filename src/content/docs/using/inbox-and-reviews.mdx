@@ -28,6 +28,7 @@ What lands here, and why:
 - **Your build was approved or rejected**: a build you pushed was reviewed. A rejection shows the reviewer's reason.
 - **Review overdue**: a request to you has waited past the project's review target. Sent once. Someone else's overdue review can also reach you if you are the person the project tells when it's missed.
 - **Assigned to you as the person on triage**: see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+- **Connection needs attention**: a connection of the workspace, such as a git host or Slack, stopped working, and the notice says which one and why. It goes to the workspace's owners and admins only. Its **Reconnect** button opens that connection's page in the workspace's integrations settings. It is the one place the Inbox leads into settings; everything else here opens the app.
 
 Which of these also arrive by email or push is set in [Account settings](/using/account-settings/). [Notifications](/reference/notifications/) lists every kind and the rules for what is sent. You can't turn off Inbox notifications; snooze or delete single items instead.
 
@@ -39,7 +40,7 @@ A row shows an unread dot, who did it, what happened, the project, and the age. 
 |---|---|---|
 | Mark read / Mark unread | <Kbd keys="u" /> | Toggles |
 | Delete | <Kbd keys="Backspace" /> | Removes the notification (with Undo) |
-| Snooze, or Unsnooze on the Snoozed tab | <Kbd keys="h" /> | Tomorrow, Next week or a Custom date; Unsnooze brings it back |
+| Snooze, or Unsnooze on the Snoozed tab | <Kbd keys="h" /> | Tomorrow, Next week or a Custom date; Unsnooze brings it back, and its toast has Undo |
 | Open review, Open build, Open thread, Open project | <Kbd keys="Enter" /> | Goes to where it happened |
 | Approve all | <Kbd keys="Shift+A" /> | Only when the notification is a request on a build that still waits: approves the whole build |
 
@@ -73,13 +74,13 @@ The right side shows the request: the status, the build number, the project, the
 
 Other actions:
 
-- **Snooze** (<Kbd keys="h" />) puts a request away. Choose Until next push (it wakes when a newer build closes the request), Tomorrow, Next week or a Custom date. **Unsnooze** on the Snoozed tab brings it back.
+- **Snooze** (<Kbd keys="h" />) puts a request away. Choose Until next push (it wakes when a newer build closes the request), Tomorrow, Next week or a Custom date. **Unsnooze** on the Snoozed tab brings it back (also in the right-click menu and the [command menu](/using/command-menu-and-search/)).
 - **Dismiss** removes a request from your list. It isn't offered on Reviewed requests, or on requests that wait on someone else.
 - **Nudge** appears when you asked someone and they haven't answered. It sends them a "review again" notice, once per 24 hours.
 - **Request review** (<Kbd keys="Shift+R" />) asks another member about the same build.
 - Approve is in the row's right-click menu, for requests addressed to you on a build that has finished processing.
 
-Snoozing and approving can be undone from the toast. **Unsnooze** and **Dismiss** can't.  See [Undo](/using/undo/).
+Snoozing, unsnoozing and approving can be undone from the toast. **Dismiss** can't be. See [Undo](/using/undo/).
 
 A push notification can tell you a review landed when the page isn't open. Turn it on in [Account settings](/using/account-settings/#push).
 

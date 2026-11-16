@@ -1,8 +1,8 @@
 ---
 title: Mobile and the installed app
-description: How the dashboard changes on a phone, how to install it as an app, how its tabs work, and what the service worker keeps for offline.
+description: How the dashboard changes on a phone, how to install it as an app, how its tabs work, and what the browser keeps for speed and offline.
 ---
-{/* Source: apps/web/src/lib/use-phone.ts, app/PhoneTabs.tsx, app/PhoneMore.tsx, app/PhoneTabSwitcher.tsx, app/Sidebar.tsx, app/shell-model.ts, lib/tabs.ts, lib/stores/tab-store.ts, lib/prompt-rules.ts, features/pwa (start.ts, platform.ts, InstallBanner.tsx, AddToHomeScreenSheet.tsx), sw/logic.ts, sw/sw.ts, public/manifest.webmanifest */}
+{/* Source: apps/web/src/lib/use-phone.ts, app/PhoneTabs.tsx, app/PhoneMore.tsx, app/PhoneTabSwitcher.tsx, app/Sidebar.tsx, app/shell-model.ts, lib/tabs.ts, lib/stores/tab-store.ts, lib/prompt-rules.ts, features/pwa (start.ts, platform.ts, InstallBanner.tsx, AddToHomeScreenSheet.tsx), sw/logic.ts, sw/sw.ts, sw/precache.ts, lib/query-persist.ts, lib/persist-policy.ts, public/manifest.webmanifest */}
 
 import { Aside, Steps } from '@astrojs/starlight/components'
 import Kbd from '../../../components/Kbd.astro'
@@ -60,15 +60,24 @@ The installed app has its own tabs, like a browser's, in a strip at the top. On 
 
 The keys are listed under Tabs in [Keyboard shortcuts](/reference/keyboard-shortcuts/#tabs). They exist only in the installed app.
 
-## Offline
+## Speed and offline
 
-In a production build, a service worker is registered. It keeps the app's own files so the dashboard opens when the network is down, and it shows push notifications.
+Two things keep the dashboard quick and let it open without the network. Both are kept in this browser, for the person signed in, and both are deleted when you sign out.
+
+**Recent data.** The dashboard keeps what it last fetched (lists, builds, comments, settings pages and the like) in the browser's IndexedDB. The next time you open it, pages draw from that at once and refresh in the background. Data older than a day is dropped, and the whole store is capped in size, oldest data first. Not kept: tokens and secrets, integrations, sessions and other account and security pages, the instance admin pages, and search suggestions. Searches you ran and pages you visited in the command menu (**Recent**) and the installed app's tabs are kept in this browser as well, and are cleared with it. The dashboard also only draws from the stored data before the session check finishes if the server confirmed you within the last 12 hours; after a longer gap it waits for the check (or shows the sign-in page) as usual. The store also goes when a new version of the dashboard is deployed, when your session ends (a 401) and when someone else signs in. Where the browser has no IndexedDB (a private window), nothing is kept and pages load from the network.
+
+**The app and screenshots.** In a production build, a service worker is registered. It keeps the app's own files so the dashboard opens when the network is down, and it shows push notifications.
 
 - Pages load from the network first, so a new version appears on the next load. When the network fails, the kept copy of the app shell is shown.
-- The built assets (`/assets/…`, content-hashed) are served from the cache first, up to 200 of them, oldest dropped first. Icons and the manifest are served from the cache while a fresh copy loads behind them.
-- Nothing from `/api`, `/v1`, `/v2`, `/webhooks` or `/internal` is ever kept: those hold people's data. Offline, the app opens but its data doesn't load.
+- Once the first page has loaded, the worker fetches the rest of the app's built files in the background, so later pages open without waiting. The built assets (`/assets/…`, content-hashed) are served from the cache first, up to 700 of them, oldest dropped first. Icons and the manifest are served from the cache while a fresh copy loads behind them.
+- Screenshots (`/api/files/<hash>`) are kept too, up to 300 files and 200 MB, the least recently used dropped first; a file over 20 MB isn't kept. A kept screenshot is used for one hour (the lifetime of the server's signed link) and only for the person it was kept for; after that, or for someone else, it is fetched again, so losing access to a project stops its screenshots within the hour. If the server answers that you may no longer see one, the kept copy is deleted.
+- Nothing else from `/api`, `/v1`, `/v2`, `/webhooks` or `/internal` is kept by the worker. Offline, the app opens, and a page draws from the stored data where it has some. This hasn't been tried against a real network outage; what isn't stored doesn't load.
 - Tapping a push notification marks its Inbox item read, then focuses a window already on that page, else reuses an open app window, else opens one.
 
+<Aside type="caution" title="On a shared computer, sign out">
+Signing out (from the menu, the command menu or after a 401, and in your other open tabs) deletes the stored data, recent searches and visits, the app's tabs and the kept screenshots. Closing the browser without signing out doesn't: the next person at that browser profile can find recently viewed data (up to a day old) and screenshots still stored, until the session ends or a sign-out clears them. Use **Sign out**, or a private window, on a computer others use.
+</Aside>
+
 <Aside type="note">
-The dev server (`pnpm dev`) has no service worker, so none of the offline behavior or push can be tried there. A browser that refuses the worker still runs the dashboard.
+The dev server (`pnpm dev`) has no service worker, so the offline behavior of the app and its screenshots, and push, can't be tried there. A browser that refuses the worker still runs the dashboard.
 </Aside>

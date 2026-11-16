@@ -14,6 +14,7 @@ On Windows and Linux, ⌘ is <Kbd keys="Ctrl" /> and ⌥ is <Kbd keys="Alt" />.
 ## When a key counts
 
 - A key with <Kbd keys="Mod" /> works anywhere, even while you type.
+- **Single-key shortcuts** can be switched off in account settings, under **Keyboard shortcuts**. A single key is a letter, digit or punctuation key, alone or with <Kbd keys="Shift" />, including each key of a sequence such as <Kbd keys="g then i" />. With the setting off they do nothing; shortcuts with <Kbd keys="Mod" /> or <Kbd keys="Alt" /> (and holding <Kbd keys="Alt" /> to peek on a build) still work.
 - A plain key (a letter, <Kbd keys="Enter" />, <Kbd keys="Space" />, a digit) is ignored while focus is in a text field, a select or a dialog, and while any comment or reply box holds text you haven't sent. Typing is never taken over.
 - A two-key shortcut such as <Kbd keys="g then i" /> is a sequence: press the first key, release, and press the second within one second.
 - A key that a page doesn't use does nothing there. <Kbd keys="a" /> only approves on a build page.
@@ -82,10 +83,13 @@ These work on a build page. See [Reviewing a build](/using/reviewing-a-build/).
 | <Kbd keys="c" /> | Write a comment |
 | <Kbd keys="Mod+Enter" /> | Send the comment, or confirm the dialog you're typing in |
 | <Kbd keys="1" /> | Side by side |
-| <Kbd keys="2" /> | Overlay |
-| <Kbd keys="3" /> | Diff |
-| <Kbd keys="4" /> | Slider |
-| <Kbd keys="5" /> | Design, only when the project has the Figma integration |
+| <Kbd keys="2" /> | Diff |
+| <Kbd keys="3" /> | Slider |
+| <Kbd keys="4" /> | Design, only when the project has the Figma integration |
+| <Kbd keys="[" /> / <Kbd keys="]" /> | In Diff and Slider, show less or more of this build, by 10% (announced) |
+| <Kbd keys="Alt" /> | In Diff and Slider, hold to peek at this build in full |
+
+The bracket keys also work while the **This build** pill's slider or the Slider's handle has focus, the only sliders that let them through. Holding <Kbd keys="Alt" /> counts as a peek after a short moment; <Kbd keys="Alt" /> pressed with another key isn't one.
 
 While you draw a region with the keyboard tool (the crosshair button), <Kbd keys="←" />, <Kbd keys="→" />, <Kbd keys="↑" /> and <Kbd keys="↓" /> move it, <Kbd keys="Shift" /> with an arrow resizes it, <Kbd keys="Enter" /> confirms and <Kbd keys="Esc" /> cancels. <Kbd keys="Esc" /> also cancels a region you're adjusting and a comment you're writing in a reply box. See [Comments and regions](/using/comments-and-regions/).
 
