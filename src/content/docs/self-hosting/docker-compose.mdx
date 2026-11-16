@@ -15,7 +15,7 @@ The `deploy/` folder of the repository is the reference install.
   tree={`deploy/
     Dockerfile ## the app image
     docker-compose.yml ## app and Postgres, local-disk storage
-    docker-compose.s3.yml ## overlay: a local MinIO and S3 storage
+    docker-compose.s3.yml ## overlay: a local SeaweedFS and S3 storage
     docker-compose.caddy.yml ## overlay: Caddy for TLS and sites
     Caddyfile
     caddy/
@@ -47,14 +47,14 @@ Every variable is in the [environment variable reference](/reference/environment
 ## Overlays
 
 ```sh
-# S3-compatible storage with a local MinIO (development)
+# S3-compatible storage with a local SeaweedFS (development)
 docker compose -f docker-compose.yml -f docker-compose.s3.yml up -d --build
 
 # TLS for the dashboard and the sites domain, with Caddy
 docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
 ```
 
-For production S3 point `S3_*` at AWS S3, Cloudflare R2, Backblaze B2 or similar instead of running MinIO. See [Storage](/self-hosting/storage/) and [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/).
+For production S3 point `S3_*` at AWS S3, Cloudflare R2, Backblaze B2 or similar instead of running the overlay's SeaweedFS. See [Storage](/self-hosting/storage/) and [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/).
 
 ## Running the server and worker separately
 

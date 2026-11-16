@@ -1,6 +1,6 @@
 ---
 title: Storage
-description: Local disk, S3-compatible buckets, LocalStack and MinIO, and moving between them.
+description: Local disk, S3-compatible buckets, LocalStack and SeaweedFS, and moving between them.
 ---
 {/* Source: README.md (Self-hosting), packages/config/src/schema.ts, packages/config/src/load.ts, packages/storage, apps/server/src/cli/commands/storage.ts, deploy/docker-compose.s3.yml, docs/reference/running-costs.md */}
 
@@ -94,9 +94,9 @@ With S3 the CLI uploads **directly to the bucket** through presigned URLs bound 
 Egress and storage are the main costs. Object storage with free egress (Cloudflare R2, Backblaze B2 behind Cloudflare, or MinIO on the same disk) cuts the most. Shorter [retention](/self-hosting/retention-and-gc/) for projects that don't need history helps next.
 </Aside>
 
-## MinIO and LocalStack for development
+## SeaweedFS and LocalStack for development
 
-`docker-compose.s3.yml` adds a local MinIO (API on 9000, console on 9001) with a `circi` bucket and points the app at it. The end-to-end suite uses LocalStack for S3. Neither is meant for production.
+`docker-compose.s3.yml` adds a local SeaweedFS (S3 API on host port 9000, `S3_PORT` to change it) with a `circi` bucket, created by an `aws-cli` init container, and points the app at it. Any S3-compatible service works instead, MinIO included. The end-to-end suite uses LocalStack for S3. Neither is meant for production.
 
 ## Moving between storages
 

@@ -67,4 +67,4 @@ docker compose down                                # stop (data stays in the vol
 docker compose down -v                             # stop and delete the data
 ```
 
-To try CirCI with S3-compatible storage locally, add the MinIO overlay: `docker compose -f docker-compose.yml -f docker-compose.s3.yml up -d --build`. See [Storage](/self-hosting/storage/).
+To try CirCI with S3-compatible storage locally, add the S3 overlay (a local SeaweedFS): `docker compose -f docker-compose.yml -f docker-compose.s3.yml up -d --build`. See [Storage](/self-hosting/storage/).
