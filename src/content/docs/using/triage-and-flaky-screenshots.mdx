@@ -18,7 +18,7 @@ Triage is the queue of problems with a project's **default branch** that no sing
 | Group | What it's |
 |---|---|
 | <StatusChip status="flaky">Flaky</StatusChip> | A screenshot that keeps changing on the default branch without anyone meaning it to |
-| No baseline | A screenshot with no approved baseline yet. The pane shows "First seen in build #N" |
+| <StatusChip status="no-baseline">No baseline</StatusChip> | A screenshot with no approved baseline yet. The pane shows "First seen in build #N" |
 | <StatusChip status="failed">Failed</StatusChip> | A default-branch build that failed to process. The pane shows its error |
 
 Each row shows the screenshot or build, why it's here, the assignee, and how long ago it was first seen. The pane on the right adds the detail: for flaky items **Why it's flaky**, a strip of the **last 10 commits on main** with `~` ("changed in that build") marking the ones where the screenshot changed, and a preview (**Where it changes**) with **Open in build**; plus the assignee, how long the item has been in triage, and what it's **Blocking** ("The check on this commit is failing", or "3 pull requests show it as changed").

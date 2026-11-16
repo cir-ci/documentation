@@ -35,16 +35,16 @@ The list and the build page show one word, chosen from the three fields in this 
 
 | Shown | When | Glyph |
 |---|---|---|
-| Uploading | Status is `pending` or `uploading` | <StatusChip status="processing" glyph /> |
+| Uploading | Status is `pending` or `uploading` | <StatusChip status="uploading" glyph /> |
 | Processing | Status is `processing` | <StatusChip status="processing" glyph /> |
 | Failed | Status is `error` | <StatusChip status="failed" glyph /> |
-| Expired | Status is `expired` | none (grey) |
+| Expired | Status is `expired` | <StatusChip status="expired" glyph /> |
 | Rejected | Review status is `rejected` | <StatusChip status="rejected" glyph /> |
 | No changes | Conclusion is `no_changes` | <StatusChip status="approved" glyph /> |
 | Approved | Review status is `approved` | <StatusChip status="approved" glyph /> |
 | Needs review | Anything else: a finished build with changes nobody has settled | <StatusChip status="needs-review" glyph /> |
 
-The build page shows **No baseline** instead of Needs review when there was nothing to compare with. Rejected wins over No changes: a project that approves builds by hand can reject one that had no changes.
+The build page shows <StatusChip status="no-baseline" /> instead of Needs review when there was nothing to compare with. Rejected wins over No changes: a project that approves builds by hand can reject one that had no changes.
 
 ## How the review status is derived
 

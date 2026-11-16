@@ -128,9 +128,23 @@ A change comes with tests, in the smallest kind that covers it (see [Tests](/con
 
 External services (GitHub, GitLab, Slack, ...) are faked at their edge. If your change was tested only against a fake, say so in the pull request.
 
+## Changesets
+
+Only two packages are published to npm: `@circi/cli` (the `circi upload` command) and `@circi/vitest` (the Vitest plugin). Every other package is private and has no version. A pull request that changes what either one ships needs a changeset, a small file in `.changeset/` that says what changed and how big the bump is.
+
+Run `pnpm changeset`, choose the package or packages, choose the bump, and write one line for the changelog, in the style of a release note ("Add `--shard` to `circi upload`"). Commit the generated file with your change. A change to tests, docs, the repository's tooling or any private package needs none; if a change touches a published package but needs no release, run `pnpm changeset --empty`. A CI check fails a pull request that changes `packages/cli` or `packages/vitest` without one.
+
+Pick the bump from what a person using the package sees (CirCI is 0.x until the first stable release, so a breaking change is a minor):
+
+- **Patch:** a bug fix, a clearer error message, a dependency update, a performance fix. Nothing a script could notice.
+- **Minor:** a new flag, option, environment variable or export; a newly detected CI provider. Also a breaking change while the version is below 1.0.
+- **Major** (from 1.0): a removed or renamed flag, option or export; a changed exit code or output format that scripts parse; a raised minimum Node or Vitest version.
+
+`@circi/vitest` bundles `@circi/cli`, so a change to the CLI's code is a release of both: list both packages in the changeset. When a pull request with a changeset reaches `main`, a release workflow opens or updates a "Version Packages" pull request with the new versions and changelogs. Merging it publishes to npm. Maintainers do that; contributors only add the changeset.
+
 ## Continuous integration
 
-CircleCI runs on every push and pull request. The `gate` job runs `pnpm gate`, the same command you run locally. The `e2e` job (the end-to-end tests on Docker) and `compose-smoke` (the shipped Compose files) run on pushes to `main` and nightly. A pull request needs `gate` to pass.
+CircleCI runs on every push and pull request. The `gate` job runs `pnpm gate`, the same command you run locally. The `e2e` job (the end-to-end tests on Docker) and `compose-smoke` (the shipped Compose files) run on pushes to `main` and nightly. A pull request needs `gate` to pass. A `changeset` job also checks that a change to a published package comes with a changeset.
 
 ## Documentation and screenshots
 

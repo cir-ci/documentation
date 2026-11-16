@@ -11,6 +11,9 @@ export type StatusName =
   | 'added'
   | 'removed'
   | 'flaky'
+  | 'expired'
+  | 'no-baseline'
+  | 'uploading'
 
 export const STATUS_LABEL: Record<StatusName, string> = {
   approved: 'Approved',
@@ -23,6 +26,9 @@ export const STATUS_LABEL: Record<StatusName, string> = {
   added: 'Added',
   removed: 'Removed',
   flaky: 'Flaky',
+  expired: 'Expired',
+  'no-baseline': 'No baseline',
+  uploading: 'Uploading',
 }
 
 /** Eight short arcs round the circle: the dashed processing ring. */

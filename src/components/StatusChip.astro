@@ -97,6 +97,30 @@ const decorative = !glyph
         </>
       )
     }
+    {
+      status === 'expired' && (
+        <>
+          <circle cx="7" cy="7" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path d="M5 4h4M5 10h4M5.6 4v.9L7 7 5.6 9.1V10M8.4 4v.9L7 7l1.4 2.1V10" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" />
+        </>
+      )
+    }
+    {
+      status === 'no-baseline' && (
+        <>
+          <circle cx="7" cy="7" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 2.1" />
+          <circle cx="7" cy="7" r="1.9" fill="currentColor" />
+        </>
+      )
+    }
+    {
+      status === 'uploading' && (
+        <>
+          <circle cx="7" cy="7" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path class="rise" d="M7 10V4.4M4.6 6.7L7 4.3l2.4 2.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+        </>
+      )
+    }
   </svg>
   {!glyph && (hasText ? <slot /> : label)}
 </span>
@@ -136,6 +160,8 @@ const decorative = !glyph
   [data-status='approved'] .status-glyph { color: var(--circi-state-approved); }
   [data-status='needs-review'] .status-glyph { color: var(--circi-state-review); }
   [data-status='processing'] .status-glyph { color: var(--circi-state-processing); }
+  [data-status='uploading'] .status-glyph { color: var(--circi-state-processing); }
+  [data-status='no-baseline'] .status-glyph { color: var(--circi-text-secondary); }
   [data-status='failed'] .status-glyph { color: var(--circi-state-failed); }
   [data-status='rejected'] .status-glyph { color: var(--circi-state-rejected); }
   [data-status='added'] .status-glyph { color: var(--circi-state-added); }
@@ -145,6 +171,16 @@ const decorative = !glyph
   [data-status='approved']:not(.status-chip--glyph) { color: var(--circi-state-approved-text); }
   [data-status='needs-review']:not(.status-chip--glyph) { color: var(--circi-state-review-text); }
   [data-status='processing']:not(.status-chip--glyph) { color: var(--circi-state-processing); }
+  [data-status='uploading']:not(.status-chip--glyph) { color: var(--circi-state-processing); }
+  [data-status='no-baseline']:not(.status-chip--glyph) { color: var(--circi-text-secondary); }
   [data-status='failed']:not(.status-chip--glyph) { color: var(--circi-state-failed-text); }
   [data-status='rejected']:not(.status-chip--glyph) { color: var(--circi-state-rejected-text); }
+  @media (prefers-reduced-motion: no-preference) {
+    .rise { animation: arrow-rise 1.4s ease-out infinite; }
+  }
+  @keyframes arrow-rise {
+    0% { transform: translateY(1.6px); opacity: 0; }
+    40%, 80% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(0); opacity: 0; }
+  }
 </style>
