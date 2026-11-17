@@ -156,7 +156,13 @@ const ratio = asked !== undefined && Number.isFinite(asked) && asked > natural ?
     font-size: var(--sl-text-sm);
     color: var(--circi-text-secondary);
   }
+  /* Centred in the viewport. A modal dialog is centred by the browser's own margin: auto, but
+     Starlight's resets and its prose spacing (any element after a sibling gets a margin) override
+     that and pinned it to a side; !important restores it against those more specific rules. */
   .zoom {
+    position: fixed;
+    inset: 0;
+    margin: auto !important;
     width: min(96vw, 1600px);
     max-width: none;
     max-height: 94vh;
