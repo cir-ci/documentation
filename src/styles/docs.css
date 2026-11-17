@@ -74,9 +74,20 @@ footer .meta:not(:has(*)) {
   clip-path: inset(50%);
   white-space: nowrap;
 }
-/* No repository to link to: the header has no social icons, so no divider for them either. */
-.social-icons {
-  display: none !important;
+/* The GitHub organization link (`social` in astro.config.mjs): a quiet icon like the rest of the header chrome,
+   the primary text color on hover. The divider after it is Starlight's, in the app's line color. */
+.social-icons a {
+  color: var(--circi-text-secondary);
+}
+.social-icons a:hover {
+  color: var(--circi-text-primary);
+}
+.header .social-icons {
+  gap: 0.75rem;
+}
+.header .social-icons::after {
+  height: 1.25rem;
+  border-inline-end-color: var(--circi-line-strong);
 }
 .header .right-group {
   gap: 0.75rem;

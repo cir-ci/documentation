@@ -33,6 +33,7 @@ export default defineConfig({
       description: 'Documentation for CirCI, self-hosted visual regression testing.',
       logo: { src: './src/assets/logo.svg', alt: 'CirCI' },
       favicon: '/favicon.svg',
+      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/cir-ci' }],
       head: [
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/icons/180.png' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#0c0a09', media: '(prefers-color-scheme: dark)' } },

@@ -65,8 +65,8 @@ are preloaded. A script that must run on every page uses `astro:page-load`, neve
 All in `src/components/overrides/`: `SiteTitle` (rounded logo mark, "CirCI", "Docs"), `ThemeSelect` (a System / Light / Dark
 segmented control like the app's, same storage key as Starlight), `PageTitle` (the sidebar group as a quiet breadcrumb line, the
 title, the page `description` as a lead; on a splash page the h1 is visually hidden), `Footer` (Starlight's pagination, then links to
-the glossary, environment variables, HTTP API and CLI). The sidebar, table of contents and pagination are CSS in `docs.css`. There is
-no repository to link to, so the header has no social icons. Code blocks use Expressive Code with the vitesse themes and the app's
+the glossary, environment variables, HTTP API and CLI). The sidebar, table of contents and pagination are CSS in `docs.css`. The header
+has one social icon, GitHub, linking to the `cir-ci` organization (`social` in `astro.config.mjs`, styled in `docs.css`). Code blocks use Expressive Code with the vitesse themes and the app's
 surfaces (`expressiveCode.styleOverrides`).
 
 Line length: paragraphs and lists are capped at `62ch` (about 70 characters at 16px); tables, code and figures use the full column.
