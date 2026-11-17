@@ -1,71 +1,100 @@
 ---
 title: Vitest plugin
-description: Take stable screenshots in Vitest browser mode and upload them to CirCI.
+description: Upload the screenshots of Vitest's toMatchScreenshot to CirCI, with one plugin and no change to your tests.
 ---
-{/* Source: docs/reference/vitest.md, packages/vitest/src (reporter.ts, browser.ts, screenshot.ts, collect.ts, shard.ts) */}
+{/* Source: docs/reference/vitest.md, packages/vitest/src (plugin.ts, setup.ts, reporter.ts, names.ts, screenshot.ts, shard.ts) */}
 
 import { Aside } from '@astrojs/starlight/components'
 
-`@circi/vitest` takes screenshots from Vitest browser mode that stay the same between runs, and uploads them to CirCI when the run ends.
+`@circi/vitest` is a Vitest plugin. Your tests keep using Vitest's own `toMatchScreenshot` in browser mode; the plugin writes each screenshot to a folder and uploads them to CirCI when the run ends.
 
 <Aside type="note" title="Status">
-The reporter, collection, shard mapping and screenshot naming are unit-tested, and `circiScreenshot` has been run for real: CirCI's own design system is screenshotted with it in Vitest browser mode on Playwright's Chromium and uploaded to a CirCI stack. The WebDriver provider isn't supported yet, and `toMatchScreenshot` collection isn't verified yet in a real project.
+Tested against real Vitest 5.1 browser mode on Playwright's Chromium, with a fixture project in the package's tests, and CirCI's own design system is screenshotted this way and uploaded to a CirCI stack. The upload itself is only tested against a fake in the package's unit tests. The WebDriver provider, Firefox and WebKit, and Vitest versions before 5.1 haven't been tried.
 </Aside>
 
 ## Setup
 
 ```ts title="vitest.config.ts"
-import { CirciReporter } from '@circi/vitest'
+import { circi } from '@circi/vitest'
+import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  plugins: [circi({ name: 'vitest-chromium' })],
   test: {
-    reporters: ['default', new CirciReporter({ name: 'vitest-chromium' })],
-    browser: { enabled: true, provider: 'playwright', instances: [{ browser: 'chromium' }] },
+    browser: { enabled: true, provider: playwright(), instances: [{ browser: 'chromium' }] },
   },
 })
 ```
 
 ```tsx title="button.test.tsx"
-import { circiScreenshot } from '@circi/vitest/browser'
+import { expect, it } from 'vitest'
 import { page } from 'vitest/browser'
 
 it('primary button', async () => {
   render(<Button variant="primary">Save</Button>)
-  await circiScreenshot(page, 'button/primary')
+  await expect.element(page.getByRole('button')).toMatchScreenshot('button/primary')
 })
 ```
 
-Import `circiScreenshot` from `@circi/vitest/browser`, not `@circi/vitest`: the main entry also holds the reporter, which needs Node (files and the network) and can't be bundled for the browser.
+No CirCI import goes in a test file. Set `CIRCI_API_URL` and `CIRCI_TOKEN` in CI. Without them the reporter prints a line and does nothing, and the screenshots stay in `.circi/screenshots` (add it to `.gitignore`).
 
-## What `circiScreenshot` does
+## What the plugin does
 
-It turns CSS animation and transitions off, waits for fonts and two animation frames, then saves `<project root>/.circi/screenshots/button/primary.png`. Both a locator (`page.getByRole(...)`, `page.elementLocator(el)`) and `page` itself work as the target. Names are lowercased and `/` makes folders.
+It registers the reporter, beside Vitest's default one or the reporters you list, and a browser setup file that replaces `toMatchScreenshot`. Each call waits for fonts and two animation frames (CSS animation, transitions and the caret are off), then writes `.circi/screenshots/<test file>/<name>.png` under the project root, where `/` in the name makes folders. When the run starts the reporter empties that folder, so screenshots of tests you removed aren't uploaded again; when it ends, it uploads what the run wrote.
 
-Set `CIRCI_API_URL` and `CIRCI_TOKEN` in CI. Without them the reporter prints a line and does nothing, and the screenshots stay in `.circi/screenshots` (add it to `.gitignore`). Delete that folder before a run (a Vitest `globalSetup` is the place), or screenshots of tests you removed are uploaded again.
+The target can be a locator, an element, or `page`. Options such as `screenshotOptions.mask` go to Playwright.
 
-Reporters are a root-level Vitest option, not per project: with several projects, one `CirciReporter` collects what all of them saved.
+### Names
 
-## Using `toMatchScreenshot`
+A screenshot is named by its test file, relative to the project root, and the name you pass. A call without a name gets Vitest's generated name, `<describe> > <test> <n>`, where `n` counts that test's calls from 1. It's the same on every run as long as the test's title and the order of its calls stay the same, so give a name to any screenshot that has to survive a rename. Two calls with the same name in one file overwrite each other.
 
-Already using Vitest's `expect(...).toMatchScreenshot()`? Set `collectToMatchScreenshot: true` on the reporter and the screenshots it keeps in `__screenshots__` folders are uploaded too (its `-actual` and `-diff` files are skipped). CirCI then does the comparing and review; keep or drop Vitest's own assertion as you prefer.
+## Who gates: `local`
+
+| `local` | Behavior |
+|---|---|
+| `false` (default) | Nothing is compared or stored on the machine running the tests. A test never fails on pixels, and nothing is written to `__screenshots__`. CirCI is the gate: set `wait: true` to fail the run while changes need review. |
+| `true` | Vitest's normal comparison also runs: references are saved next to the tests (the first run of a new screenshot fails, as in Vitest) and a changed screenshot fails the test. The screenshots are uploaded as well. |
+
+`local: true` is how to adopt CirCI in a suite that already has committed references.
+
+### Why a setup file
+
+Vitest writes a reference and fails the test when none exists, before it asks a comparator anything. Its screenshot options (`resolveScreenshotPath`, `comparators`) can move or loosen a comparison but can't skip it, so with `local: false`, where there is never a reference, every first run would fail. The plugin's setup file registers its own `toMatchScreenshot` with `expect.extend` that takes the screenshot through the locator and passes. With `local: true` it takes the screenshot and then calls Vitest's own matcher, which it reads from Vitest's `Assertion` prototype before replacing it; that read is the one part tied to Vitest's internals, and the plugin throws a clear error if the matcher is missing after a Vitest upgrade.
+
+## Migrating from `circiScreenshot`
+
+`circiScreenshot` from `@circi/vitest/browser` still works for one release and prints a warning the first time it's called. To move, add `circi()` to `plugins` (in place of `new CirciReporter(...)` in `reporters`) and change each call:
+
+```ts
+// before
+await circiScreenshot(page.getByRole('button'), 'button/primary')
+// after
+await expect.element(page.getByRole('button')).toMatchScreenshot('button/primary')
+```
+
+What changes:
+
+- A screenshot's name in CirCI starts with the test file (`src/button.test.tsx/button/primary`, was `button/primary`), and names keep their case (they used to be lowercased). The first build after the move shows every screenshot as removed and added. Approve it.
+- The reporter empties `.circi/screenshots` itself, so remove a `globalSetup` that did.
+- `collectToMatchScreenshot` is gone. Use `local: true`: the plugin uploads every `toMatchScreenshot` capture, and Vitest keeps comparing against `__screenshots__`.
 
 ## One build per browser, and shards
 
-Give each browser project its own reporter `name` (`vitest-chromium`, `vitest-firefox`) so each has its own baselines. `vitest --shard=2/4` is picked up automatically and uploaded as shard 2 of 4 of the same build.
+One plugin uploads one build. For several browsers, run Vitest once per browser (`vitest --project chromium`), each with its own `name` (`vitest-chromium`, `vitest-firefox`) so each has its own baselines; two browsers in one run would share a path. `vitest --shard=2/4` is picked up automatically and uploaded as shard 2 of 4 of the same build.
 
-## Reporter options
+## Options
 
 | Option | Meaning |
 |---|---|
+| `local` | Also compare locally, as Vitest does. Default `false`. |
 | `apiUrl`, `token` | Default to `CIRCI_API_URL` and `CIRCI_TOKEN`. |
 | `name` | The build name. |
-| `dir` | Where to look for screenshots. |
-| `collectToMatchScreenshot` | Also upload `toMatchScreenshot` screenshots. |
+| `dir` | Where captures go, relative to the project root. Default `.circi/screenshots`. |
 | `root` | The project root. |
 | `wait` | Fail the run when changes need review. |
 | `strict` | Fail the run when the upload fails. By default a failed upload never changes the test result. |
 
 ## Stable screenshots
 
-CirCI's own visual tests use a fixed viewport (1000x700), fonts imported by the test file (`@fontsource-variable/*`), and `circiScreenshot`'s own animation and caret stabilization. They also set `wait: true`, so the run exits 1 while a build has changes that need review and 0 after approval.
+CirCI's own visual tests use a fixed viewport (1000x700), fonts imported by the test file (`@fontsource-variable/*`), and the plugin's animation and caret stabilization. They also set `wait: true`, so the run exits 1 while a build has changes that need review and 0 after approval.

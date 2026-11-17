@@ -132,7 +132,9 @@ External services (GitHub, GitLab, Slack, ...) are faked at their edge. If your 
 
 Only two packages are published to npm: `@circi/cli` (the `circi upload` command) and `@circi/vitest` (the Vitest plugin). Every other package is private and has no version. A pull request that changes what either one ships needs a changeset, a small file in `.changeset/` that says what changed and how big the bump is.
 
-Run `pnpm changeset`, choose the package or packages, choose the bump, and write one line for the changelog, in the style of a release note ("Add `--shard` to `circi upload`"). Commit the generated file with your change. A change to tests, docs, the repository's tooling or any private package needs none; if a change touches a published package but needs no release, run `pnpm changeset --empty`. A CI check fails a pull request that changes `packages/cli` or `packages/vitest` without one.
+You don't have to remember it: a git hook (husky, set up by `pnpm install`) notices a commit that changes `packages/cli` or `packages/vitest` without a changeset, writes `.changeset/auto-<sha>.md` from the commit's first line and amends it into the same commit. It's a patch unless the message says `[minor]` or `[major]`, and a CLI change also releases `@circi/vitest`, which bundles the CLI. Set `CIRCI_AUTO_CHANGESET=0` on a commit to skip it.
+
+For a better release note, write it yourself: run `pnpm changeset`, choose the package or packages, choose the bump, and write one line for the changelog, in the style of a release note ("Add `--shard` to `circi upload`"). Commit the generated file with your change. A change to tests, docs, the repository's tooling or any private package needs none; if a change touches a published package but needs no release, run `pnpm changeset --empty`. A CI check fails a pull request that changes `packages/cli` or `packages/vitest` without one.
 
 Pick the bump from what a person using the package sees (CirCI is 0.x until the first stable release, so a breaking change is a minor):
 

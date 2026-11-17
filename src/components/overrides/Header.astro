@@ -8,6 +8,17 @@ import Default from '@astrojs/starlight/components/Header.astro'
   <Default {...Astro.props}><slot /></Default>
 </div>
 
+<script>
+  // The header is kept between pages, search included. The incoming page brings its own
+  // <site-search>, which starts up when the router adopts it, even though the kept header replaces
+  // it: its setup then adds a second Pagefind search box to the kept #starlight__search (one more on
+  // every page change). Dropping the incoming one before the swap leaves the kept search alone.
+  document.addEventListener('astro:before-swap', (event) => {
+    if (!document.querySelector('site-search')) return
+    for (const incoming of event.newDocument.querySelectorAll('site-search')) incoming.remove()
+  })
+</script>
+
 <style>
   .persist {
     display: contents;
