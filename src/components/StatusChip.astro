@@ -54,7 +54,7 @@ const decorative = !glyph
     }
     {
       status === 'processing' &&
-        PROCESSING_ARCS.map((d) => <path d={d} fill="none" stroke="currentColor" stroke-width="1.5" />)
+        PROCESSING_ARCS.map((d) => <path class="arc" d={d} fill="none" stroke="currentColor" stroke-width="1.5" />)
     }
     {
       status === 'failed' && (
@@ -175,6 +175,23 @@ const decorative = !glyph
   [data-status='no-baseline']:not(.status-chip--glyph) { color: var(--circi-text-secondary); }
   [data-status='failed']:not(.status-chip--glyph) { color: var(--circi-state-failed-text); }
   [data-status='rejected']:not(.status-chip--glyph) { color: var(--circi-state-rejected-text); }
+  /* Processing: each of the eight arcs swells in turn, as in the dashboard (StatusIcon.module.css). */
+  @media (prefers-reduced-motion: no-preference) {
+    .arc { animation: arc-swell 1.8s ease-in-out infinite; }
+    .arc:nth-child(1) { animation-delay: -1.8s; }
+    .arc:nth-child(2) { animation-delay: -1.575s; }
+    .arc:nth-child(3) { animation-delay: -1.35s; }
+    .arc:nth-child(4) { animation-delay: -1.125s; }
+    .arc:nth-child(5) { animation-delay: -0.9s; }
+    .arc:nth-child(6) { animation-delay: -0.675s; }
+    .arc:nth-child(7) { animation-delay: -0.45s; }
+    .arc:nth-child(8) { animation-delay: -0.225s; }
+  }
+  @keyframes arc-swell {
+    0% { stroke-width: 1.4; opacity: 0.45; }
+    25% { stroke-width: 1.9; opacity: 1; }
+    55%, 100% { stroke-width: 1.4; opacity: 0.45; }
+  }
   @media (prefers-reduced-motion: no-preference) {
     .rise { animation: arrow-rise 1.4s ease-out infinite; }
   }
