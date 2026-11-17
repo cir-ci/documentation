@@ -113,4 +113,6 @@ See [the CLI reference](/ci/cli/).
 
 <Aside type="tip" title="Hosting reports">
 Upload the Playwright report or Storybook from the same job: `circi site upload ./playwright-report --name playwright`. See [Hosted sites](/using/hosted-sites/).
+
+On GitHub Actions with the GitHub App you can skip the CLI: upload the folder with `actions/upload-artifact` (name `circi-site`) and CirCI publishes it when the run succeeds. See [Sites from GitHub Actions](/integrations/github/#sites-from-github-actions).
 </Aside>

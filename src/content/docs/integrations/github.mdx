@@ -2,7 +2,7 @@
 title: GitHub
 description: Connect the CirCI GitHub App to report builds as checks on pull requests, and review from GitHub.
 ---
-{/* Source: packages/integrations/src/kinds/github (definition.ts, client.ts, manifest.ts), packages/integrations/src/git/render.ts, packages/services/src/git/events.ts, packages/services/src/integration-admin/github-app.ts, packages/services/src/uploads/status.ts, packages/core/src/reviews/review-sources.ts, apps/web/src/features/instance (GithubSetupPage, GithubAppSection), apps/web/src/features/account/LinkedAccounts.tsx, apps/server/src/cli/commands/github.ts, README.md */}
+{/* Source: packages/integrations/src/kinds/github (definition.ts, client.ts, manifest.ts), packages/services/src/jobs/site-artifact.ts, packages/sites/src/ingest-zip.ts, packages/integrations/src/git/render.ts, packages/services/src/git/events.ts, packages/services/src/integration-admin/github-app.ts, packages/services/src/uploads/status.ts, packages/core/src/reviews/review-sources.ts, apps/web/src/features/instance (GithubSetupPage, GithubAppSection), apps/web/src/features/account/LinkedAccounts.tsx, apps/server/src/cli/commands/github.ts, README.md */}
 
 import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
@@ -14,6 +14,7 @@ Every build of a linked project shows on its pull request as a check named `CirC
 | A check per build name, with Approve and Reject buttons | The pull request's **Checks** tab and merge box |
 | One summary comment per pull request | The pull request's conversation |
 | `/circi approve`, `/circi reject`, `/circi rerun` | A comment on the pull request |
+| Sites published from a workflow's artifact (optional) | [Sites from GitHub Actions](#sites-from-github-actions) |
 | One help comment when a command or button can't be used | The same conversation, edited in place |
 
 <Aside type="note">
@@ -57,8 +58,8 @@ The link from GitHub works once. If creation fails, start again from the button.
 Create a GitHub App yourself (GitHub **Settings** › **Developer settings** › **GitHub Apps**) with:
 
 - Webhook URL: `PUBLIC_URL/webhooks/github` (the alias `PUBLIC_URL/api/integrations/github/webhook` also works), and a webhook secret you choose.
-- Permissions: **Checks: write**, **Pull requests: write**, **Metadata: read**.
-- Events: **Check run**, **Issue comment** and **Pull request**.
+- Permissions: **Checks: write**, **Pull requests: write**, **Metadata: read**, and **Actions: read** if you want [sites from GitHub Actions](#sites-from-github-actions).
+- Events: **Check run**, **Issue comment** and **Pull request**, and **Workflow run** for the same sites feature.
 
 Install it on your repositories, then set these on the server:
 
@@ -74,7 +75,7 @@ Install it on your repositories, then set these on the server:
 
 If `GITHUB_APP_*` is set in the environment it always wins: the instance page then only shows the App (ID and slug) and hides the create button. An App created from the page is stored in the instance database, and several replicas pick it up when they restart. Creating the App from the page is the alternative to setting the variables.
 
-The permissions are the smallest set that works: Checks for the check run and its buttons, Pull requests for the summary comment and its reactions, Metadata because GitHub always grants it.
+The permissions are the smallest set that works: Checks for the check run and its buttons, Pull requests for the summary comment and its reactions, Actions (read-only) for the artifacts of [sites from GitHub Actions](#sites-from-github-actions), Metadata because GitHub always grants it. An App created from the page after this feature asks for Actions and the **Workflow run** event from the start. An App you created earlier keeps working for everything else; see [Update an existing App](#update-an-existing-app) to add them.
 
 <InstanceSettingNote title="Set up GitHub sign-in in Instance settings">
 An instance admin adds the GitHub sign-in provider in Instance settings, or sets `AUTH_GITHUB_CLIENT_ID` and `AUTH_GITHUB_CLIENT_SECRET`, which then win and lock it. Register `PUBLIC_URL/api/auth/callback/github` as the callback address on GitHub. See [Instance settings](/self-hosting/instance-settings/) and [Environment variables](/reference/environment-variables/).
@@ -108,20 +109,23 @@ The installation ID is the number at the end of the installation's settings addr
 
 ### The check
 
-One check per build name, called `CirCI / <build name>` (for example `CirCI / default`). It's in progress while screenshots are processed ("Processing screenshots…"), then ends as one of:
+One check per build name, called `CirCI / <build name>` (for example `CirCI / default`). It's in progress while screenshots are processed ("Processing screenshots…"), then ends as one of the rows below. The merge gate is the project's **Unreviewed changes block merging** setting (`blockMergeOnChanges`, on by default); with the check marked as required in branch protection, only a passing check lets the pull request merge.
 
-| Situation | Check title | Result |
-| --- | --- | --- |
-| No visual changes | No visual changes | Passes |
-| Changes await review | `3 changed · 1 added: review required` | Action required, or passes when the project doesn't block merging |
-| Approved | `Changes approved (3 changed · 1 added)` | Passes |
-| Rejected | `Changes rejected (3 changed · 1 added)` | Fails |
-| Only flaky screenshots changed | `Only flaky screenshots changed (2 changed)` | Passes when the project doesn't hold merges for flaky ones |
-| Some screenshots couldn't be read | `1 screenshot couldn't be read` | Fails when the project blocks merging, neutral otherwise, whatever was approved. Upload the build again to clear it |
-| Processing failed | Processing failed, with the error | Fails, or neutral when the project doesn't block merging |
-| No changes, but the project approves by hand | No visual changes: approval required | Action required, with an Approve button |
+| Build state | Check title | Blocking on | Blocking off | Buttons |
+| --- | --- | --- | --- | --- |
+| Processing | Processing screenshots… | In progress | In progress | None |
+| No visual changes | No visual changes | Passes | Passes | None |
+| No changes, project approves by hand | No visual changes: approval required | Action required | Passes | Approve |
+| Changes wait for review | `3 changed · 1 added: review required` | Action required | Passes | Approve, Reject |
+| Approved | `Changes approved (3 changed · 1 added)` | Passes | Passes | Reject |
+| Rejected | `Changes rejected (3 changed · 1 added)` | Fails | Fails | Approve |
+| Only flaky screenshots changed, flaky ones don't hold merges | `Only flaky screenshots changed (2 changed)` | Passes | Passes | Approve, Reject |
+| Some screenshots couldn't be read | `1 screenshot couldn't be read` | Fails | Neutral | None |
+| Processing failed | Processing failed, with the error | Fails | Neutral | None |
 
-The counts in a title read `changed`, `added`, `removed` and `couldn't be read`, joined with a middle dot, for example `3 changed · 1 couldn't be read`. While a build waits, the check carries **Approve** and **Reject** buttons, and approving in the dashboard or on GitHub updates the check within seconds, with no CI re-run.
+Two rows don't follow the setting. A rejection always fails the check, because someone said the changes are wrong. Screenshots that couldn't be read and a failed processing are input or server problems that no review settles, so they fail a blocking project and are neutral otherwise, whatever was approved; upload the build again to clear them. A button disappears once its decision is the current one: after **Approve** only **Reject** remains.
+
+The counts in a title read `changed`, `added`, `removed` and `couldn't be read`, joined with a middle dot, for example `3 changed · 1 couldn't be read`. Approving in the dashboard or on GitHub (the buttons or `/circi approve`) updates the check within seconds, with no CI re-run. A build's decisions are the same wherever they're made: see [Who may approve from GitHub](#who-may-approve-from-github).
 
 A check that waits says what to do next: "Approve or reject it here or reply `/circi approve` or `/circi reject` on the pull request, or open the build to see it." The sentence about replying is left out for a build with no pull request.
 
@@ -192,6 +196,68 @@ Commands and the check's buttons are accepted from a person who has linked their
 
 Decisions made this way appear in the build's activity as coming from a GitHub comment (`github-comment`) or a GitHub check (`github-check`).
 
+## Sites from GitHub Actions
+
+A workflow doesn't need the CirCI CLI to publish a site. It only uploads the built site as an artifact with `actions/upload-artifact`; when the run succeeds, CirCI picks the artifact up and publishes it as a [hosted site](/using/hosted-sites/) for the run's commit and branch, exactly as `circi site upload` would.
+
+```yaml
+# .github/workflows/storybook.yml
+name: Storybook
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+      - run: npm run build-storybook
+      - uses: actions/upload-artifact@v4
+        with:
+          name: circi-site          # the artifact name set in the project's settings
+          path: storybook-static    # the folder with index.html
+```
+
+<Steps>
+
+1. Link the project to the repository, and turn on **Host static sites** (see [Hosted sites](/using/hosted-sites/)).
+2. In **Project settings** › **General** › **Hosted sites**, check **Upload sites from GitHub Actions**. The setting is off by default.
+3. Set the **Artifact name** to the `name` of your `upload-artifact` step (default `circi-site`). Optionally set the **Site name**, which is what `--name` is for the CLI (empty means `site`).
+4. **Save changes.** Make sure the GitHub App has the permissions below.
+
+</Steps>
+
+### What happens
+
+1. A workflow run completes successfully; GitHub sends a `workflow_run` webhook to CirCI. Failed, canceled and unfinished runs are ignored.
+2. For each project linked to that repository with the setting on, a background job lists the run's artifacts, finds the one with the configured name and downloads it with the installation's token. GitHub redirects the download to a signed address; CirCI follows the redirect without sending the token there.
+3. The zip goes through the same checks as an uploaded tarball: the unpacked size must fit **Largest hosted site** (`STATIC_SITES_MAX_MB`), at most 20,000 files, no symbolic links or special files, no path that leaves the site, no duplicates, and no absurd expansion ratio. A zip that fails any of them publishes nothing.
+4. The site is published for the run's head commit and head branch (the same [addresses](/using/hosted-sites/#addresses) as an upload, and the pull request comment's **Hosted sites for this commit** list refreshes). The branch address moves only when the commit is the branch's current tip, as GitHub says (when GitHub can't say, only a branch with no address yet is taken), and never for a pull request from a fork. `upload-artifact` zips the contents of `path`, so the site's `index.html` must sit directly inside that folder.
+
+A run attempt is published once. GitHub redelivering the webhook, or you redelivering it by hand, doesn't publish twice; re-running the workflow is a new attempt with a new artifact and publishes again, replacing that commit's files.
+
+If something is wrong, the project's **Hosted sites** section says what happened to the latest run and what to fix, for example `Run 123 has no artifact named "circi-site". It has: "coverage". Check the name in the upload-artifact step and in the project settings.` The notes cover a missing or expired artifact (GitHub keeps artifacts 90 days by default), an artifact above the size limit, a zip that isn't a site (an unsafe path, a link, no `index.html`), and the App lacking **Actions: read**. GitHub errors that may pass (server errors, rate limits) are retried with backoff, 5 attempts, before the note says GitHub couldn't be reached; re-run the workflow to try again.
+
+### Update an existing App
+
+An App created before this feature has no **Actions** permission and isn't subscribed to **Workflow run**, so nothing arrives and CirCI can't read artifacts. Nothing else changes, and nothing breaks if you skip this. To turn the feature on:
+
+<Steps>
+
+1. On GitHub, open the App's settings (**Settings** › **Developer settings** › **GitHub Apps** › your App, or the organization's).
+2. Under **Permissions & events** › **Repository permissions**, set **Actions** to **Read-only**.
+3. Under **Subscribe to events**, check **Workflow run**. Save.
+4. Each installation of the App gets a request to accept the new permission: the owner of the account or organization opens it from the notification GitHub sends (or the installation's settings page) and accepts. Until then GitHub answers CirCI with a refusal, and the project's note says "The GitHub App needs the Actions: read permission".
+
+</Steps>
+
+For an App set up by hand, the same two changes apply. There is no change on the CirCI side: the instance picks up the new webhook events and permission at once.
+
 ## Troubleshooting
 
 | What you see | Why, and what to do |
@@ -202,6 +268,7 @@ Decisions made this way appear in the build's activity as coming from a GitHub c
 | `/circi approve` gets a thumbs-down | Read the help comment: it names the reason (see the table above) |
 | The help comment says it can't tell who you are | Link your GitHub account in **Profile** › **Signed in with**, using an account that belongs to the project's workspace |
 | The integration shows **needs attention** | GitHub removed or suspended the installation, or rejected the credentials. Reinstall the App; an unsuspend or a fresh install clears the flag |
+| A site isn't published after the workflow succeeded | Open the project's **Hosted sites** section: it says why (wrong artifact name, expired or too big, no `index.html`, or the App needs **Actions: read** and **Workflow run**; see [Update an existing App](#update-an-existing-app)). Also check **Recent deliveries** for a `workflow_run` delivery |
 | Buttons or comments do nothing at all | GitHub's webhook deliveries are failing. In the GitHub App's **Advanced** page, look at **Recent deliveries**, and check that `PUBLIC_URL` is reachable from GitHub and the secret matches |
 
 ## Webhook events CirCI handles
@@ -212,6 +279,7 @@ The App's webhook is the one entry point. CirCI verifies the signature and handl
 - `pull_request` closed or merged: closes the open review requests on that pull request's builds and clears their "please review" notices. The builds keep their own review status.
 - `check_run` with a button press: Approve or Reject.
 - `issue_comment` created on a pull request: the `/circi` commands. Comments by bots are ignored.
+- `workflow_run` completed with a success: queues the site import for each linked project that has [sites from GitHub Actions](#sites-from-github-actions) on. Other conclusions are ignored.
 - `installation` deleted or suspended: flags the connection as needing attention. Created or unsuspended clears it.
 
 Not yet verified against github.com.

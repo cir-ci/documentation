@@ -96,6 +96,10 @@ circi site upload ./playwright-report --name playwright
 circi site upload ./coverage --kind coverage
 ```
 
+<Aside type="tip" title="No CLI step on GitHub Actions">
+With the GitHub App, a workflow can upload the folder with `actions/upload-artifact` instead, and CirCI publishes it when the run succeeds, with the same limits and checks. See [Sites from GitHub Actions](/integrations/github/#sites-from-github-actions).
+</Aside>
+
 ## `circi argos-env`
 
 Prints the two lines that point the Argos SDKs at this server (from `CIRCI_API_URL` and `CIRCI_TOKEN`): `ARGOS_API_BASE_URL=<url>/v2` and `ARGOS_TOKEN=<token>`. See [the Argos-compatible API](/ci/argos-compatible-api/).

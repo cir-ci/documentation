@@ -21,6 +21,7 @@ A service queues a job in the same database transaction as the change that needs
 | `webhook` | Deliver one event to one webhook | An event a webhook subscribes to happens | 8 (a **Send test** is tried once) |
 | `notification-email` | Email, then web push, for one [notification](/reference/notifications/) | A notification that has an email or push to send | 5 |
 | `integration-event` | Hand one event to one integration, such as a Slack message | An event happens that an integration's mapping handles | 5 |
+| `site-artifact` | Download a GitHub Actions run's artifact and publish it as a hosted site | A workflow run completes successfully in a repository whose project has [sites from GitHub Actions](/integrations/github/#sites-from-github-actions) on | 5 |
 
 Details per queue:
 
@@ -28,6 +29,7 @@ Details per queue:
 - **`git-notify`** is deduplicated on the build's status, conclusion and review status together, so a state that was already reported isn't reported twice. It does nothing for a project that isn't linked to a repository.
 - **`webhook`** keeps the same delivery ID across retries. The delivery history and signing are in [Webhooks](/integrations/webhooks/#delivery-and-retries).
 - **`notification-email`** keeps its name from when it only sent email. The email is sent first and throws when it fails, so the job is retried and the push hasn't gone out yet. A push never throws for a push service's refusal, so a failed push isn't retried.
+- **`site-artifact`** is deduplicated per project, run and run attempt, and the attempt's result is recorded, so a redelivered webhook or a retry publishes once. It re-reads the project's settings when it runs. Problems a person must fix (no such artifact, too big, not a site, the App lacking **Actions: read**) end the job with a note in the project's settings instead of retrying; GitHub server errors and timeouts are retried. A rolling deploy is safe: a worker without this queue never claims these jobs, which wait until a worker that has it runs, and a server without it ignores the webhook that would queue them.
 - **`integration-event`** re-reads the integration's mapping and event toggles when it runs, since they may have changed after queuing. If the integration needs a person to act (a revoked token), the integration is flagged and the job ends without retrying. Any other failure is retried. See [Integrations](/integrations/overview/).
 
 A job for a deleted workspace is completed without doing anything, for every queue except `process-build`: nothing is sent for a deleted workspace, and a build already being processed finishes so a restore finds it complete.
@@ -36,7 +38,7 @@ A queue the running version doesn't know (a job from a newer deploy) fails with 
 
 ## Lanes
 
-A worker runs three lanes in parallel. Two take `process-build` first and other queues when there are no builds. The third never takes a build, so a webhook or a git check doesn't wait behind image work. The order a lane claims in is `process-build`, `git-notify`, `webhook`, `notification-email`, `integration-event`, and within a queue the job due first. These counts are built in; there is no setting.
+A worker runs three lanes in parallel. Two take `process-build` first and other queues when there are no builds. The third never takes a build, so a webhook or a git check doesn't wait behind image work. The order a lane claims in is `process-build`, `git-notify`, `webhook`, `notification-email`, `integration-event`, `site-artifact`, and within a queue the job due first. These counts are built in; there is no setting.
 
 A lane claims one job at a time with `FOR UPDATE SKIP LOCKED`, so several lanes and several worker processes never take the same job.
 

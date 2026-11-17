@@ -15,7 +15,7 @@ Hosting is off until the instance has a sites domain. The domain is set by the e
 
 ## Turn it on for a project
 
-Owners and admins switch hosting on per project: **Project settings** › **General** › **Hosted sites** › **Host static sites**, then **Save changes**. The checkbox only appears when the instance has a sites domain; without one, the Sites page says "Static site hosting isn't set up on this server" and, to an instance admin, which variable to set (`STATIC_SITES_HOST`, a separate domain). See [Project settings](/using/project-settings/).
+Owners and admins switch hosting on per project: **Project settings** › **General** › **Hosted sites** › **Host static sites**, then **Save changes**. The same section has **Upload sites from GitHub Actions**. The checkbox only appears when the instance has a sites domain; without one, the Sites page says "Static site hosting isn't set up on this server" and, to an instance admin, which variable to set (`STATIC_SITES_HOST`, a separate domain). See [Project settings](/using/project-settings/).
 
 ## Upload a site from CI
 
@@ -36,6 +36,19 @@ circi site upload ./coverage --kind coverage
 | `--api-url` | The CirCI address, instead of `CIRCI_API_URL` |
 
 Each upload belongs to a commit. A CI re-run of a commit replaces that commit's files and keeps its address. See [CLI](/ci/cli/).
+
+### Or from GitHub Actions, with no CirCI step
+
+With the [GitHub App](/integrations/github/) and the project linked to its repository, the workflow only has to upload the built site as an artifact:
+
+```yaml
+- uses: actions/upload-artifact@v4
+  with:
+    name: circi-site
+    path: storybook-static
+```
+
+Turn on **Upload sites from GitHub Actions** in **Hosted sites** (off by default), and set the **Artifact name** (default `circi-site`) and, if you like, the **Site name** (what `--name` is). When the run succeeds, CirCI downloads the artifact and publishes it for the run's commit and branch with the same limits and checks as an upload; the two ways can be mixed. The App needs the **Actions: read** permission and the **Workflow run** event; the setting's note shows what went wrong with the latest run. The full guide, including how to update an App created earlier, is in [Sites from GitHub Actions](/integrations/github/#sites-from-github-actions).
 
 ## Addresses
 
