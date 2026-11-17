@@ -23,7 +23,7 @@ The header shows the build's state:
 
 | State | Meaning |
 |---|---|
-| Uploading | CI is still sending files. |
+| <StatusChip status="uploading" /> | CI is still sending files. |
 | <StatusChip status="processing" /> | The server is comparing. The page updates by itself when processing is done. |
 | <StatusChip status="needs-review" /> | The build finished with changes nobody has decided yet. |
 | <StatusChip status="approved" /> | Every changed screenshot is approved. |
@@ -31,7 +31,7 @@ The header shows the build's state:
 | <StatusChip status="unchanged">No changes</StatusChip> | Nothing differs from the baseline. |
 | <StatusChip status="no-baseline">No baseline</StatusChip> | There was nothing to compare with. The first build of a project is like this: every screenshot is new, and later builds are compared with it once it's approved. |
 | <StatusChip status="failed" /> | The build errored. The message is shown under the header. |
-| Expired | Its screenshots were deleted under the project's retention. See [Project settings](/using/project-settings/). |
+| <StatusChip status="expired" /> | Its screenshots were deleted under the project's retention. See [Project settings](/using/project-settings/). |
 
 The status, review target and watchers sit on a row of their own under the title. Next to the status the header can show the review target (for example "22h left" or "Overdue 22h"), and an eye with the number of people watching the build: its author and whoever was asked to review, with "you're watching" when you are one of them.
 
