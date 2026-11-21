@@ -2,7 +2,7 @@
 title: Database
 description: Postgres requirements, connections, migrations and what lives in it.
 ---
-{/* Source: deploy/docker-compose.yml, packages/config/src/schema.ts, packages/db, apps/server/src/cli/server.ts, apps/worker/src/runner.ts, README.md */}
+{/* Source: deploy/docker-compose.yml, deploy/terraform (database), packages/config/src/schema.ts, packages/db, apps/server/src/cli/server.ts, apps/worker/src/runner.ts, README.md */}
 
 import { Aside, Steps } from '@astrojs/starlight/components'
 import SettingCard from '../../../components/SettingCard.astro'
@@ -29,6 +29,17 @@ The dashboard's [live updates](/using/live-updates/) use the same notifications.
 </Aside>
 
 If a connection drops, the process reconnects by itself.
+
+## Managed Postgres (Amazon RDS)
+
+Any Postgres 13 or later works; the [Terraform module](/self-hosting/terraform/#database) takes one as `database`. On Amazon RDS (and similar services):
+
+- **TLS.** Add `?sslmode=verify-full` to `DATABASE_URL` so the server checks the database's certificate. RDS's certificates come from Amazon's own certificate authority, which Node doesn't trust: download [Amazon's bundle](https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem), put it where the server can read it, and add `&sslrootcert=/path/to/global-bundle.pem`. Without it the server fails to start with a certificate error. RDS for PostgreSQL 15 and later refuses connections without TLS.
+- **The password** goes into the URL, so URL-encode it (`/` is `%2F`, `@` is `%40`). IAM database authentication isn't supported. A rotated password (RDS's managed master password, Secrets Manager rotation) needs a restart with the new one.
+- **Permissions.** The server applies migrations as it starts, so its user must be able to create tables in the database's `public` schema: make it the database's owner (`CREATE DATABASE circi OWNER circi_app`). No extensions are needed.
+- **Connect directly** to the instance or the cluster's writer endpoint, not through RDS Proxy: see the connection rules above.
+- **Connections.** Each process opens up to `DATABASE_POOL_MAX`, plus a few of its own for notifications and locks. Check the instance's `max_connections` on the smallest classes.
+- **Network.** The host must reach the database (its security group allows port 5432 from the host). Docker's own networks (172.17.0.0/16 and up) can overlap an AWS default VPC (172.31.0.0/16) and send the traffic into Docker instead; give Docker networks a range outside the VPC's.
 
 ## What is stored
 

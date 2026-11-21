@@ -48,7 +48,7 @@ CirCI speaks plain HTTP on port 3000. Put a TLS proxy in front of it: sign-in ne
 
 </Steps>
 
-The overlay adds a `caddy` service (ports 80, 443 and 443/udp, a `caddy-data` volume for certificates), and sets `PUBLIC_URL=https://$DASHBOARD_HOST`, `STATIC_SITES_HOST=$SITES_HOST` and `TRUSTED_PROXIES=172.16.0.0/12,192.168.0.0/16` on the app (Caddy reaches it over the Compose network).
+The overlay adds a `caddy` service (ports 80, 443 and 443/udp, a `caddy-data` volume for certificates), and sets `PUBLIC_URL=https://$DASHBOARD_HOST`, `STATIC_SITES_HOST=$SITES_HOST` and `TRUSTED_PROXIES` to Caddy's own address on the app. Caddy has a fixed address on a fixed subnet, `CADDY_ADDRESS` (`192.168.250.10`) in `CIRCI_SUBNET` (`192.168.250.0/24`), so the app believes the client address Caddy forwards and nobody else's. Change both in `.env` if the subnet overlaps a network the host reaches.
 
 Caddy needs **AWS credentials for Route53** to get the wildcard certificate of the sites domain (DNS-01): an instance role works without variables, otherwise set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (and `AWS_REGION`, default `us-east-1`).
 

@@ -2,7 +2,7 @@
 title: Configuration
 description: How CirCI is configured, and where each kind of setting lives.
 ---
-{/* Source: packages/config/src/schema.ts, packages/config/src/load.ts, deploy/.env.example, README.md (Configuration) */}
+{/* Source: packages/config/src/schema.ts, packages/config/src/load.ts, packages/config/src/settings.ts, deploy/.env.example, README.md (Configuration) */}
 
 import { Aside } from '@astrojs/starlight/components'
 import SettingCard from '../../../components/SettingCard.astro'
@@ -36,7 +36,9 @@ Some variables only make sense together. The server checks them at start and pri
 | `STORAGE_DRIVER=s3` | Needs `S3_BUCKET`. `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` are both set or both left out. |
 | `SMTP_HOST` | Needs `SMTP_FROM`. `SMTP_USER` goes with `SMTP_PASSWORD`. |
 | `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_WEBHOOK_SECRET` | All three or none. |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Both, and a matching P-256 pair. |
+| `AUTH_OIDC_ISSUER`, `AUTH_OIDC_CLIENT_ID`, `AUTH_OIDC_CLIENT_SECRET` | All three or none. |
+| `AUTH_GITHUB_*`, `AUTH_GOOGLE_*`, `AUTH_GITLAB_*`, `SLACK_*` | Each `_CLIENT_ID` with its `_CLIENT_SECRET`, or neither. |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Both or neither, and a matching P-256 pair. |
 | `PUBLIC_URL`, `PREVIOUS_PUBLIC_URLS` | `PUBLIC_URL` is the root of its own hostname. The previous list can't contain the current host. |
 | `STATIC_SITES_HOST` | Refused if it's the dashboard host, its parent or child, or shares its parent domain. |
 | `AUTH_EMAIL_ENABLED=true` | Without SMTP this only logs a warning, and email sign-in stays off. |
@@ -50,8 +52,13 @@ Some variables only make sense together. The server checks them at start and pri
 
 ## Secrets
 
-`BETTER_AUTH_SECRET` signs sessions and cookies: keep it stable (changing it signs everyone out) and back it up. Don't commit `.env`. Secrets can be passed as ordinary environment variables or with your orchestrator's secret mechanism; the variables take the value itself, not a file path.
+`BETTER_AUTH_SECRET` signs sessions and cookies: keep it stable (changing it signs everyone out) and back it up. Don't commit `.env`.
 
-<Aside type="note">
-The compose file only passes through the variables it lists. See [Docker Compose](/self-hosting/docker-compose/).
-</Aside>
+Any variable can also come from a file: set `<NAME>_FILE` to its path, and the server reads the value from it (one trailing newline is dropped). That's how Docker and Kubernetes secrets are mounted, and how the [Terraform module](/self-hosting/terraform/) passes every secret, so none sits in the container's environment. Setting both `<NAME>` and `<NAME>_FILE` is an error, and so is a file the server can't read.
+
+```sh
+SMTP_PASSWORD_FILE=/run/secrets/smtp_password
+GITHUB_APP_PRIVATE_KEY_FILE=/run/secrets/github_app_key   # the PEM file as it is
+```
+
+The secrets are `BETTER_AUTH_SECRET`, `DATABASE_URL`, `SMTP_PASSWORD`, `S3_SECRET_ACCESS_KEY`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_APP_WEBHOOK_SECRET`, `SLACK_CLIENT_SECRET`, `VAPID_PRIVATE_KEY` and the `AUTH_*_CLIENT_SECRET`s.

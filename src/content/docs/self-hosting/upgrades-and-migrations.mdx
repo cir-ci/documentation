@@ -49,4 +49,13 @@ Migrations are forward-only SQL. There's no automatic downgrade: to go back to a
 
 ## Versions
 
-The image is built from the repository and has no published version tags. Note the commit you deployed (`git rev-parse HEAD`) so you can reproduce it or roll back.
+CirCI is released with versions. Each release has a GitHub release named `@circi/server@<version>` with its changelog, and images on GitHub's registry:
+
+```
+ghcr.io/cir-ci/circi:<version>        also :<major>.<minor> and :latest
+ghcr.io/cir-ci/circi-caddy:<version>  Caddy with the Route53 module, from the same release
+```
+
+To update a server that runs a published image, run the new version: change `circi_version` in the [Terraform module](/self-hosting/terraform/#updating) and apply, or `docker pull` the new tag and restart the container. Migrations run as the server starts. `circi --version` and `GET /healthz` report the version a server runs. The images are `linux/amd64`.
+
+An install built from the repository (the compose files) has the version of the commit it was built from; note the commit you deployed (`git rev-parse HEAD`) so you can reproduce it or roll back.

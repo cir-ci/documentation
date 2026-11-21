@@ -2,18 +2,18 @@
 title: Environment variables
 description: Lists every environment variable CirCI reads, with its default and what it does.
 ---
-{/* Source: packages/config/src/schema.ts (names and defaults), packages/config/src/load.ts (rules between variables), README.md (Configuration), deploy/.env.example. The tables are generated from src/data/env.ts: edit that file, not the page. */}
+{/* Source: packages/config/src/schema.ts (names and defaults), packages/config/src/load.ts (rules between variables, <NAME>_FILE), packages/config/src/settings.ts (secrets, image settings), README.md (Configuration), deploy/.env.example. The tables are generated from src/data/env.ts: edit that file, not the page. */}
 
 import EnvTable from '../../../components/EnvTable.astro'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
-Values are read once at start. Booleans accept `true`, `false`, `1`, `0`, `yes` and `no`. An empty value counts as unset. A bad value stops the process with a list of problems. Guidance is in [Configuration](/self-hosting/configuration/).
+Values are read once at start. Booleans accept `true`, `false`, `1`, `0`, `yes` and `no`. An empty value counts as unset. A bad value stops the process with a list of problems. Any variable can also be read from a file named by `<NAME>_FILE` ([Secrets](/self-hosting/configuration/#secrets)). Guidance is in [Configuration](/self-hosting/configuration/).
 
 <InstanceSettingNote title="The Instance settings badge">
 A variable with the **Instance settings** badge is also editable in the dashboard: who can create workspaces, sign-in methods and providers, the five limits (grace period, upload timeout, job retention, largest site, webhook timeout), the mail server and the Slack app. When the variable is set it wins and locks the setting ("Set by VARIABLE"); otherwise the saved value applies, otherwise the default. Saved changes apply within about 30 seconds, with no restart. The default retention of new projects is a dashboard setting with no variable. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 
-The Docker Compose file only passes through the variables it lists: see [Docker Compose](/self-hosting/docker-compose/).
+Both deploys pass every variable: the [Docker Compose](/self-hosting/docker-compose/) file from `.env`, and the [Terraform module](/self-hosting/terraform/#settings) as a variable of its own, in lower case (`SMTP_HOST` is `smtp_host`).
 
 <nav class="chip-row" aria-label="Jump to a group">
   <a href="#core">Core</a>

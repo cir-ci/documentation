@@ -1,0 +1,124 @@
+---
+title: Terraform
+description: Run a released CirCI on a Docker host with the Terraform module, and update it by changing one version.
+---
+{/* Source: deploy/terraform (main.tf, variables.tf, README.md, tests/settings.tftest.hcl), packages/config/src/settings.ts, packages/config/src/load.ts (<NAME>_FILE), deploy/Caddyfile */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+import SettingCard from '../../../components/SettingCard.astro'
+
+The repository's `deploy/terraform` module runs a released CirCI on one Docker host: the app (`ghcr.io/cir-ci/circi:<version>`), Postgres in a container unless you give your own, and Caddy for TLS and hosted sites when you ask for it. It runs the same services as [Docker Compose](/self-hosting/docker-compose/) with the Caddy overlay, but from published images. It needs Terraform 1.8 or later and the `kreuzwerker/docker` provider.
+
+## Use
+
+Pin the module to the same release as the image with `?ref=`, so the two always match.
+
+```hcl
+provider "docker" {
+  host = "ssh://ubuntu@ci.acme.io" # or unix:///var/run/docker.sock on the host itself
+}
+
+module "circi" {
+  source = "git::https://github.com/cir-ci/repo.git//deploy/terraform?ref=@circi/server@0.1.0"
+
+  circi_version      = "0.1.0"
+  better_auth_secret = var.better_auth_secret # openssl rand -base64 32; keep it stable
+  postgres_password  = var.postgres_password
+
+  caddy = {
+    dashboard_host = "ci.acme.io"
+    sites_host     = "acme-sites.com" # a domain used for nothing else
+  }
+
+  smtp_host     = "email-smtp.eu-west-1.amazonaws.com"
+  smtp_from     = "CirCI <ci@acme.io>"
+  smtp_user     = var.smtp_user
+  smtp_password = var.smtp_password
+}
+```
+
+Without `caddy`, the app is published on `port` (3000) at `public_url`; put your own proxy in front and list it in `trusted_proxies`. With `caddy`, read [Site domains](/self-hosting/site-domains/) first: the sites domain must be used for nothing else.
+
+The volumes for screenshots and the bundled Postgres have `prevent_destroy`, so `terraform destroy` stops at them instead of deleting your data.
+
+## Updating
+
+Change `circi_version` (and the module's `?ref=`) and apply. Terraform pulls that image and replaces the container. The server applies database migrations as it starts, and the apply waits for the image's health check, so a version that doesn't start fails the apply instead of leaving a restarting container. `GET /healthz` reports the version a server runs. See [Upgrades and migrations](/self-hosting/upgrades-and-migrations/).
+
+## Settings
+
+Every [environment variable](/reference/environment-variables/) the server reads is a module variable of its own, named in lower case: `SMTP_HOST` is `smtp_host`, `AUTH_OIDC_ISSUER` is `auth_oidc_issuer`. Two are named for what they do: `CIRCI_DIFF_ENGINE` is `diff_engine` and `CIRCI_DIFF_THREADS` is `diff_threads`. `variables.tf` describes each one.
+
+- **A misspelled name fails the plan** (`Unsupported argument`), and every change to a setting shows in it.
+- **Settings that go together are checked in the plan**: `smtp_user` with `smtp_password`, each client ID with its secret, the three GitHub App values, the three OIDC values. The server checks the same groups when it starts, but the plan catches a half-set pair before anything is replaced.
+- **A variable left `null` leaves the setting unset.** The server's default applies, and a setting that [Instance settings](/self-hosting/instance-settings/) can change (mail, sign-in methods, Slack, the limits) stays changeable in the dashboard. Setting the variable locks it there.
+- **The module sets a few itself**: `DATABASE_URL` (from the database inputs below), `PUBLIC_URL`, `TRUSTED_PROXIES` and `STATIC_SITES_HOST` with Caddy. The image fixes `NODE_ENV`, `HOST`, `PORT`, `STORAGE_PATH` and its own paths.
+
+### Secrets
+
+The variables marked `sensitive` (`better_auth_secret`, `smtp_password`, `github_app_private_key`, the `*_client_secret`s, `s3_secret_access_key`, `vapid_private_key`, the database password) never go into the container's environment. Each is uploaded as a file under `/run/circi/secrets/`, and the server reads it through `<NAME>_FILE` (see [Configuration](/self-hosting/configuration/#secrets)). So the plan shows every other setting in plain text, and a change to `log_level` reads as `LOG_LEVEL=info` → `LOG_LEVEL=debug`.
+
+<Aside type="caution">
+Secrets are in the Terraform state, like every other value. Keep the state in a private backend.
+</Aside>
+
+## Database
+
+Leave `database` unset and the module runs Postgres 18 in a container with its own volume. Set `postgres_password` for it. Postgres takes the password only when its volume is first made: to change it later, run `ALTER USER circi PASSWORD '…'` in the database first, then change the variable and apply.
+
+To use your own Postgres, such as Amazon RDS, set `database` and `database_password`:
+
+```hcl
+module "circi" {
+  # ...
+  database = {
+    host           = aws_db_instance.circi.address
+    user           = aws_db_instance.circi.username
+    name           = "circi"
+    ca_certificate = data.http.rds_ca.response_body
+  }
+  database_password = var.database_password
+}
+
+data "http" "rds_ca" {
+  url = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
+}
+```
+
+<SettingCard name="database" type="object">
+`host`, `port` (5432), `name` (`circi`), `user`, `tls` (true) and `ca_certificate`. With `tls`, the server verifies the database's certificate (`sslmode=verify-full`). `ca_certificate` is the PEM it chains to when that isn't a public certificate authority: Amazon RDS's certificates aren't trusted by Node, so pass Amazon's bundle. Without it the server fails to start with a certificate error.
+</SettingCard>
+
+<SettingCard name="database_password" type="string">
+The password of `database.user`. Any characters work: the module URL-encodes it.
+</SettingCard>
+
+The other requirements are in [Database](/self-hosting/database/#managed-postgres-amazon-rds): a direct connection, a user that may create tables, and room for the connections.
+
+## Network and Caddy
+
+The module's Docker network has a fixed subnet, `network_subnet` (`192.168.250.0/24`), and Caddy gets its 10th address, the only proxy the app trusts. Keep the subnet outside any network the host has to reach: Docker's own default networks (172.17.0.0/16 and up) overlap an AWS default VPC (172.31.0.0/16), which would send traffic for RDS into Docker.
+
+Caddy needs Route53 for the sites domain's wildcard certificate. An instance role works without settings; otherwise set `caddy_aws_credentials = { access_key_id, secret_access_key }`, which Caddy reads from a file, out of its environment and the plan.
+
+On EC2, a container reaches the instance role (for Caddy's Route53, or S3 with `s3_bucket` and no keys) only when the instance's metadata hop limit is 2: `metadata_options { http_put_response_hop_limit = 2 }`.
+
+## Inputs
+
+The main ones; every setting has its own variable as described above.
+
+| Name | Default | |
+| --- | --- | --- |
+| `circi_version` | (required) | The release to run, e.g. `0.1.0`. |
+| `better_auth_secret` | (required) | 32 characters or more. |
+| `postgres_password` | `null` | For the bundled Postgres; required unless `database` is set. |
+| `database`, `database_password` | `null` | Your own Postgres. |
+| `public_url`, `previous_public_urls` | `http://localhost:3000`, `[]` | `public_url` is ignored with `caddy`: it becomes `https://<dashboard_host>`. |
+| `caddy`, `caddy_aws_credentials` | `null` | `dashboard_host`, `sites_host`, `aws_region`; Route53 keys when there's no instance role. |
+| `port`, `trusted_proxies` | `3000`, `[]` | Without `caddy`: the host port, and your proxy's addresses. |
+| `network_subnet` | `192.168.250.0/24` | The Docker network. |
+| `image_repository` | `ghcr.io/cir-ci/circi` | Another registry or a mirror; the Caddy image is `<repository>-caddy`. |
+| `postgres_image` | `postgres:18-alpine` | Keep the major version: a new one needs a dump and restore. |
+| `name_prefix` | `circi` | Container, volume and network names, for two installs on one host. |
+
+Outputs: `version`, `image`, `public_url`.

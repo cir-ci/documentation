@@ -30,7 +30,9 @@ The `deploy/` folder of the repository is the reference install.
 - **postgres** (`postgres:18-alpine`) with a named volume `pgdata`, a health check, user and database `circi`, and the password from `POSTGRES_PASSWORD`.
 - **circi**, built from `deploy/Dockerfile`, command `all` (server and worker in one process), published on `CIRCI_PORT` (default 3000). Files go to the `files` volume at `/var/lib/circi/files`. It waits for Postgres to be healthy, then applies migrations on start.
 
-Everything the app reads comes from the `environment:` list, filled from `.env`. The compose file passes through the common variables (URLs, SMTP, sign-in, GitHub App, sites, timeouts, diff engine). A variable that isn't in that list is **not** passed to the container: for example `SMTP_SECURE`, `SLACK_CLIENT_ID`, `AUTH_GITLAB_*`, `CIRCI_DIFF_THREADS` and `DATABASE_POOL_MAX`. Add it to the `environment:` block (or use an `env_file`) when you need it.
+Everything the app reads comes from the `environment:` list, filled from `.env` (or the shell, or `--env-file`). The list has every [environment variable](/reference/environment-variables/) the server reads, so any of them set in `.env` reaches the container; one left empty counts as unset. The compose file builds `DATABASE_URL` from `POSTGRES_PASSWORD`, and fixes `STORAGE_PATH` to the volume. `.env.example` names every variable, most of them commented out.
+
+For storage in S3 without the overlay, set `STORAGE_DRIVER=s3` and the `S3_*` variables in `.env`.
 
 ## Settings file
 
@@ -55,6 +57,10 @@ docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
 ```
 
 For production S3 point `S3_*` at AWS S3, Cloudflare R2, Backblaze B2 or similar instead of running the overlay's SeaweedFS. See [Storage](/self-hosting/storage/) and [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/).
+
+The Caddy overlay gives the Compose network a fixed subnet, `CIRCI_SUBNET` (`192.168.250.0/24`), and Caddy a fixed address in it, `CADDY_ADDRESS` (`192.168.250.10`): the only proxy the app trusts. Change both if the subnet overlaps a network the host has to reach, such as your VPC.
+
+To run published images with Terraform instead, see [Terraform](/self-hosting/terraform/).
 
 ## Running the server and worker separately
 
@@ -101,4 +107,6 @@ Open `PUBLIC_URL` and follow the setup page, or script it. The server commands r
 
 One bundle, `/app/dist/main.mjs`, plus `/app/migrations` (`CIRCI_MIGRATIONS`), `/app/web` (`CIRCI_WEB_DIST`) and a small `node_modules` (`sharp`, `pg`, the AWS SDK). The image sets `NODE_OPTIONS=--enable-source-maps`, so stack traces point at source files. The image doesn't contain the upload CLI.
 
-Health endpoints: `GET /healthz` (liveness) and `GET /readyz` (the database and storage answer).
+The image sets `NODE_ENV`, `HOST`, `PORT`, `STORAGE_PATH`, `CIRCI_MIGRATIONS` and `CIRCI_WEB_DIST` for its own layout.
+
+Health endpoints: `GET /healthz` (liveness, with the version running) and `GET /readyz` (the database and storage answer).
