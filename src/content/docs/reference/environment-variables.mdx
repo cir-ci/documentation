@@ -13,7 +13,7 @@ Values are read once at start. Booleans accept `true`, `false`, `1`, `0`, `yes` 
 A variable with the **Instance settings** badge is also editable in the dashboard: who can create workspaces, sign-in methods and providers, the five limits (grace period, upload timeout, job retention, largest site, webhook timeout), the mail server and the Slack app. When the variable is set it wins and locks the setting ("Set by VARIABLE"); otherwise the saved value applies, otherwise the default. Saved changes apply within about 30 seconds, with no restart. The default retention of new projects is a dashboard setting with no variable. See [Instance settings](/self-hosting/instance-settings/).
 </InstanceSettingNote>
 
-Both deploys pass every variable: the [Docker Compose](/self-hosting/docker-compose/) file from `.env`, and the [Terraform module](/self-hosting/terraform/#settings) as a variable of its own, in lower case (`SMTP_HOST` is `smtp_host`).
+Both deploys pass every variable: the [Docker Compose](/self-hosting/docker-compose/) file from `.env`, and the [Terraform module](/self-hosting/terraform/#settings) as a key of its group (`SMTP_HOST` is `smtp.host`).
 
 <nav class="chip-row" aria-label="Jump to a group">
   <a href="#core">Core</a>

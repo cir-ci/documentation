@@ -30,9 +30,11 @@ module "circi" {
     sites_host     = "acme-sites.com" # a domain used for nothing else
   }
 
-  smtp_host     = "email-smtp.eu-west-1.amazonaws.com"
-  smtp_from     = "CirCI <ci@acme.io>"
-  smtp_user     = var.smtp_user
+  smtp = {
+    host = "email-smtp.eu-west-1.amazonaws.com"
+    from = "CirCI <ci@acme.io>"
+    user = var.smtp_user
+  }
   smtp_password = var.smtp_password
 }
 ```
@@ -47,16 +49,32 @@ Change `circi_version` (and the module's `?ref=`) and apply. Terraform pulls tha
 
 ## Settings
 
-Every [environment variable](/reference/environment-variables/) the server reads is a module variable of its own, named in lower case: `SMTP_HOST` is `smtp_host`, `AUTH_OIDC_ISSUER` is `auth_oidc_issuer`. Two are named for what they do: `CIRCI_DIFF_ENGINE` is `diff_engine` and `CIRCI_DIFF_THREADS` is `diff_threads`. `variables.tf` describes each one.
+Every [environment variable](/reference/environment-variables/) the server reads is a key of a group, one module variable per area, named after its setting: `smtp.host` is `SMTP_HOST`, `tuning.diff_engine` is `CIRCI_DIFF_ENGINE`. `variables.tf` lists each group's keys with their types and defaults.
 
-- **A misspelled name fails the plan** (`Unsupported argument`), and every change to a setting shows in it.
-- **Settings that go together are checked in the plan**: `smtp_user` with `smtp_password`, each client ID with its secret, the three GitHub App values, the three OIDC values. The server checks the same groups when it starts, but the plan catches a half-set pair before anything is replaced.
-- **A variable left `null` leaves the setting unset.** The server's default applies, and a setting that [Instance settings](/self-hosting/instance-settings/) can change (mail, sign-in methods, Slack, the limits) stays changeable in the dashboard. Setting the variable locks it there.
+| Group | Keys |
+| --- | --- |
+| `smtp` | `host`, `port`, `secure`, `user`, `from` |
+| `s3` | `bucket`, `region`, `endpoint`, `force_path_style`, `access_key_id`, `connect_timeout_seconds`, `request_timeout_seconds` |
+| `sign_in` | `email`, `password`, `sso`: which sign-in methods are on |
+| `sso` | `github_client_id`, `google_client_id`, `gitlab_client_id`, `gitlab_url`, `oidc_issuer`, `oidc_client_id`, `oidc_name`, `oidc_trusted_for_email` |
+| `github_app` | `id`, `api_url`, `api_timeout_seconds` |
+| `slack` | `client_id`, `api_url` |
+| `vapid` | `public_key`, `subject` |
+| `sites` | `host` (without `caddy`), `max_mb` |
+| `jobs` | `upload_timeout_minutes`, `gc_grace_hours`, `retention_days`, `retry_base_seconds`, `retry_max_seconds` |
+| `webhooks` | `timeout_seconds`, `allow_private_addresses` |
+| `tuning` | `database_pool_max`, `diff_engine`, `diff_threads`, `live_max_streams` |
+
+`log_level` and `workspace_creation` are variables of their own, and so is each secret (below).
+
+- **A misspelled key fails the plan** (`smtp takes host, port, secure, user, from: hots isn't one.`), and so does a value of the wrong type. Every change to a setting shows in the plan.
+- **Settings that go together are checked in the plan**: `smtp.user` with `smtp_password`, each client ID with its secret, the three GitHub App values, the three OIDC values. The server checks the same groups when it starts, but the plan catches a half-set pair before anything is replaced.
+- **A key left out leaves the setting unset.** The server's default applies, and a setting that [Instance settings](/self-hosting/instance-settings/) can change (mail, sign-in methods, Slack, the limits) stays changeable in the dashboard. Setting it here locks it there.
 - **The module sets a few itself**: `DATABASE_URL` (from the database inputs below), `PUBLIC_URL`, `TRUSTED_PROXIES` and `STATIC_SITES_HOST` with Caddy. The image fixes `NODE_ENV`, `HOST`, `PORT`, `STORAGE_PATH` and its own paths.
 
 ### Secrets
 
-The variables marked `sensitive` (`better_auth_secret`, `smtp_password`, `github_app_private_key`, the `*_client_secret`s, `s3_secret_access_key`, `vapid_private_key`, the database password) never go into the container's environment. Each is uploaded as a file under `/run/circi/secrets/`, and the server reads it through `<NAME>_FILE` (see [Configuration](/self-hosting/configuration/#secrets)). So the plan shows every other setting in plain text, and a change to `log_level` reads as `LOG_LEVEL=info` → `LOG_LEVEL=debug`.
+Each secret is a variable of its own, named after the setting in lower case and marked `sensitive`: `better_auth_secret`, `smtp_password`, `s3_secret_access_key`, `github_app_private_key`, `github_app_webhook_secret`, `slack_client_secret`, `vapid_private_key`, the `auth_*_client_secret`s, and the database password. None of them goes into the container's environment. Each is uploaded as a file under `/run/circi/secrets/`, and the server reads it through `<NAME>_FILE` (see [Configuration](/self-hosting/configuration/#secrets)). So the plan shows every other setting in plain text, and a change to `log_level` reads as `LOG_LEVEL=info` → `LOG_LEVEL=debug`.
 
 <Aside type="caution">
 Secrets are in the Terraform state, like every other value. Keep the state in a private backend.
@@ -101,11 +119,11 @@ The module's Docker network has a fixed subnet, `network_subnet` (`192.168.250.0
 
 Caddy needs Route53 for the sites domain's wildcard certificate. An instance role works without settings; otherwise set `caddy_aws_credentials = { access_key_id, secret_access_key }`, which Caddy reads from a file, out of its environment and the plan.
 
-On EC2, a container reaches the instance role (for Caddy's Route53, or S3 with `s3_bucket` and no keys) only when the instance's metadata hop limit is 2: `metadata_options { http_put_response_hop_limit = 2 }`.
+On EC2, a container reaches the instance role (for Caddy's Route53, or `s3` without `access_key_id`) only when the instance's metadata hop limit is 2: `metadata_options { http_put_response_hop_limit = 2 }`.
 
 ## Inputs
 
-The main ones; every setting has its own variable as described above.
+Besides the groups and secrets described above:
 
 | Name | Default | |
 | --- | --- | --- |
@@ -120,5 +138,6 @@ The main ones; every setting has its own variable as described above.
 | `image_repository` | `ghcr.io/cir-ci/circi` | Another registry or a mirror; the Caddy image is `<repository>-caddy`. |
 | `postgres_image` | `postgres:18-alpine` | Keep the major version: a new one needs a dump and restore. |
 | `name_prefix` | `circi` | Container, volume and network names, for two installs on one host. |
+| `log_level`, `workspace_creation` | `null` | `LOG_LEVEL`, `WORKSPACE_CREATION`. |
 
 Outputs: `version`, `image`, `public_url`.
