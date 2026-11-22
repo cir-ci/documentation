@@ -202,6 +202,8 @@ export default defineConfig({
             'ci/cli',
             'ci/vitest',
             'ci/playwright',
+            'ci/storybook',
+            'ci/cypress',
             'ci/ci-examples',
             'ci/github-actions',
             'ci/argos-compatible-api',

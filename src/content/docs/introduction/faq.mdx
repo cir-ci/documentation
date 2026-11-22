@@ -9,7 +9,7 @@ description: Short answers to the questions people ask first, each with the page
 
 ### What takes the screenshots?
 
-Your own tests do. CirCI compares and reviews screenshots; it doesn't capture them. `circi upload <dir>` uploads every `*.png` under a folder, so any tool that writes PNG files works. The [Vitest plugin](/ci/vitest/) captures them from Vitest's browser mode, and [Playwright](/ci/playwright/) writes them to a folder. See [The CLI](/ci/cli/).
+Your own tests do. CirCI compares and reviews screenshots; it doesn't capture them. `circi upload <dir>` uploads every `*.png` under a folder, so any tool that writes PNG files works. The [Vitest plugin](/ci/vitest/) captures them from Vitest's browser mode, [Playwright](/ci/playwright/) writes them to a folder, and the [Cypress](/ci/cypress/) and [Storybook](/ci/storybook/) packages take and upload them. See [The CLI](/ci/cli/).
 
 ### Which image formats work?
 
@@ -29,7 +29,7 @@ Make one [project](/getting-started/create-a-project/) per thing you test. Each 
 
 ### Can I switch from Argos?
 
-Not by changing two variables yet. CirCI implements the Argos upload API, but the real Argos SDK refuses CirCI's project tokens today (see [Argos-compatible API](/ci/argos-compatible-api/)). The move that works is to write your tests' screenshots to a folder and upload it with `circi upload`: see [Playwright](/ci/playwright/) and [The CLI](/ci/cli/). Old builds aren't imported, so the first approved build on your default branch becomes the baseline. See also [how CirCI compares with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/).
+Not by changing two variables yet. CirCI implements the Argos upload API, but the real Argos SDK refuses CirCI's project tokens today (see [Argos-compatible API](/ci/argos-compatible-api/)). The move that works is to write your tests' screenshots to a folder and upload it with `circi upload`: see [Playwright](/ci/playwright/), [Cypress](/ci/cypress/) and [The CLI](/ci/cli/). Old builds aren't imported, so the first approved build on your default branch becomes the baseline. See also [how CirCI compares with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/).
 
 ## Baselines and reviews
 

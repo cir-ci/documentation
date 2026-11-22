@@ -25,7 +25,7 @@ This page lists what each product's own public pages say. It doesn't rank them, 
 
 - **You run it.** Updates, backups, storage and uptime are yours. [Requirements](/self-hosting/requirements/) says what it needs, and [Upgrades and migrations](/self-hosting/upgrades-and-migrations/) and [Backups](/self-hosting/backups/) cover the rest.
 - **You choose and run the browsers.** CirCI stores and compares PNG files. Chromatic's pages describe snapshots taken in Chrome, Firefox, Safari and Edge on its infrastructure; with CirCI, whatever your tests render is what gets compared. To keep browsers apart, upload one build per browser ([Vitest](/ci/vitest/#one-build-per-browser-and-shards)).
-- **Capture is a separate step.** CirCI has no Storybook add-on that snapshots your stories for you; a short script or a Vitest test does it. It can also host a built Storybook next to the screenshots ([Hosted sites](/using/hosted-sites/)).
+- **Capture runs in your CI.** The CirCI server doesn't render your stories: [`@circi/storybook`](/ci/storybook/) screenshots them with Playwright in your own CI job and uploads the images, and the [Cypress](/ci/cypress/) and [Vitest](/ci/vitest/) plugins do the same from your tests. CirCI can also host a built Storybook next to the screenshots ([Hosted sites](/using/hosted-sites/)).
 - **It's pre-1.0.** Parts of it are verified only against fakes, and its [Argos-compatible API](/ci/argos-compatible-api/) was tried with the real Argos SDK, which refuses CirCI's tokens today.
 
 ## What you get with CirCI

@@ -63,6 +63,8 @@ A screenshot is named by its test file, relative to the project root, and the na
 
 Vitest writes a reference and fails the test when none exists, before it asks a comparator anything. Its screenshot options (`resolveScreenshotPath`, `comparators`) can move or loosen a comparison but can't skip it, so with `local: false`, where there is never a reference, every first run would fail. The plugin's setup file registers its own `toMatchScreenshot` with `expect.extend` that takes the screenshot through the locator and passes. With `local: true` it takes the screenshot and then calls Vitest's own matcher, which it reads from Vitest's `Assertion` prototype before replacing it; that read is the one part tied to Vitest's internals, and the plugin throws a clear error if the matcher is missing after a Vitest upgrade.
 
+To screenshot Storybook stories with this plugin, see [Storybook](/ci/storybook/#without-the-addon-vitest-and-portable-stories). For a whole Storybook, [`@circi/storybook`](/ci/storybook/) screenshots every story.
+
 ## Migrating from `circiScreenshot`
 
 `circiScreenshot` (from `@circi/vitest/browser`) was deprecated in 0.2.0 and removed in 0.3.0, along with `screenshotPath`. To move, add `circi()` to `plugins` (in place of `new CirciReporter(...)` in `reporters`) and change each call:

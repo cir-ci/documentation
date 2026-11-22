@@ -81,6 +81,10 @@ CirCI marks a pixel as changed when its color moves past a fixed tolerance, and 
 
 For a part of a page that still moves, draw an [ignore region](/using/baselines-and-ignore-regions/#ignore-regions) in the dashboard, and for a screenshot that flips back and forth see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
 
+## Other tools
+
+For Storybook stories there's [`@circi/storybook`](/ci/storybook/), and for Cypress [`@circi/cypress`](/ci/cypress/). The step-by-step pipeline is in the [GitHub Actions guide](/ci/github-actions/).
+
 ## Host the Playwright report
 
 The same job can put the HTML report next to the screenshots: `npx @circi/cli site upload ./playwright-report --name playwright`. See [Hosted sites](/using/hosted-sites/).

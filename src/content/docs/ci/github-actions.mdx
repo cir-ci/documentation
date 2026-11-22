@@ -9,7 +9,7 @@ import { Aside, Steps } from '@astrojs/starlight/components'
 
 This guide takes a repository from nothing to a visual check on every pull request: a CirCI project and token, a workflow that takes screenshots and uploads them, a check that blocks the merge until someone reviews the changes, and sharding for a slow suite. [CI examples](/ci/ci-examples/) has the short versions for every CI system.
 
-The CLI needs Node 22 or newer. You need a running CirCI server ([Run it locally](/getting-started/run-it-locally/) or [Self-hosting](/self-hosting/requirements/)) that GitHub's runners can reach over the network, and tests that write PNG screenshots to a folder. The examples use Playwright writing to `./screenshots` ([how to set that up](/ci/playwright/)); the [Vitest plugin](/ci/vitest/) has its own page, and the workflow changes only in the step that takes the screenshots.
+The CLI needs Node 22 or newer. You need a running CirCI server ([Run it locally](/getting-started/run-it-locally/) or [Self-hosting](/self-hosting/requirements/)) that GitHub's runners can reach over the network, and tests that write PNG screenshots to a folder. The examples use Playwright writing to `./screenshots` ([how to set that up](/ci/playwright/)); the [Vitest plugin](/ci/vitest/), [Cypress](/ci/cypress/) and [Storybook](/ci/storybook/) have their own pages, and the workflow changes only in the step that takes the screenshots.
 
 ## 1. Create the project and store its token
 
