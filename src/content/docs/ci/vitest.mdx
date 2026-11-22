@@ -38,11 +38,11 @@ it('primary button', async () => {
 })
 ```
 
-No CirCI import goes in a test file. Set `CIRCI_API_URL` and `CIRCI_TOKEN` in CI. Without them the reporter prints a line and does nothing, and the screenshots stay in `.circi/screenshots` (add it to `.gitignore`).
+No CirCI import goes in a test file. Set `CIRCI_API_URL` and `CIRCI_TOKEN` in CI. Without them the reporter prints a line and does nothing, and the screenshots stay in `.circi/screenshots/vitest` (add `.circi` to `.gitignore`).
 
 ## What the plugin does
 
-It registers the reporter, beside Vitest's default one or the reporters you list, and a browser setup file that replaces `toMatchScreenshot`. Each call waits for fonts and two animation frames (CSS animation, transitions and the caret are off), then writes `.circi/screenshots/<test file>/<name>.png` under the project root, where `/` in the name makes folders. When the run starts the reporter empties that folder, so screenshots of tests you removed aren't uploaded again; when it ends, it uploads what the run wrote.
+It registers the reporter, beside Vitest's default one or the reporters you list, and a browser setup file that replaces `toMatchScreenshot`. Each call waits for fonts and two animation frames (CSS animation, transitions and the caret are off), then writes `.circi/screenshots/vitest/<test file>/<name>.png` under the project root, where `/` in the name makes folders. Each CirCI plugin has its own folder under `.circi/screenshots` (`vitest`, [`cypress`](/ci/cypress/), [`storybook`](/ci/storybook/)), so they never upload or delete each other's files; versions of `@circi/vitest` before 0.4.0 wrote straight to `.circi/screenshots`. When the run starts the reporter empties its folder, so screenshots of tests you removed aren't uploaded again; when it ends, it uploads what the run wrote.
 
 The target can be a locator, an element, or `page`. Options such as `screenshotOptions.mask` go to Playwright.
 
@@ -79,7 +79,7 @@ await expect.element(page.getByRole('button')).toMatchScreenshot('button/primary
 What changes:
 
 - A screenshot's name in CirCI starts with the test file (`src/button.test.tsx/button/primary`, was `button/primary`), and names keep their case (they used to be lowercased). The first build after the move shows every screenshot as removed and added. Approve it.
-- The reporter empties `.circi/screenshots` itself, so remove a `globalSetup` that did.
+- The reporter empties `.circi/screenshots/vitest` itself, so remove a `globalSetup` that did.
 - `collectToMatchScreenshot` is gone. Use `local: true`: the plugin uploads every `toMatchScreenshot` capture, and Vitest keeps comparing against `__screenshots__`.
 
 ## One build per browser, and shards
@@ -93,7 +93,7 @@ One plugin uploads one build. For several browsers, run Vitest once per browser 
 | `local` | Also compare locally, as Vitest does. Default `false`. |
 | `apiUrl`, `token` | Default to `CIRCI_API_URL` and `CIRCI_TOKEN`. |
 | `name` | The build name. |
-| `dir` | Where captures go, relative to the project root. Default `.circi/screenshots`. |
+| `dir` | The folder the plugins share, relative to the project root; this plugin writes to its `vitest` folder. Default `.circi/screenshots`. |
 | `root` | The project root. |
 | `wait` | Fail the run when changes need review. |
 | `strict` | Fail the run when the upload fails. By default a failed upload never changes the test result. |

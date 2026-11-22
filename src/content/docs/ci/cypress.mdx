@@ -56,11 +56,11 @@ import { Aside, Steps } from '@astrojs/starlight/components'
 
 </Steps>
 
-Screenshots are named `<spec file>/<name>`, as the [Vitest plugin](/ci/vitest/) names its own: `home.cy.ts/home` and `home.cy.ts/header`. Always pass a name, and note that renaming a spec file starts new baselines. Add `.circi` to `.gitignore`.
+Screenshots are named by the spec's path from the project root, then the name you pass: `cypress/e2e/home.cy.ts/home` and `cypress/e2e/home.cy.ts/header`, the way the [Vitest plugin](/ci/vitest/) names its own. Two specs with the same file name in different folders don't collide. Always pass a name, and note that moving or renaming a spec file starts new baselines. A name with nothing usable in it (only punctuation or non-Latin characters, such as `'!!'`) is skipped with a `[circi] skipped screenshot` line, and the test is unaffected. Add `.circi` to `.gitignore`.
 
 ## What is uploaded
 
-Every screenshot a `cypress run` takes with a name, from that run only: the folder (`.circi/screenshots`) is emptied when the run starts. Cypress's automatic screenshot of a failing test isn't uploaded, and neither is a `cy.screenshot()` without a name. `cypress open` uploads nothing.
+Every screenshot a `cypress run` takes with a name, from that run only: the plugin's folder, `.circi/screenshots/cypress`, is emptied when the run starts. The other CirCI plugins have their own folders next to it (`vitest`, `storybook`), which Cypress never touches or uploads. Cypress's automatic screenshot of a failing test isn't uploaded, and neither is a `cy.screenshot()` without a name. `cypress open` uploads nothing.
 
 ## What a screenshot shows
 
@@ -84,8 +84,8 @@ The same names and meanings as the [Vitest plugin](/ci/vitest/):
 | `wait` | `false` | Wait for the result and fail the run while changes need review and this job is the gate. |
 | `strict` | `false` | Also fail the run if the upload fails. By default the tests pass or fail on their own. |
 | `shard` | `CIRCI_SHARD` (`2/4`) | This machine's share of a parallel run: give every machine the same `name` and its own shard, and they become one build. |
-| `dir` | `.circi/screenshots` | Where screenshots are written, under the project root. |
-| `clean` | `true` | Empty `dir` when the run starts. |
+| `dir` | `.circi/screenshots` | The folder the plugins share, under the project root; this plugin writes to its `cypress` folder. |
+| `clean` | `true` | Empty the plugin's own folder when the run starts. |
 | `root` | Cypress's project root | The project root. |
 | `apiUrl`, `token` | `CIRCI_API_URL`, `CIRCI_TOKEN` | Where to upload, and the project's token. Keep the token in the environment. |
 
