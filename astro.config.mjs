@@ -203,6 +203,7 @@ export default defineConfig({
             'ci/vitest',
             'ci/playwright',
             'ci/ci-examples',
+            'ci/github-actions',
             'ci/argos-compatible-api',
           ],
         },
