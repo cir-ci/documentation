@@ -1,0 +1,94 @@
+---
+title: Playwright
+seoTitle: Playwright visual regression testing with CirCI
+description: Write Playwright screenshots to a folder, upload them with the circi CLI, and review the changes in CirCI, with no plugin and no change to how you write tests.
+---
+{/* Source: packages/cli/src/files.ts (names), ci/ci-examples. The Playwright configuration below was run with @playwright/test 1.65.1 on Chromium; its output folder is what the CLI reads. */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+import CopyCommand from '../../../components/CopyCommand.tsx'
+
+CirCI has no Playwright plugin, and it doesn't need one. Playwright takes the screenshots, `circi upload` sends every PNG under a folder, and CirCI compares each one with its baseline and asks your team to review the changes. This page shows a Playwright setup that writes its screenshots where the CLI looks.
+
+## Write screenshots to a folder
+
+Playwright's `toHaveScreenshot()` normally compares against reference images committed next to your tests and fails the test on a difference. With CirCI doing the comparing, point it at an output folder and let it overwrite on every run:
+
+```ts title="playwright.config.ts"
+import { defineConfig } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './e2e',
+  // CirCI compares and gates: write every screenshot to ./screenshots, and never fail a test on pixels.
+  snapshotPathTemplate: '{testDir}/../screenshots/{projectName}/{arg}{ext}',
+  updateSnapshots: 'all',
+  projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
+})
+```
+
+```ts title="e2e/settings.spec.ts"
+import { expect, test } from '@playwright/test'
+
+test('profile page', async ({ page }) => {
+  await page.goto('/settings/profile')
+  await expect(page).toHaveScreenshot('settings-profile.png', { fullPage: true })
+})
+```
+
+That run writes `screenshots/chromium/settings-profile.png`. The name CirCI shows is the path without the extension, `chromium/settings-profile`; the project's name is in the path so that two Playwright projects (browsers or devices) never overwrite each other. Always pass a name: Playwright adds the browser and the operating system to a generated one, and a name that changes between machines has no baseline to compare with.
+
+Add `screenshots` to `.gitignore`. Nothing is compared on the machine that runs the tests, so a test fails only when it can't take the screenshot.
+
+<Aside type="note" title="Plain page.screenshot works too">
+`await page.screenshot({ path: 'screenshots/settings-profile.png', fullPage: true })` writes the same kind of file. `toHaveScreenshot` is the better fit because it also waits until two consecutive screenshots match and, by default, turns off CSS animations and hides the text caret ([Playwright's `toHaveScreenshot`](https://playwright.dev/docs/test-snapshots)).
+</Aside>
+
+## Upload from CI
+
+<Steps>
+
+1. Put the project's CI token in your CI's secret store as `CIRCI_TOKEN`, and your CirCI address in `CIRCI_API_URL` ([Create a project](/getting-started/create-a-project/)).
+
+2. Run the tests, then upload the folder and wait for the result:
+
+   <CopyCommand client:visible command="npx playwright test && npx @circi/cli upload ./screenshots --wait" />
+
+3. Open the build in the dashboard. The first build of a project has nothing to compare with, so every screenshot is added and waits for your approval ([First review](/getting-started/first-review/)).
+
+</Steps>
+
+`--wait` exits `1` while changes need review, so the CI job is the merge gate, unless a linked git host's check is ([How a build flows](/introduction/how-a-build-flows/#merge-gate)). The copy-paste workflows for GitHub Actions, GitLab CI, Bitbucket Pipelines and Jenkins are in [CI examples](/ci/ci-examples/), including [sharded runs](/ci/ci-examples/#sharded-runs): `npx playwright test --shard=2/4` and `circi upload --shard 2/4` go together.
+
+## Browsers and devices
+
+Each Playwright project writes to its own folder (the `{projectName}` in the template), and one upload carries all of them as one build. To give each browser its own build, baselines and review, upload each folder with its own `--name`:
+
+```sh
+npx @circi/cli upload ./screenshots/chromium --name chromium
+npx @circi/cli upload ./screenshots/webkit --name webkit
+```
+
+The names then lose the project folder, which is fine: each build name has its own baselines ([CI examples](/ci/ci-examples/#several-builds-per-commit)).
+
+## Make screenshots stable
+
+CirCI marks a pixel as changed when its color moves past a fixed tolerance, and the default diff threshold is 0%, so one different pixel is a change ([How screenshots are compared](/introduction/how-screenshots-are-compared/)). What keeps a Playwright screenshot the same from run to run is mostly in the test:
+
+- A fixed viewport, set in the project's `use`, and `fullPage` only for pages whose height is stable. A different size is always a change.
+- The same fonts on every machine. Run the tests in the same container image locally and in CI.
+- `mask` for content that changes (dates, avatars, ads): `toHaveScreenshot('home.png', { mask: [page.locator('.timestamp')] })`.
+- Fixed data and a fixed clock in the test, not a live service.
+
+For a part of a page that still moves, draw an [ignore region](/using/baselines-and-ignore-regions/#ignore-regions) in the dashboard, and for a screenshot that flips back and forth see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+
+## Host the Playwright report
+
+The same job can put the HTML report next to the screenshots: `npx @circi/cli site upload ./playwright-report --name playwright`. See [Hosted sites](/using/hosted-sites/).
+
+## Another way: the Argos SDK
+
+CirCI accepts uploads from the Argos SDKs, including `@argos-ci/playwright`, when two variables point at it. That route is built from the SDKs' source and **hasn't been verified with the real SDKs**, so the folder and `circi upload` above is the tested one. See [Argos-compatible API](/ci/argos-compatible-api/).
+
+<Aside type="caution" title="What was tested">
+The Playwright configuration on this page was run with `@playwright/test` 1.65.1 on Chromium, and it wrote the files named above. The upload itself is the ordinary `circi upload` documented in the [CLI reference](/ci/cli/); it wasn't run against a CirCI server in this check.
+</Aside>

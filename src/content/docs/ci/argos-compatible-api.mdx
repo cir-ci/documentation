@@ -1,5 +1,6 @@
 ---
 title: Argos-compatible API
+seoTitle: "Argos-compatible API: use Argos SDKs with CirCI"
 description: Point the Argos SDKs at CirCI by changing two variables, designed to work and not yet verified with the real SDKs.
 ---
 {/* Source: apps/server/src/http/routes/argos, packages/cli/src/main.ts (argos-env) */}
@@ -13,7 +14,7 @@ ARGOS_API_BASE_URL=https://ci.acme.io/v2
 ARGOS_TOKEN=circi_…          # the project's CI token
 ```
 
-`circi argos-env` prints exactly these two lines from `CIRCI_API_URL` and `CIRCI_TOKEN`.
+`circi argos-env` prints exactly these two lines from `CIRCI_API_URL` and `CIRCI_TOKEN`. To use Playwright without the Argos SDK, write its screenshots to a folder for the CLI: see [Playwright](/ci/playwright/).
 
 <Aside type="caution" title="Status">
 Designed to work with the SDKs, from the source of `@argos-ci/core` `upload()`; not yet verified with the real SDKs. If an SDK refuses the token's format or sends something unexpected, the error is in the SDK's output and the CirCI server log.
