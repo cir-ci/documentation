@@ -68,8 +68,8 @@ Every [environment variable](/reference/environment-variables/) the server reads
 `log_level` and `workspace_creation` are variables of their own, and so is each secret (below).
 
 - **A misspelled key fails the plan** (`smtp takes host, port, secure, user, from: hots isn't one.`), and so does a value of the wrong type. Every change to a setting shows in the plan.
-- **Settings that go together are checked in the plan**: `smtp.user` with `smtp_password`, each client ID with its secret, the three GitHub App values, the three OIDC values. The server checks the same groups when it starts, but the plan catches a half-set pair before anything is replaced.
-- **A key left out leaves the setting unset.** The server's default applies, and a setting that [Instance settings](/self-hosting/instance-settings/) can change (mail, sign-in methods, Slack, the limits) stays changeable in the dashboard. Setting it here locks it there.
+- **Settings that go together are checked in the plan**: `smtp.user` with `smtp_password`, each client ID with its secret, the three GitHub App values, the three OIDC values. The message names the variables (`These settings go together, set all of each or none: smtp.user / smtp_password.`). The server checks the same groups when it starts, but the plan catches a half-set pair before anything is replaced.
+- **A key left out leaves the setting unset.** Each group defaults to `{}`, and every key you don't give is `null`, which keeps the setting out of the container's environment. The server's default applies, and a setting that [Instance settings](/self-hosting/instance-settings/) can change (mail, sign-in methods, Slack, the limits) stays changeable in the dashboard. Setting it here locks it there.
 - **The module sets a few itself**: `DATABASE_URL` (from the database inputs below), `PUBLIC_URL`, `TRUSTED_PROXIES` and `STATIC_SITES_HOST` with Caddy. The image fixes `NODE_ENV`, `HOST`, `PORT`, `STORAGE_PATH` and its own paths.
 
 ### Secrets
@@ -130,14 +130,15 @@ Besides the groups and secrets described above:
 | `circi_version` | (required) | The release to run, e.g. `0.1.0`. |
 | `better_auth_secret` | (required) | 32 characters or more. |
 | `postgres_password` | `null` | For the bundled Postgres; required unless `database` is set. |
-| `database`, `database_password` | `null` | Your own Postgres. |
+| `database`, `database_password` | `null` | Your own Postgres; its keys default to `port = 5432`, `name = "circi"`, `tls = true`, the rest `null`. |
 | `public_url`, `previous_public_urls` | `http://localhost:3000`, `[]` | `public_url` is ignored with `caddy`: it becomes `https://<dashboard_host>`. |
-| `caddy`, `caddy_aws_credentials` | `null` | `dashboard_host`, `sites_host`, `aws_region`; Route53 keys when there's no instance role. |
+| `caddy`, `caddy_aws_credentials` | `null` | `dashboard_host`, `sites_host`, `aws_region` (default `"us-east-1"`); Route53 keys when there's no instance role. |
 | `port`, `trusted_proxies` | `3000`, `[]` | Without `caddy`: the host port, and your proxy's addresses. |
 | `network_subnet` | `192.168.250.0/24` | The Docker network. |
 | `image_repository` | `ghcr.io/cir-ci/circi` | Another registry or a mirror; the Caddy image is `<repository>-caddy`. |
 | `postgres_image` | `postgres:18-alpine` | Keep the major version: a new one needs a dump and restore. |
 | `name_prefix` | `circi` | Container, volume and network names, for two installs on one host. |
 | `log_level`, `workspace_creation` | `null` | `LOG_LEVEL`, `WORKSPACE_CREATION`. |
+| `smtp`, `s3`, `sign_in`, `sso`, `github_app`, `slack`, `vapid`, `sites`, `jobs`, `webhooks`, `tuning` | `{}` | The settings' groups (above); a key you don't give is `null`. |
 
 Outputs: `version`, `image`, `public_url`.
