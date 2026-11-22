@@ -102,6 +102,7 @@ export default defineConfig({
               items: [
                 'self-hosting/requirements',
                 'self-hosting/docker-compose',
+                'self-hosting/terraform',
                 'self-hosting/tls-and-reverse-proxy',
                 'self-hosting/site-domains',
               ],

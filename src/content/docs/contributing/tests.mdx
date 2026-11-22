@@ -2,7 +2,7 @@
 title: Tests
 description: The test projects, which command runs which, and the rules for writing new tests.
 ---
-{/* Source: CLAUDE.md (Tests), e2e/README.md, vitest.config.ts, package.json, turbo.json */}
+{/* Source: CLAUDE.md (Tests, Commands), e2e/README.md, vitest.config.ts, package.json, turbo.json, .circleci/config.yml, packages/config/test/deploy-settings.test.ts */}
 
 CirCI's tests run in four kinds of project, each with its own command. This page lists them and the rules new tests follow.
 
@@ -37,6 +37,8 @@ pnpm test:web-browser      # apps/web, ui, api, core browser tests
 pnpm test:e2e              # both end-to-end groups (needs Docker and Chromium)
 pnpm test:e2e:api          # server, worker and CLI image, no browser
 pnpm test:e2e:browser      # also the dashboard and the design system
+pnpm test:compose          # the shipped compose files, brought up for real (needs Docker)
+pnpm test:terraform        # deploy/terraform's `terraform test`, a mocked Docker provider (needs Terraform)
 ```
 
 With Turborepo, each test project is its own cached root task (`//#test:node`, `//#test:ui`, `//#test:web-browser`, `//#e2e:api`, `//#e2e:browser`), so `pnpm gate` only reruns what its inputs changed. The two browser tasks each take a quarter of the cores, and a browser test gets one retry for the runner's own lost-frame errors; a retried test still shows in the report.
@@ -50,9 +52,10 @@ With Turborepo, each test project is its own cached root task (`//#test:node`, `
 - A bug only the real stack finds gets a regression test in its owning package.
 - A main page test calls `expectOnePrimaryPerArea()`: at most one primary button per area.
 - End-to-end files that drive Chromium are named `*.browser.e2e.test.ts` (checked by `e2e/test/fakes/e2e-groups.test.ts`).
+- **A new environment variable** goes in `packages/config/src/schema.ts` and, if it's a secret, set by the image or part of a group that goes together, in the lists in `packages/config/src/settings.ts`. `packages/config/test/deploy-settings.test.ts` (in `pnpm test`) then fails until the Dockerfile, the Terraform module (a variable, the wiring test case, a plan check for a group) and the compose file and `.env.example` all have it.
 
 See `e2e/README.md` for the stack, debugging (`E2E_KEEP`, `E2E_HEADED`), sharding and the image build lock.
 
 ## Quality gates
 
-`pnpm gate` is the check before a commit; it runs the Node, UI and web browser projects and skips the end-to-end groups, which need Docker (`pnpm gate:full` adds them). Visual runs are never cached. See [Local development](/contributing/local-development/).
+`pnpm gate` is the check before a commit; it runs the Node, UI and web browser projects and skips the end-to-end groups, which need Docker (`pnpm gate:full` adds them). CI also runs `terraform test` (the `terraform` job) on every push, and the compose files for real on `main`. Visual runs are never cached. See [Local development](/contributing/local-development/).

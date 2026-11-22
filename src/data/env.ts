@@ -1,4 +1,5 @@
 // Source: repo/packages/config/src/schema.ts (names, defaults), packages/config/src/load.ts (rules between variables),
+// packages/config/src/settings.ts (secrets, what the image sets),
 // repo/README.md Configuration table and deploy/.env.example (wording). Keep in sync with those.
 //
 // `instanceSetting: true` marks a variable whose setting is also editable in Instance settings in the dashboard.
@@ -33,8 +34,8 @@ export const envGroups: EnvGroup[] = [
       { name: 'PUBLIC_URL', default: 'http://localhost:3000', description: 'The dashboard address, any host you own (`https://ci.acme.io`). It must be the root of its own hostname (no sub-path). Use https outside local development; a plain http address on a public host logs a warning.' },
       { name: 'PREVIOUS_PUBLIC_URLS', default: '(empty)', description: 'Comma-separated old dashboard addresses. Requests to them are redirected to `PUBLIC_URL`, so old links in pull request comments and emails keep working after a move. A previous address can\'t equal the current host.' },
       { name: 'TRUSTED_PROXIES', default: 'none', description: 'Reverse proxies whose `X-Forwarded-For` is believed: comma-separated IPs or CIDR ranges (`10.0.0.5,172.16.0.0/12`), or `true` for any hop (unsafe unless the app is reachable only through the proxy). Behind a proxy, set it to the proxy address, or every user shares the proxy address and one rate limit.' },
-      { name: 'HOST', default: '0.0.0.0', description: 'Address the HTTP server binds to.' },
-      { name: 'PORT', default: '3000', description: 'Port the HTTP server listens on (1 to 65535).' },
+      { name: 'HOST', default: '0.0.0.0', description: 'Address the HTTP server binds to. The image sets it to `0.0.0.0`.' },
+      { name: 'PORT', default: '3000', description: 'Port the HTTP server listens on (1 to 65535). The image sets it to 3000, which its health check, the Caddyfile and the Terraform module rely on.' },
       { name: 'LOG_LEVEL', default: 'info', description: 'One of `fatal`, `error`, `warn`, `info`, `debug`, `trace`.' },
       { name: 'NODE_ENV', default: 'production', description: '`development`, `production` or `test`. The image runs as production.' },
       { name: 'DATABASE_POOL_MAX', default: '10', description: 'Largest number of Postgres connections one process keeps open.' },
@@ -47,7 +48,7 @@ export const envGroups: EnvGroup[] = [
     title: 'Storage',
     vars: [
       { name: 'STORAGE_DRIVER', default: 'fs', description: '`fs` (local disk) or `s3` (any S3-compatible service).' },
-      { name: 'STORAGE_PATH', default: '/var/lib/circi/files', description: 'Directory for the `fs` driver. In the compose file it is a Docker volume.' },
+      { name: 'STORAGE_PATH', default: '/var/lib/circi/files', description: 'Directory for the `fs` driver. The image sets it to `/var/lib/circi/files`, the volume in the compose file and the Terraform module.' },
       { name: 'S3_BUCKET', description: 'Bucket name. Required when `STORAGE_DRIVER=s3`.' },
       { name: 'S3_REGION', default: 'us-east-1', description: 'Bucket region.' },
       { name: 'S3_ENDPOINT', description: 'A custom endpoint for R2, B2, MinIO or LocalStack. Leave empty for AWS. Must be a URL.' },
@@ -128,6 +129,7 @@ export const envGroups: EnvGroup[] = [
       { name: 'JOB_RETENTION_DAYS', default: '14', instanceSetting: true, description: 'Finished background jobs (done or failed) are deleted after this many days. `0` keeps them.' },
       { name: 'JOB_RETRY_BASE_SECONDS', default: '2', description: 'First wait before a failed job (webhook, git check, email) is retried; each further wait doubles. Mostly for tests.' },
       { name: 'JOB_RETRY_MAX_SECONDS', default: '300', description: 'The longest wait between two attempts of a job.' },
+      { name: 'LIVE_MAX_STREAMS', default: '2000', description: 'The most [live update](/using/live-updates/) streams (`GET /api/live`) one server process keeps open (1 to 100000). More get a `503` with `Retry-After`.' },
     ],
   },
   {

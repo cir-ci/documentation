@@ -107,7 +107,7 @@ circi admin storage migrate --to s3 --bucket circi --region eu-west-1
 circi admin storage migrate --to fs --path /mnt/files
 ```
 
-It copies every stored file to the new storage under the same keys and reports the `Copied`, `already there`, `missing at the source` and `failed` counts. It exits 1 if any copy failed. When it succeeds it tells you to set `STORAGE_DRIVER` (and its settings) and restart. Other options: `--endpoint`, `--force-path-style`.
+It copies every stored file to the new storage under the same keys and reports the `Copied`, `already there`, `missing at the source` and `failed` counts. It exits 1 if any copy failed. When it succeeds it tells you to set `STORAGE_DRIVER` (and its settings) and restart. Other options: `--endpoint`, `--force-path-style`. The target bucket's keys come from `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` (or their `_FILE` forms) when both are set, otherwise from the AWS credential chain.
 
 ## What is using space
 

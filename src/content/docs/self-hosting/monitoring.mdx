@@ -14,7 +14,7 @@ Both answer without a sign-in and don't write a log line per request, because pr
 
 | Endpoint | Answers | Use it for |
 |---|---|---|
-| `GET /healthz` | `200` with `{ "status": "ok" }` while the process serves. | Liveness: restart the container when it stops answering. |
+| `GET /healthz` | `200` with `{ "status": "ok", "version": "0.1.0" }` while the process serves: the version is the release it runs. | Liveness: restart the container when it stops answering. |
 | `GET /readyz` | `200` with `{ "status": "ok", "checks": { "database": "ok", "storage": "ok" } }`, or `503` with `"status": "fail"` and `fail` against the check that failed. | Readiness: take the instance out of a load balancer while a dependency is down. |
 
 `/readyz` runs the two checks at once. Each has a 2 second timeout, so a hung database or storage can't hang the probe. A failing check is also logged as a warning, `readiness check failed`, with the check's name and the error.
