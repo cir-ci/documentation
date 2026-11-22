@@ -37,6 +37,11 @@ export default defineConfig({
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/cir-ci' }],
       head: [
+        // Search results need a raster icon whose size is a multiple of 48 px, declared as rel="icon" (Starlight's
+        // `favicon` above is an SVG `shortcut icon`, which Google shows as a globe); /favicon.ico is the usual fallback.
+        { tag: 'link', attrs: { rel: 'icon', href: '/favicon.ico', sizes: '48x48' } },
+        { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/icons/96.png' } },
+        { tag: 'link', attrs: { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' } },
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/icons/180.png' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#0c0a09', media: '(prefers-color-scheme: dark)' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#e9e2de', media: '(prefers-color-scheme: light)' } },

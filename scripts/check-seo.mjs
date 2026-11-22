@@ -1,8 +1,8 @@
 // Checks the built site (dist/) for what search engines and link previews need, and fails the build when a page
 // is missing it: a unique <title> (60 characters or fewer) and description (70 to 160), a canonical link, Open
 // Graph and Twitter tags with an image that exists, valid JSON-LD (SoftwareApplication and Organization on the
-// home page, a BreadcrumbList elsewhere), `noindex` on the 404 page and the design kit, and a robots.txt that
-// names the sitemap. Run by `pnpm build`, after astro build.
+// home page, a BreadcrumbList elsewhere), `noindex` on the 404 page and the design kit, a robots.txt that
+// names the sitemap, and an icon search results can show. Run by `pnpm build`, after astro build.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
@@ -125,6 +125,20 @@ if (!robotsTxt.includes(`Sitemap: ${SITE}/sitemap-index.xml`)) problems.push('ro
 if (/^Disallow:\s*\/\s*$/m.test(robotsTxt)) problems.push('robots.txt: disallows everything')
 if (!existsSync(join(dist, 'sitemap-index.xml'))) problems.push('sitemap-index.xml: missing')
 if (readFileSync(join(dist, 'sitemap-0.xml'), 'utf8').includes('/design-kit/')) problems.push('sitemap: lists the design kit')
+
+// The icon search results show: a raster `rel="icon"` whose size is a multiple of 48 px (Google shows a globe for an
+// SVG-only shortcut icon), and /favicon.ico, the fallback crawlers ask for.
+{
+  const head = readFileSync(join(dist, 'index.html'), 'utf8')
+  const icons = (head.match(/<link [^>]*>/g) ?? []).filter((tag) => attr(tag, 'rel') === 'icon')
+  const raster = icons.filter((tag) => {
+    const size = Number((attr(tag, 'sizes') ?? '').split('x')[0])
+    const file = (attr(tag, 'href') ?? '').replace(/^\//, '')
+    return size > 0 && size % 48 === 0 && !/\.svg$/.test(file) && existsSync(join(dist, file))
+  })
+  if (raster.length === 0) fail('index.html', 'no rel="icon" raster icon whose size is a multiple of 48 px (and exists)')
+  if (!existsSync(join(dist, 'favicon.ico'))) fail('favicon.ico', 'missing')
+}
 
 if (problems.length > 0) {
   console.error(`SEO check failed (${problems.length}):\n- ${problems.join('\n- ')}`)
