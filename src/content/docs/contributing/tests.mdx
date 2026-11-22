@@ -39,6 +39,7 @@ pnpm test:e2e              # both end-to-end groups (needs Docker and Chromium)
 pnpm test:e2e:api          # server, worker and CLI image, no browser
 pnpm test:e2e:browser      # also the dashboard and the design system
 pnpm test:compose          # the shipped compose files, brought up for real (needs Docker)
+pnpm test:helm             # deploy/helm: helm lint, helm template and kubeconform, plus values it must refuse
 pnpm test:terraform        # deploy/terraform's `terraform test`, a mocked Docker provider (needs Terraform)
 ```
 
@@ -53,7 +54,7 @@ With Turborepo, each test project is its own cached root task (`//#test:node`, `
 - A bug only the real stack finds gets a regression test in its owning package.
 - A main page test calls `expectOnePrimaryPerArea()`: at most one primary button per area.
 - End-to-end files that drive Chromium are named `*.browser.e2e.test.ts` (checked by `e2e/test/fakes/e2e-groups.test.ts`).
-- **A new environment variable** goes in `packages/config/src/schema.ts` and, if it's a secret, set by the image or part of a group that goes together, in the lists in `packages/config/src/settings.ts`. `packages/config/test/deploy-settings.test.ts` (in `pnpm test`) then fails until the Dockerfile, the Terraform module (a variable, the wiring test case, a plan check for a group) and the compose file and `.env.example` all have it.
+- **A new environment variable** goes in `packages/config/src/schema.ts` and, if it's a secret, set by the image or part of a group that goes together, in the lists in `packages/config/src/settings.ts`. `packages/config/test/deploy-settings.test.ts` (in `pnpm test`) then fails until the Dockerfile, the Terraform module (a variable, the wiring test case, a plan check for a group), the Helm chart (the same key as the module's, in `values.yaml` and its schema) and the compose file and `.env.example` all have it.
 
 See `e2e/README.md` for the stack, debugging (`E2E_KEEP`, `E2E_HEADED`), sharding and the image build lock.
 
