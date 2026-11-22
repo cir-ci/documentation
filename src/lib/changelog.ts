@@ -1,7 +1,8 @@
 // The release notes on /changelog/: the CHANGELOG.md files of the main repository, read when the site is built.
 // They are fetched from GitHub, and when that fails (offline, a rate limit, GitHub down) the copy in
 // `src/data/changelog/` is used instead, so a build never breaks because of the network. The copies are only a
-// fallback: the deploy workflow runs every day, so the live page follows the repository without anyone editing it.
+// fallback: the deploy workflow runs after each release (cir-ci/repo sends a circi-release event), so the live page follows
+// the repository without anyone editing it.
 import { readFile } from 'node:fs/promises'
 import type { Loader } from 'astro/loaders'
 
