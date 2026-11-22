@@ -5,6 +5,6 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "paths": { "#components/*": ["./src/components/*"], "#data/*": ["./src/data/*"] }
+    "paths": { "#components/*": ["./src/components/*"], "#data/*": ["./src/data/*"], "#lib/*": ["./src/lib/*"] }
   }
 }

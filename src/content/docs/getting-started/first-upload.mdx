@@ -1,6 +1,7 @@
 ---
 title: First upload
-description: Upload a folder of screenshots with the CLI and see the build appear.
+seoTitle: Upload screenshots from CI with the circi CLI
+description: Upload a folder of PNG screenshots with the circi CLI and see the first build appear in your CirCI project.
 ---
 {/* Source: README.md (Uploading from CI), packages/cli/src/main.ts, packages/cli/src/files.ts, apps/web/src/features/project-settings/CiTokenPage.tsx */}
 
@@ -9,7 +10,7 @@ import BuildFlow from '../../../components/BuildFlow.astro'
 import CopyCommand from '../../../components/CopyCommand.tsx'
 import StatusChip from '../../../components/StatusChip.astro'
 
-You need three things: a folder of PNG screenshots (any test tool will do; Playwright's `page.screenshot({ path: 'screenshots/home.png' })` is enough), your CirCI address and the project's CI token.
+You need three things: a folder of PNG screenshots (any test tool will do; Playwright's `page.screenshot({ path: 'screenshots/home.png' })` is enough: see [Playwright](/ci/playwright/)), your CirCI address and the project's CI token.
 
 <Steps>
 

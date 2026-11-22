@@ -15,6 +15,7 @@ Inter and JetBrains Mono, small radii.
 | Sidebar and Starlight config | `astro.config.mjs` (explicit sidebar: add a page = add the file and its slug) |
 | Logo, favicon | `src/assets/logo.svg` (header), `public/favicon.svg`, `public/icons/` (copied from `apps/web`) |
 | Component overrides | `astro.config.mjs` `components: { Header: './src/components/overrides/Header.astro' }` |
+| Search and sharing: `<title>`, description, social image, JSON-LD | `src/route-data.ts` (head tags per page), `src/lib/seo.ts`, `src/lib/structured-data.ts`, `src/pages/og/` (one 1200x630 image per page, colors read from `circi-theme.css`), `scripts/check-seo.mjs` (run by `pnpm build`). A page whose title is too short for a search result adds `seoTitle:` (at most 60 characters with the ` \| CirCI` suffix, which is left off when the title has "CirCI"; the h1 and sidebar keep `title`) and a `description` of 70 to 160 characters |
 
 ## Token mapping
 

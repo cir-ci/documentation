@@ -1,6 +1,7 @@
 ---
 title: What is CirCI?
-description: A self-hosted visual regression testing tool, and what it does for your team.
+seoTitle: What is CirCI? Self-hosted visual regression testing
+description: "CirCI is a self-hosted, open source visual regression testing tool: it compares CI screenshots with a baseline and your team reviews the changes."
 ---
 {/* Source: README.md (intro) */}
 
@@ -11,7 +12,7 @@ import ScreenFrame from '../../../components/ScreenFrame.astro'
 
 CirCI is a visual regression testing tool you run yourself. Your tests take screenshots, CI uploads them after each run, and CirCI compares each one with the last approved version. When something looks different, your team reviews the change in a web dashboard and approves or rejects it. The result can block a pull request until someone has looked.
 
-It's a self-hosted alternative to services such as Argos: one Docker image, a Postgres database and somewhere to keep files (local disk or any S3-compatible bucket).
+It's a self-hosted alternative to hosted services such as Chromatic, Percy and Argos ([how they differ](/introduction/compared-with-chromatic-percy-argos/)): one Docker image, a Postgres database and somewhere to keep files (local disk or any S3-compatible bucket).
 
 <BuildFlow />
 
