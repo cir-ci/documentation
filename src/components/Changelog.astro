@@ -1,0 +1,16 @@
+---
+// The release notes of one package, read from the main repository's CHANGELOG.md at build time (src/lib/changelog.ts).
+import { getEntry, render } from 'astro:content'
+
+interface Props {
+  id: 'server' | 'cli' | 'vitest'
+}
+const entry = await getEntry('changelog', Astro.props.id)
+if (!entry) throw new Error(`No changelog named ${Astro.props.id}`)
+const { Content } = await render(entry)
+---
+
+<div class="changelog">
+  <p>Latest release: <code>{entry.data.packageName}</code> {entry.data.versions[0]}.</p>
+  <Content />
+</div>

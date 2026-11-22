@@ -95,6 +95,9 @@
   letter-spacing: -0.03em;
   text-wrap: balance;
 }
+.l-hero .l-name {
+  color: var(--circi-accent-text);
+}
 .l-lead {
   margin-block-start: 1.25rem !important;
   max-width: 34rem;

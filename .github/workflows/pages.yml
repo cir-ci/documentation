@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # The changelog page is built from the main repository's CHANGELOG.md files, so a daily build keeps it current.
+  schedule:
+    - cron: '17 5 * * *'
 
 permissions:
   contents: read

@@ -89,6 +89,7 @@ export default defineConfig({
             'introduction/key-concepts',
             'introduction/how-screenshots-are-compared',
             'introduction/compared-with-chromatic-percy-argos',
+            'introduction/visual-regression-testing-without-saas',
             'introduction/faq',
           ],
         },
@@ -197,7 +198,17 @@ export default defineConfig({
         {
           label: 'Upload from CI',
           collapsed: true,
-          items: ['ci/cli', 'ci/vitest', 'ci/playwright', 'ci/ci-examples', 'ci/argos-compatible-api'],
+          items: [
+            'ci/cli',
+            'ci/vitest',
+            'ci/playwright',
+            'ci/storybook',
+            'ci/cypress',
+            'ci/ci-examples',
+            'ci/github-actions',
+            'ci/gitlab-ci',
+            'ci/argos-compatible-api',
+          ],
         },
         {
           label: 'Connect other tools',
@@ -273,6 +284,7 @@ export default defineConfig({
           ],
         },
         'roadmap',
+        'changelog',
       ],
     }),
     // Starlight adds this itself unless it's listed; listed here so the design kit (noindex, kept out of the

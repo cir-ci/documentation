@@ -81,13 +81,17 @@ CirCI marks a pixel as changed when its color moves past a fixed tolerance, and 
 
 For a part of a page that still moves, draw an [ignore region](/using/baselines-and-ignore-regions/#ignore-regions) in the dashboard, and for a screenshot that flips back and forth see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
 
+## Other tools
+
+The same folder-and-upload idea works for [Storybook](/ci/storybook/) (a script that screenshots every story) and [Cypress](/ci/cypress/) (`cy.screenshot()`). The step-by-step pipelines are in the [GitHub Actions](/ci/github-actions/) and [GitLab CI](/ci/gitlab-ci/) guides.
+
 ## Host the Playwright report
 
 The same job can put the HTML report next to the screenshots: `npx @circi/cli site upload ./playwright-report --name playwright`. See [Hosted sites](/using/hosted-sites/).
 
 ## Another way: the Argos SDK
 
-CirCI accepts uploads from the Argos SDKs, including `@argos-ci/playwright`, when two variables point at it. That route is built from the SDKs' source and **hasn't been verified with the real SDKs**, so the folder and `circi upload` above is the tested one. See [Argos-compatible API](/ci/argos-compatible-api/).
+CirCI implements the upload API of the Argos SDKs, including `@argos-ci/playwright`, but **the real SDK refuses CirCI's project tokens today** (tried with `@argos-ci/cypress`, which shares the upload code), so the folder and `circi upload` above is the route to use. See [Argos-compatible API](/ci/argos-compatible-api/).
 
 <Aside type="caution" title="What was tested">
 The Playwright configuration on this page was run with `@playwright/test` 1.65.1 on Chromium, and it wrote the files named above. The upload itself is the ordinary `circi upload` documented in the [CLI reference](/ci/cli/); it wasn't run against a CirCI server in this check.

@@ -7,7 +7,7 @@ import { groupsOf, HOME_DESCRIPTION, pathOf, SITE, SITE_NAME } from '#lib/seo.ts
 const REPOSITORY = 'https://github.com/cir-ci/repo'
 const ORGANIZATION_ID = `${SITE}/#organization`
 
-/** The home page: the application and its organization (`@circi/cli` and `@circi/vitest` are the packages on npm). */
+/** The home page: the application, the website and its organization (`@circi/cli` and `@circi/vitest` are the packages on npm). */
 export function homeData(): Graph {
   return {
     '@context': 'https://schema.org',
@@ -25,6 +25,16 @@ export function homeData(): Graph {
         offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
         publisher: { '@id': ORGANIZATION_ID },
         sameAs: [REPOSITORY, 'https://www.npmjs.com/package/@circi/cli', 'https://www.npmjs.com/package/@circi/vitest'],
+      },
+      {
+        // Tells search engines that "CirCI" is the name of this site (and not a misspelling of another word).
+        '@type': 'WebSite',
+        '@id': `${SITE}/#website`,
+        name: SITE_NAME,
+        url: `${SITE}/`,
+        description: HOME_DESCRIPTION,
+        inLanguage: 'en',
+        publisher: { '@id': ORGANIZATION_ID },
       },
       {
         '@type': 'Organization',
