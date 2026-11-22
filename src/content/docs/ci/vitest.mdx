@@ -97,6 +97,17 @@ One plugin uploads one build. For several browsers, run Vitest once per browser 
 | `root` | The project root. |
 | `wait` | Fail the run when changes need review. |
 | `strict` | Fail the run when the upload fails. By default a failed upload never changes the test result. |
+| `site` | Also host Vitest's HTML test report next to the build, as a [hosted site](/using/hosted-sites/) (from 0.4.0). `true`, or `{ name, dir }`. Default off. |
+
+## Host the test report
+
+With `site: true` the plugin turns on Vitest's own `html` reporter (it needs `@vitest/ui` installed) and, once the screenshots have uploaded, uploads the report as a site of kind `vitest-report`, named `vitest-report`, so reviewers can open the test results from the build:
+
+```ts title="vitest.config.ts"
+plugins: [circi({ name: 'unit', site: true })],
+```
+
+The upload waits for the report to be written. It happens only with a token, only after the screenshots uploaded, and in a sharded run only from the first shard. A failure is logged and fails the run only with `strict`. `site: { dir: 'reports/unit' }` hosts a folder you made yourself instead, and `name` names the site.
 
 ## Stable screenshots
 
