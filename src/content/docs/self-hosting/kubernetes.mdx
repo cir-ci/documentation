@@ -1,0 +1,588 @@
+---
+title: Kubernetes
+description: Run a released CirCI on an existing Kubernetes cluster such as EKS with the Helm chart, and a complete AWS example with Terraform.
+---
+{/* Source: deploy/helm/circi (Chart.yaml, values.yaml, values.schema.json, templates/_helpers.tpl), deploy/helm/README.md, deploy/Caddyfile, packages/config/src/settings.ts, packages/config/src/load.ts (<NAME>_FILE, TRUSTED_PROXIES), .github/workflows/release.yml */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+import SettingCard from '../../../components/SettingCard.astro'
+
+The Helm chart (the repository's `deploy/helm/circi`) runs a released CirCI on a Kubernetes cluster you already have: the app (`ghcr.io/cir-ci/circi:<version>`), and Caddy for TLS and hosted sites when you ask for it. It creates nothing outside the cluster. Postgres (for example Amazon RDS), the S3 bucket and the IAM role are yours; [the EKS example](#a-complete-eks-example) below creates all of them with Terraform. It needs Kubernetes 1.27 or later and Helm 3.8 or later (for charts in a registry).
+
+Each release publishes the chart as an OCI chart, `oci://ghcr.io/cir-ci/charts/circi`, whose version is the CirCI release, so the chart and the image always match.
+
+## Install
+
+<Steps>
+
+1. Create a values file. The least a release needs is the secret and a database:
+
+   ```yaml title="values.yaml"
+   secrets:
+     betterAuthSecret: "…" # openssl rand -base64 32; keep it stable
+     databasePassword: "…"
+   database:
+     host: circi.abc123.eu-west-1.rds.amazonaws.com
+     user: circi
+   publicUrl: https://ci.acme.io
+   ```
+
+2. Install it, pinned to a release:
+
+   ```sh
+   helm install circi oci://ghcr.io/cir-ci/charts/circi --version 0.1.0 \
+     --namespace circi --create-namespace -f values.yaml
+   ```
+
+3. Check that it's ready. `GET /readyz` answers once the database and storage do:
+
+   ```sh
+   kubectl --namespace circi rollout status deployment/circi
+   kubectl --namespace circi port-forward service/circi 3000:3000
+   curl localhost:3000/readyz
+   ```
+
+</Steps>
+
+A release named `circi` gets a Service named `circi`; with another name it's `<release>-circi`.
+
+Without S3 the chart keeps screenshots on a volume (`persistence`), which one pod can use. That is fine to try CirCI. For anything else, use S3, below.
+
+## Values
+
+Settings come in the groups of the [Terraform module](/self-hosting/terraform/#settings), each key named after its setting in camel case: `smtp.host` is `SMTP_HOST`, `tuning.diffEngine` is `CIRCI_DIFF_ENGINE`. `values.yaml` in the chart lists every key with its setting and default. Every [environment variable](/reference/environment-variables/) the server reads has a key.
+
+| Group | Keys |
+| --- | --- |
+| `smtp` | `host`, `port`, `secure`, `user`, `from` |
+| `s3` | `bucket`, `region`, `endpoint`, `forcePathStyle`, `accessKeyId`, `connectTimeoutSeconds`, `requestTimeoutSeconds` |
+| `signIn` | `email`, `password`, `sso`: which sign-in methods are on |
+| `sso` | `githubClientId`, `googleClientId`, `gitlabClientId`, `gitlabUrl`, `oidcIssuer`, `oidcClientId`, `oidcName`, `oidcTrustedForEmail` |
+| `githubApp` | `id`, `apiUrl`, `apiTimeoutSeconds` |
+| `slack` | `clientId`, `apiUrl` |
+| `vapid` | `publicKey`, `subject` |
+| `sites` | `host` (without `caddy`), `maxMb` |
+| `jobs` | `uploadTimeoutMinutes`, `gcGraceHours`, `retentionDays`, `retryBaseSeconds`, `retryMaxSeconds` |
+| `webhooks` | `timeoutSeconds`, `allowPrivateAddresses` |
+| `tuning` | `databasePoolMax`, `diffEngine`, `diffThreads`, `liveMaxStreams` |
+
+`publicUrl`, `previousPublicUrls`, `trustedProxies`, `logLevel` and `workspaceCreation` are top-level values. The rest of `values.yaml` is the chart's own: `mode`, `all`, `serve`, `worker`, `service`, `ingress`, `caddy`, `database`, `persistence`, `secrets`, `serviceAccount`, `networkPolicy`, `probes` and the image.
+
+- **A misspelled key fails the install.** `values.schema.json` closes every group, so `smtp.hots` is an error (`additional properties 'hots' not allowed`), and so is a value of the wrong type.
+- **Settings that go together are checked at install**: `smtp.user` with `secrets.smtpPassword`, each client ID with its secret, the three GitHub App values, the three OIDC values. The message names the settings, and the server checks the same groups when it starts.
+- **A key left out (`null`) leaves the setting unset.** The server's default applies, and a setting that [Instance settings](/self-hosting/instance-settings/) can change stays changeable in the dashboard. Setting it here locks it there.
+- **The chart sets a few itself**: `DATABASE_URL` (from `database` and the password), `PUBLIC_URL`, `TRUSTED_PROXIES` and `STATIC_SITES_HOST` with Caddy, and `STORAGE_DRIVER=s3` when `s3.bucket` is set. The image fixes `NODE_ENV`, `HOST`, `PORT`, `STORAGE_PATH` and its own paths.
+
+### Secrets
+
+Secrets are not values of the environment. The chart puts them in a Secret and mounts it under `/run/circi/secrets`, one file per setting, and each pod gets `<NAME>_FILE` pointing at its file; the server reads it from there (see [Configuration](/self-hosting/configuration/#secrets)). `kubectl describe pod` shows every other setting and none of the secrets.
+
+There are two ways to give them:
+
+- **In the values**, under `secrets`: `betterAuthSecret`, `databasePassword` (or `databaseUrl` whole), `s3SecretAccessKey`, `smtpPassword`, `githubAppPrivateKey`, `githubAppWebhookSecret`, `slackClientSecret`, `vapidPrivateKey` and the four `auth*ClientSecret`s. Pass them from your own tooling with `--set-file secrets.githubAppPrivateKey=circi.private-key.pem` rather than committing them. The chart makes a Secret from them.
+- **A Secret you manage**, for an external secrets operator or sealed secrets: `secrets.existingSecret: circi-secrets`, a Secret whose keys are the settings' names (`BETTER_AUTH_SECRET`, `DATABASE_URL`, `SMTP_PASSWORD`, ...). Say which optional keys it holds with `secrets.existingSecretKeys: [SMTP_PASSWORD]`. `BETTER_AUTH_SECRET` and `DATABASE_URL` are always read. `database.*` and `secrets.databasePassword` are ignored then: the URL is yours.
+
+A change to the Secret restarts the pods, because the server reads it at start (`helm upgrade` does that for values; with `existingSecret`, run `kubectl rollout restart`).
+
+## Storage: S3 and IAM roles
+
+Pods can't share the files volume, so the chart refuses `mode: split` or more than one replica without `s3.bucket` (`Pods can't share the files volume: set s3.bucket…`). With a bucket, screenshots, diffs and hosted sites go to S3:
+
+```yaml
+s3:
+  bucket: acme-circi
+  region: eu-west-1
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/circi
+```
+
+On EKS, an [IAM role for the service account](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) needs no keys: the annotation makes EKS hand the pods temporary credentials, and the server uses the AWS credential chain when `s3.accessKeyId` is not set. The role needs `s3:GetObject`, `s3:PutObject` and `s3:DeleteObject` on the bucket's objects and `s3:ListBucket` on the bucket (see [Storage](/self-hosting/storage/)). Its trust policy names the chart's service account, `system:serviceaccount:<namespace>:<release name>`.
+
+To use keys instead (an S3-compatible store such as MinIO, R2, or a cluster without IRSA), set `s3.accessKeyId` and `secrets.s3SecretAccessKey` together, and `s3.endpoint` for a store that isn't AWS.
+
+## Database
+
+Use a Postgres of your own, reached directly: not through a transaction pooler or RDS Proxy, because the server uses `LISTEN`/`NOTIFY` and session advisory locks. The other requirements are in [Database](/self-hosting/database/#managed-postgres-amazon-rds): a user that may create tables, and room for the connections. Each pod opens up to `tuning.databasePoolMax` (10) plus a few of its own, so `replicas × 10` must stay under the instance's `max_connections`.
+
+```yaml
+database:
+  host: circi.abc123.eu-west-1.rds.amazonaws.com
+  port: 5432
+  name: circi
+  user: circi
+  caCertificate: |
+    -----BEGIN CERTIFICATE-----
+    …
+secrets:
+  databasePassword: "…"
+```
+
+The chart builds `DATABASE_URL` into the Secret, URL-encoding the user, password and name, so any characters work. With `tls: true` (the default) it ends in `?sslmode=verify-full`, and the server verifies the database's certificate. Amazon RDS's certificates come from Amazon's own authority, which Node doesn't trust, so pass [Amazon's bundle](https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem) as `database.caCertificate` (`--set-file database.caCertificate=global-bundle.pem`). The chart mounts it at `/run/circi/database-ca.pem` and adds `&sslrootcert=/run/circi/database-ca.pem`. Without it the server fails to start with a certificate error. To keep the bundle in a ConfigMap of your own, name it in `database.existingCaConfigMap` (key `ca.pem`).
+
+## Hosted sites with Caddy
+
+[Hosted sites](/self-hosting/site-domains/) need a wildcard certificate for the sites domain and certificates for each project's custom domain, which an Ingress controller can't issue by itself. With `caddy.enabled`, the chart runs Caddy in the cluster: the same `ghcr.io/cir-ci/circi-caddy:<version>` image and Caddyfile as [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/) (a wildcard certificate by the DNS-01 challenge through Route53, and on-demand certificates for custom domains that Caddy confirms with CirCI's `/internal/tls-ask`). Read [Site domains](/self-hosting/site-domains/) first: the sites domain must be used for nothing else.
+
+```yaml
+caddy:
+  enabled: true
+  dashboardHost: ci.acme.io
+  sitesHost: acme-sites.com
+  awsRegion: eu-west-1
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::111122223333:role/circi-caddy
+  service:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: external
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+```
+
+- **The addresses.** `publicUrl` becomes `https://<dashboardHost>` and `STATIC_SITES_HOST` is `sitesHost`: leave `sites.host` unset. Point `dashboardHost`, `*.<sitesHost>` and each custom domain at the load balancer (`kubectl get service circi-caddy`).
+- **The load balancer.** Caddy's Service is `type: LoadBalancer` on ports 80 and 443. The annotations above ask the AWS Load Balancer Controller for a network load balancer that sends traffic straight to the pod, which keeps the client's address. Without the controller, EKS makes a classic load balancer, which keeps the client's address only with `caddy.service.externalTrafficPolicy: Local`. `caddy.service.http3` also publishes 443/UDP, which needs a load balancer that supports both protocols on one Service.
+- **Route53 access.** Caddy reads the AWS credential chain. On EKS, give its service account (`<release>-caddy`) a role that may list the hosted zones, read changes and change records in the sites domain's zone; the [example](#a-complete-eks-example) shows the policy. Without IRSA, put the keys in a Secret of yours as a shared credentials file under the key `credentials` and name it in `caddy.awsCredentialsSecret`.
+- **The upstream.** The Caddyfile in `deploy/` proxies to `circi:3000`. The chart renders its copy with your release's Service name, so a release that isn't called `circi` works too.
+- **One Caddy pod.** Its certificates and keys live on a volume (`caddy.persistence`, 1 GiB), and two instances would each request them. The load balancer, not Caddy, is the part you can't lose in a node failure: a restarted pod finds its certificates on the volume.
+
+### Without hosted sites: an Ingress
+
+A cluster that has no [hosted sites](/self-hosting/site-domains/) can serve the dashboard through its ingress controller and let it do TLS:
+
+```yaml
+publicUrl: https://ci.acme.io
+ingress:
+  enabled: true
+  className: alb # or nginx
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:111122223333:certificate/…
+  tls: [] # with cert-manager: [{ secretName: circi-tls, hosts: [ci.acme.io] }]
+```
+
+The Ingress routes `publicUrl`'s host (and the ones in `ingress.hosts`) to CirCI. Use either `caddy` or `ingress`: the chart refuses both. An ALB's health check path is `/healthz` (`alb.ingress.kubernetes.io/healthcheck-path`).
+
+## Trusted proxies
+
+Sign-in rate limits and logs need the client's address. CirCI believes `X-Forwarded-For` only from the addresses in `TRUSTED_PROXIES`, so it must name the proxy in front of CirCI and no one else.
+
+In a cluster the proxy's address isn't fixed: Caddy's pod (and an ingress controller's) gets a new one when it restarts. So with `caddy.enabled` or `ingress.enabled`, the chart sets `TRUSTED_PROXIES` to the private ranges, `10.0.0.0/8,172.16.0.0/12,192.168.0.0/16`, which hold the pod and VPC addresses of any cluster. That is safe only if nothing else can reach CirCI's port: a pod in the cluster could otherwise send a forged `X-Forwarded-For`. Two ways to close that:
+
+- **`networkPolicy.enabled: true`** lets only Caddy's pod (and, with `ingress.enabled`, the ingress controller's namespace, `networkPolicy.ingressNamespaceSelector`) reach port 3000. It needs a CNI that enforces NetworkPolicy (the VPC CNI does with network policy enabled, Calico and Cilium do).
+- **Name the real range** in `trustedProxies`, for example your pod CIDR or the subnets of an ALB: `trustedProxies: [10.42.0.0/16]`. A list you give replaces the default.
+
+Without Caddy or an Ingress (a `NodePort`, or your own proxy), `TRUSTED_PROXIES` is unset until you set `trustedProxies`.
+
+## Scaling
+
+By default one Deployment runs `circi all`, the HTTP server and the worker in one process, as in [Scaling the worker](/self-hosting/scaling-the-worker/). To scale them apart:
+
+```yaml
+mode: split
+serve:
+  replicas: 3
+worker:
+  replicas: 2
+```
+
+`mode: split` runs a `serve` Deployment (behind the Service, with the probes) and a `worker` Deployment (no HTTP, so no probes: Kubernetes restarts it if the process exits). Both need S3. Every pod applies database migrations as it starts, under an advisory lock, so pods starting together is fine. The `all`, `serve` and `worker` blocks each take `replicas`, `resources`, `nodeSelector`, `tolerations`, `affinity`, `podAnnotations` and `podLabels`.
+
+The probes call `GET /healthz` (liveness, with the version) and `GET /readyz` (readiness: the database and storage). A startup probe gives a pod 5 minutes to finish its migrations before the liveness probe applies; change the timings under `probes`.
+
+## Upgrading
+
+Change the chart version and upgrade:
+
+```sh
+helm upgrade circi oci://ghcr.io/cir-ci/charts/circi --version 0.2.0 \
+  --namespace circi -f values.yaml
+```
+
+The chart's image tag defaults to its own version (`image.tag` overrides it), so the app and the chart move together. The pods roll gradually, and each applies new migrations as it starts. With the files volume (no S3) there is one pod, so the old one stops before the new one starts, which means a short outage. Read [Upgrades and migrations](/self-hosting/upgrades-and-migrations/) before a release that changes migrations. `helm rollback` restores the previous chart and image, but not the database: restore from a [backup](/self-hosting/backups/) for that.
+
+Uninstalling keeps the files volume's claim, so that the screenshots outlive the release.
+
+## A complete EKS example
+
+This Terraform creates everything the chart doesn't, on an existing EKS cluster, and then installs the chart: an RDS Postgres instance that requires TLS, an S3 bucket, two IAM roles for service accounts (the app's, for the bucket, and Caddy's, for Route53), the Helm release, and the DNS records for Caddy's load balancer. It uses the `aws` and `helm` providers, and was checked with `terraform validate`.
+
+What it expects:
+
+- an EKS cluster with an [IAM OIDC provider](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html) and the [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/);
+- two Route53 hosted zones, one for the dashboard's address and one for the sites domain, which is a separate domain used for nothing else;
+- Amazon's CA bundle next to the files: `curl -O https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem`.
+
+```hcl title="versions.tf"
+terraform {
+  required_version = ">= 1.8"
+  required_providers {
+    aws  = { source = "hashicorp/aws", version = "~> 6.0" }
+    helm = { source = "hashicorp/helm", version = "~> 3.0" }
+  }
+}
+
+provider "aws" {
+  region = var.region
+}
+
+# Reaches the cluster the way `aws eks update-kubeconfig` does.
+provider "helm" {
+  kubernetes = {
+    host                   = data.aws_eks_cluster.this.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
+    exec = {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args        = ["eks", "get-token", "--cluster-name", var.cluster_name, "--region", var.region]
+    }
+  }
+}
+```
+
+```hcl title="variables.tf"
+variable "region" {
+  type    = string
+  default = "eu-west-1"
+}
+
+variable "cluster_name" {
+  description = "The EKS cluster, with an IAM OIDC provider and the AWS Load Balancer Controller."
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "Private subnets of the cluster's VPC, in at least two availability zones, for the database."
+  type        = list(string)
+}
+
+variable "dashboard_host" {
+  description = "The dashboard's address, e.g. ci.acme.io."
+  type        = string
+}
+
+variable "dashboard_zone_name" {
+  description = "The Route53 hosted zone of the dashboard's address, e.g. acme.io."
+  type        = string
+}
+
+variable "sites_zone_name" {
+  description = "The Route53 hosted zone, and the name, of the sites domain, e.g. acme-sites.com: a domain used for nothing else."
+  type        = string
+}
+
+variable "load_balancer_hostname" {
+  description = "Caddy's load balancer, from `kubectl get service circi-caddy`. Unset on the first apply; set it and apply again to create the DNS records."
+  type        = string
+  default     = null
+}
+
+variable "chart_version" {
+  description = "The CirCI release: the chart's version and the image's tag."
+  type        = string
+  default     = "0.1.0"
+}
+
+variable "better_auth_secret" {
+  description = "openssl rand -base64 32. Keep it stable."
+  type        = string
+  sensitive   = true
+}
+
+variable "database_password" {
+  type      = string
+  sensitive = true
+}
+```
+
+```hcl title="main.tf"
+data "aws_eks_cluster" "this" {
+  name = var.cluster_name
+}
+
+data "aws_iam_openid_connect_provider" "this" {
+  url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+}
+
+data "aws_route53_zone" "dashboard" {
+  name = var.dashboard_zone_name
+}
+
+data "aws_route53_zone" "sites" {
+  name = var.sites_zone_name
+}
+
+locals {
+  namespace  = "circi"
+  oidc_host  = replace(data.aws_iam_openid_connect_provider.this.url, "https://", "")
+  vpc_id     = data.aws_eks_cluster.this.vpc_config[0].vpc_id
+  cluster_sg = data.aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+}
+
+# --- Postgres: Amazon RDS, TLS required ---------------------------------------------------------------
+
+resource "aws_db_subnet_group" "circi" {
+  name       = "circi"
+  subnet_ids = var.subnet_ids
+}
+
+resource "aws_security_group" "database" {
+  name   = "circi-database"
+  vpc_id = local.vpc_id
+
+  ingress {
+    description     = "Postgres from the cluster's pods and nodes"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [local.cluster_sg]
+  }
+}
+
+# RDS for PostgreSQL 15 and later requires TLS already; the parameter says so for every version.
+resource "aws_db_parameter_group" "circi" {
+  name   = "circi-postgres17"
+  family = "postgres17"
+
+  parameter {
+    name  = "rds.force_ssl"
+    value = "1"
+  }
+}
+
+resource "aws_db_instance" "circi" {
+  identifier                = "circi"
+  engine                    = "postgres"
+  engine_version            = "17"
+  instance_class            = "db.t4g.medium"
+  allocated_storage         = 50
+  storage_encrypted         = true
+  db_name                   = "circi"
+  username                  = "circi"
+  password                  = var.database_password
+  db_subnet_group_name      = aws_db_subnet_group.circi.name
+  vpc_security_group_ids    = [aws_security_group.database.id]
+  parameter_group_name      = aws_db_parameter_group.circi.name
+  publicly_accessible       = false
+  backup_retention_period   = 7
+  deletion_protection       = true
+  final_snapshot_identifier = "circi-final"
+}
+
+# --- Screenshots: S3 ------------------------------------------------------------------------------------
+
+resource "aws_s3_bucket" "files" {
+  bucket_prefix = "circi-files-"
+}
+
+resource "aws_s3_bucket_public_access_block" "files" {
+  bucket                  = aws_s3_bucket.files.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# --- IAM roles for service accounts ---------------------------------------------------------------------
+
+# What the server needs of the bucket: read, write and delete objects, and list (without s3:ListBucket
+# a missing object answers 403 instead of 404).
+data "aws_iam_policy_document" "files" {
+  statement {
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.files.arn]
+  }
+  statement {
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    resources = ["${aws_s3_bucket.files.arn}/*"]
+  }
+}
+
+# Each role trusts one service account of the circi namespace, and nothing else.
+data "aws_iam_policy_document" "trust_circi" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = [data.aws_iam_openid_connect_provider.this.arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${local.oidc_host}:sub"
+      values   = ["system:serviceaccount:${local.namespace}:circi"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${local.oidc_host}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "circi" {
+  name               = "circi"
+  assume_role_policy = data.aws_iam_policy_document.trust_circi.json
+}
+
+resource "aws_iam_role_policy" "circi_files" {
+  role   = aws_iam_role.circi.id
+  policy = data.aws_iam_policy_document.files.json
+}
+
+# Caddy's wildcard certificate for the sites domain: the DNS-01 challenge writes a TXT record.
+data "aws_iam_policy_document" "route53" {
+  statement {
+    actions   = ["route53:ListHostedZonesByName", "route53:GetChange"]
+    resources = ["*"]
+  }
+  statement {
+    actions   = ["route53:ListResourceRecordSets", "route53:ChangeResourceRecordSets"]
+    resources = [data.aws_route53_zone.sites.arn]
+  }
+}
+
+data "aws_iam_policy_document" "trust_caddy" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = [data.aws_iam_openid_connect_provider.this.arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${local.oidc_host}:sub"
+      values   = ["system:serviceaccount:${local.namespace}:circi-caddy"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${local.oidc_host}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "caddy" {
+  name               = "circi-caddy"
+  assume_role_policy = data.aws_iam_policy_document.trust_caddy.json
+}
+
+resource "aws_iam_role_policy" "caddy_route53" {
+  role   = aws_iam_role.caddy.id
+  policy = data.aws_iam_policy_document.route53.json
+}
+
+# --- CirCI: the chart ------------------------------------------------------------------------------------
+
+resource "helm_release" "circi" {
+  name             = "circi" # the release's name is the Service's, and the service accounts' are named after it
+  namespace        = local.namespace
+  create_namespace = true
+  repository       = "oci://ghcr.io/cir-ci/charts"
+  chart            = "circi"
+  version          = var.chart_version
+
+  values = [yamlencode({
+    mode   = "split"
+    serve  = { replicas = 2 }
+    worker = { replicas = 2 }
+
+    serviceAccount = {
+      annotations = { "eks.amazonaws.com/role-arn" = aws_iam_role.circi.arn }
+    }
+
+    s3 = {
+      bucket = aws_s3_bucket.files.bucket
+      region = var.region
+    }
+
+    database = {
+      host          = aws_db_instance.circi.address
+      user          = aws_db_instance.circi.username
+      name          = aws_db_instance.circi.db_name
+      caCertificate = file("${path.module}/global-bundle.pem") # curl -O https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+    }
+
+    secrets = {
+      betterAuthSecret = var.better_auth_secret
+      databasePassword = var.database_password
+    }
+
+    caddy = {
+      enabled       = true
+      dashboardHost = var.dashboard_host
+      sitesHost     = var.sites_zone_name
+      awsRegion     = var.region
+      serviceAccount = {
+        annotations = { "eks.amazonaws.com/role-arn" = aws_iam_role.caddy.arn }
+      }
+      service = {
+        annotations = {
+          "service.beta.kubernetes.io/aws-load-balancer-type"            = "external"
+          "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type" = "ip"
+          "service.beta.kubernetes.io/aws-load-balancer-scheme"          = "internet-facing"
+        }
+      }
+    }
+
+    networkPolicy = { enabled = true }
+  })]
+}
+
+# --- DNS, once Caddy's load balancer exists --------------------------------------------------------------
+
+resource "aws_route53_record" "dashboard" {
+  count   = var.load_balancer_hostname == null ? 0 : 1
+  zone_id = data.aws_route53_zone.dashboard.zone_id
+  name    = var.dashboard_host
+  type    = "CNAME"
+  ttl     = 300
+  records = [var.load_balancer_hostname]
+}
+
+# Every site address is <hash>-<slug>.<sites domain>.
+resource "aws_route53_record" "sites" {
+  count   = var.load_balancer_hostname == null ? 0 : 1
+  zone_id = data.aws_route53_zone.sites.zone_id
+  name    = "*.${var.sites_zone_name}"
+  type    = "CNAME"
+  ttl     = 300
+  records = [var.load_balancer_hostname]
+}
+```
+
+Apply it in two steps, because the load balancer doesn't exist until Caddy's Service does:
+
+<Steps>
+
+1. Apply without `load_balancer_hostname`. This creates the database, the bucket, the roles and the release:
+
+   ```sh
+   terraform apply \
+     -var cluster_name=acme \
+     -var 'subnet_ids=["subnet-0a…","subnet-0b…"]' \
+     -var dashboard_host=ci.acme.io -var dashboard_zone_name=acme.io \
+     -var sites_zone_name=acme-sites.com \
+     -var "better_auth_secret=$(openssl rand -base64 32)" \
+     -var "database_password=$(openssl rand -base64 24 | tr -d '/@:')"
+   ```
+
+   Keep the two secrets: a later apply needs the same values (put them in a `terraform.tfvars` or a secrets store, and keep the state private, because it holds them too).
+
+2. Read the load balancer's address and apply again with it, which adds the DNS records:
+
+   ```sh
+   kubectl --namespace circi get service circi-caddy \
+     -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+   terraform apply … -var load_balancer_hostname=k8s-circi-circicad-0123456789.elb.eu-west-1.amazonaws.com
+   ```
+
+3. Open `https://ci.acme.io`. Caddy asks for the certificates when the first request arrives, so the first load can take a few seconds.
+
+</Steps>
+
+<Aside type="caution">
+`deletion_protection` makes `terraform destroy` stop at the database, so deleting your data is a step you take on purpose. Secrets are in the Terraform state, like every other value: keep it in a private backend.
+</Aside>
+
+To switch the example to an Ingress instead of Caddy (no hosted sites), drop the Caddy role, the `caddy` block, the `sites` DNS record and the sites zone, set `publicUrl` and `ingress` in the values as in [Without hosted sites](#without-hosted-sites-an-ingress), and keep `networkPolicy`.
