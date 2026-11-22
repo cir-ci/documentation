@@ -130,11 +130,16 @@ External services (GitHub, GitLab, Slack, ...) are faked at their edge. If your 
 
 ## Changesets
 
-Only two packages are published to npm: `@circi/cli` (the `circi upload` command) and `@circi/vitest` (the Vitest plugin). Every other package is private and has no version. A pull request that changes what either one ships needs a changeset, a small file in `.changeset/` that says what changed and how big the bump is.
+Three things are released, each with its own version and changelog:
 
-You don't have to remember it: a git hook (husky, set up by `pnpm install`) notices a commit that changes `packages/cli` or `packages/vitest` without a changeset, writes `.changeset/auto-<sha>.md` from the commit's first line and amends it into the same commit. It's a patch unless the message says `[minor]` or `[major]`, and a CLI change also releases `@circi/vitest`, which bundles the CLI. Set `CIRCI_AUTO_CHANGESET=0` on a commit to skip it.
+- `@circi/cli` (the `circi upload` command) and `@circi/vitest` (the Vitest plugin), published to npm.
+- The app, versioned as `@circi/server`. Its release is the `ghcr.io/cir-ci/circi:<version>` and `circi-caddy:<version>` images and a GitHub release named `@circi/server@<version>`, not an npm package. The app changes when anything in its image does: the server and every package it uses, the dashboard, and `deploy/`.
 
-For a better release note, write it yourself: run `pnpm changeset`, choose the package or packages, choose the bump, and write one line for the changelog, in the style of a release note ("Add `--shard` to `circi upload`"). Commit the generated file with your change. A change to tests, docs, the repository's tooling or any private package needs none; if a change touches a published package but needs no release, run `pnpm changeset --empty`. A CI check fails a pull request that changes `packages/cli` or `packages/vitest` without one.
+A pull request that changes what any of them ships needs a changeset, a small file in `.changeset/` that says what changed and how big the bump is.
+
+You don't have to remember it: a git hook (husky, set up by `pnpm install`) notices a commit that changes a released package, or a package one of them depends on, without a changeset, writes `.changeset/auto-<sha>.md` from the commit's first line and amends it into the same commit. It's a patch unless the message says `[minor]` or `[major]`, and a CLI change also releases `@circi/vitest`, which bundles the CLI. Set `CIRCI_AUTO_CHANGESET=0` on a commit to skip it.
+
+For a better release note, write it yourself: run `pnpm changeset`, choose the package or packages, choose the bump, and write one line for the changelog, in the style of a release note ("Add `--shard` to `circi upload`"). Commit the generated file with your change. A change to tests, docs or the repository's tooling needs none; if a change touches a released package but needs no release, run `pnpm changeset --empty`. A CI check (`changeset status`) fails a pull request that changes a released package without one.
 
 Pick the bump from what a person using the package sees (CirCI is 0.x until the first stable release, so a breaking change is a minor):
 
@@ -142,7 +147,7 @@ Pick the bump from what a person using the package sees (CirCI is 0.x until the 
 - **Minor:** a new flag, option, environment variable or export; a newly detected CI provider. Also a breaking change while the version is below 1.0.
 - **Major** (from 1.0): a removed or renamed flag, option or export; a changed exit code or output format that scripts parse; a raised minimum Node or Vitest version.
 
-`@circi/vitest` bundles `@circi/cli`, so a change to the CLI's code is a release of both: list both packages in the changeset. When a pull request with a changeset reaches `main`, a release workflow opens or updates a "Version Packages" pull request with the new versions and changelogs. Merging it publishes to npm. Maintainers do that; contributors only add the changeset.
+`@circi/vitest` bundles `@circi/cli`, so a change to the CLI's code is a release of both: list both packages in the changeset. When a pull request with a changeset reaches `main`, a release workflow opens or updates a "Version Packages" pull request with the new versions and changelogs. Merging it publishes the npm packages and, for an app release, the images and the GitHub release. Maintainers do that; contributors only add the changeset.
 
 ## Continuous integration
 
