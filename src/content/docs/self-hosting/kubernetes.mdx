@@ -1,5 +1,6 @@
 ---
 title: Kubernetes
+seoTitle: Self-host CirCI on Kubernetes (EKS) with Helm
 description: Run a released CirCI on an existing Kubernetes cluster such as EKS with the Helm chart, and a complete AWS example with Terraform.
 ---
 {/* Source: deploy/helm/circi (Chart.yaml, values.yaml, values.schema.json, templates/_helpers.tpl), deploy/helm/README.md, deploy/Caddyfile, packages/config/src/settings.ts, packages/config/src/load.ts (<NAME>_FILE, TRUSTED_PROXIES), .github/workflows/release.yml */}
@@ -29,7 +30,7 @@ Each release publishes the chart as an OCI chart, `oci://ghcr.io/cir-ci/charts/c
 2. Install it, pinned to a release:
 
    ```sh
-   helm install circi oci://ghcr.io/cir-ci/charts/circi --version 0.1.0 \
+   helm install circi oci://ghcr.io/cir-ci/charts/circi --version 0.1.1 \
      --namespace circi --create-namespace -f values.yaml
    ```
 

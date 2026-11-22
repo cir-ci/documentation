@@ -26,7 +26,7 @@ circi serve      # HTTP API and dashboard
 circi worker     # background jobs
 ```
 
-Run any number of each from the same image, against the same Postgres and storage. In compose that is two services with `command: ['serve']` and `command: ['worker']`. A worker serves no HTTP, so the image's health check passes for it as long as the process runs.
+Run any number of each from the same image, against the same Postgres and storage. In compose that is two services with `command: ['serve']` and `command: ['worker']`; in the [Helm chart](/self-hosting/kubernetes/), `mode: split` with `serve.replicas` and `worker.replicas`. A worker serves no HTTP, so the image's health check passes for it as long as the process runs.
 
 </TabItem>
 </Tabs>

@@ -10,6 +10,8 @@ import SettingCard from '../../../components/SettingCard.astro'
 
 The Terraform module (the repository's `deploy/terraform`, published on the [Terraform Registry](https://registry.terraform.io/modules/cir-ci/circi/docker) as `cir-ci/circi/docker`) runs a released CirCI on one Docker host: the app (`ghcr.io/cir-ci/circi:<version>`), Postgres in a container unless you give your own, and Caddy for TLS and hosted sites when you ask for it. It runs the same services as [Docker Compose](/self-hosting/docker-compose/) with the Caddy overlay, but from published images. It needs Terraform 1.8 or later and the `kreuzwerker/docker` provider.
 
+For a Kubernetes cluster such as EKS, use the [Helm chart](/self-hosting/kubernetes/) instead. Its settings have the same names as this module's inputs, so one configuration translates to the other.
+
 ## Use
 
 Pin the module to the same release as the image with `version`, so the two always match.
