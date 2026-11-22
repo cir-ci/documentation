@@ -34,7 +34,7 @@ CirCI is one Docker image (the server, the dashboard and the background worker),
 - **You operate it.** Updates, backups, monitoring, TLS and uptime are your job, and a failed worker or a full disk is your page, not a vendor's status page. [Upgrades and migrations](/self-hosting/upgrades-and-migrations/), [Backups](/self-hosting/backups/) and [Monitoring](/self-hosting/monitoring/) cover what that involves.
 - **No hosted service to fall back on.** There is no CirCI cloud, trial account or managed plan.
 - **You choose and run the browsers.** There's no fleet that renders the same snapshot in Chrome, Firefox and Safari for you. Whatever your tests render is what gets compared.
-- **Capture is a separate step.** CirCI has no add-on that snapshots your stories or pages by itself; see [Storybook](/ci/storybook/), [Playwright](/ci/playwright/) and [Cypress](/ci/cypress/) for how the screenshots get in.
+- **Capture is a separate step.** CirCI has no add-on that snapshots your stories or pages by itself; see [Playwright](/ci/playwright/) and [The CLI](/ci/cli/) for how the screenshots get in.
 - **It's pre-1.0.** Some parts have been tested only against simulated services, and the Argos SDKs can't upload to it yet ([Argos-compatible API](/ci/argos-compatible-api/)). The [changelog](/changelog/) shows what each release changed.
 
 <Aside type="tip" title="A fair test">
@@ -45,4 +45,4 @@ Try it where it costs nothing: [run it locally](/getting-started/run-it-locally/
 
 Pick a hosted service when nobody on the team wants to run another server, when you need the same page rendered in several real browsers without building that yourself, or when a vendor's support contract matters more to you than where the images live. Pick CirCI when the data has to stay on your side, when per-screenshot pricing shapes what you test, or when you already run your CI and your Postgres and one more container is cheap.
 
-To go on: [Run it locally](/getting-started/run-it-locally/), [Self-host it](/self-hosting/requirements/), or [set up CI for GitHub Actions](/ci/github-actions/) or [GitLab CI](/ci/gitlab-ci/).
+To go on: [Run it locally](/getting-started/run-it-locally/), [Self-host it](/self-hosting/requirements/), or [upload from your CI](/ci/ci-examples/).

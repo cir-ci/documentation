@@ -20,7 +20,7 @@ It's a self-hosted alternative to hosted services such as Chromatic, Percy and A
 
 ## What you get
 
-- **Uploads from CI.** The `circi` CLI uploads a folder of PNG screenshots, from [Playwright](/ci/playwright/), [Cypress](/ci/cypress/) or [Storybook](/ci/storybook/) among others, with setup guides for [GitHub Actions](/ci/github-actions/) and [GitLab CI](/ci/gitlab-ci/). The `@circi/vitest` plugin takes stable screenshots in Vitest browser mode. The Argos SDKs were meant to work by changing two environment variables, but the real SDK refuses CirCI's tokens today ([Argos-compatible API](/ci/argos-compatible-api/)).
+- **Uploads from CI.** The `circi` CLI uploads a folder of PNG screenshots, from [Playwright](/ci/playwright/) or any tool that writes PNG files, with [examples for each CI](/ci/ci-examples/). The `@circi/vitest` plugin takes stable screenshots in Vitest browser mode. The Argos SDKs were meant to work by changing two environment variables, but the real SDK refuses CirCI's tokens today ([Argos-compatible API](/ci/argos-compatible-api/)).
 - **A fast comparison.** The worker diffs each screenshot with its baseline in a native Rust engine by default. Screenshots with the same SHA-256 are never opened.
 - **A review dashboard.** Side-by-side, diff and slider views. Approve or reject per screenshot or per build, comment on regions, request reviews by rule, and follow it all in the Inbox, saved views and insights.
 - **Flaky screenshot handling.** CirCI notices screenshots that keep flipping back to an image they already had, marks them <StatusChip status="flaky" />, and can let a pull request that only changes flaky screenshots pass.

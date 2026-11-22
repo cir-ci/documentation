@@ -53,7 +53,7 @@ import ThemeSelect from '../../components/overrides/ThemeSelect.astro'
     </div>
     <div class="l-path">
       <h3><a href="/ci/cli/">Set up CI</a></h3>
-      <p>Upload from any CI with the <code>circi</code> CLI or the Vitest plugin. Guides for <a href="/ci/github-actions/">GitHub Actions</a> and <a href="/ci/gitlab-ci/">GitLab CI</a>.</p>
+      <p>Upload from any CI with the <code>circi</code> CLI or the Vitest plugin. Shallow checkouts work.</p>
       <CopyCommand client:visible command="npx @circi/cli upload ./screenshots --wait" />
     </div>
     <div class="l-path">
