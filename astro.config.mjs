@@ -2,8 +2,10 @@
 import mdx from '@astrojs/mdx'
 import { satteri } from '@astrojs/markdown-satteri'
 import react from '@astrojs/react'
+import sitemap from '@astrojs/sitemap'
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
+import starlightLinksValidator from 'starlight-links-validator'
 
 // Wraps every Markdown table in `div.table-wrap` at build time (the wrapper has the border, radius and sideways
 // scroll, so the table inside can fill it; see docs.css). Tables from Astro components, like EnvTable, make their own.
@@ -30,7 +32,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'CirCI',
-      description: 'Documentation for CirCI, self-hosted visual regression testing.',
+      description: 'CirCI is open source visual regression testing you host yourself: CI uploads screenshots, your team reviews the changes, and the result gates the merge.',
       logo: { src: './src/assets/logo.svg', alt: 'CirCI' },
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/cir-ci' }],
@@ -39,6 +41,9 @@ export default defineConfig({
         { tag: 'meta', attrs: { name: 'theme-color', content: '#0c0a09', media: '(prefers-color-scheme: dark)' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#e9e2de', media: '(prefers-color-scheme: light)' } },
       ],
+      // Per-page title, social image and JSON-LD (src/route-data.ts), and a build that fails on a broken internal link.
+      routeMiddleware: './src/route-data.ts',
+      plugins: [starlightLinksValidator({ errorOnLocalLinks: false })],
       customCss: ['./src/styles/circi-theme.css', './src/styles/docs.css', './src/styles/landing.css'],
       components: {
         Head: './src/components/overrides/Head.astro',
@@ -78,6 +83,7 @@ export default defineConfig({
             'introduction/how-a-build-flows',
             'introduction/key-concepts',
             'introduction/how-screenshots-are-compared',
+            'introduction/compared-with-chromatic-percy-argos',
             'introduction/faq',
           ],
         },
@@ -185,7 +191,7 @@ export default defineConfig({
         {
           label: 'Upload from CI',
           collapsed: true,
-          items: ['ci/cli', 'ci/vitest', 'ci/ci-examples', 'ci/argos-compatible-api'],
+          items: ['ci/cli', 'ci/vitest', 'ci/playwright', 'ci/ci-examples', 'ci/argos-compatible-api'],
         },
         {
           label: 'Connect other tools',
@@ -263,6 +269,9 @@ export default defineConfig({
         'roadmap',
       ],
     }),
+    // Starlight adds this itself unless it's listed; listed here so the design kit (noindex, kept out of the
+    // sidebar) isn't in the sitemap.
+    sitemap({ filter: (page) => !page.includes('/design-kit/') }),
     react(),
     mdx(),
   ],
