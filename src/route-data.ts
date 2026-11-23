@@ -22,10 +22,11 @@ export const onRequest = defineRouteMiddleware((context) => {
   const title = titleOf(data, id)
   const description = isHome ? HOME_DESCRIPTION : (data.description ?? '')
 
-  // Starlight's title, og:title, og:type and og:description are replaced, not duplicated.
+  // Starlight's title, og:title, og:type, og:description and og:locale are replaced, not duplicated (og:locale is
+  // language_TERRITORY in Open Graph, and Starlight writes `en`).
   const replaced = (t: Tag) =>
     t.tag === 'title' ||
-    (t.tag === 'meta' && ['og:title', 'og:type', 'og:description'].includes(String(t.attrs?.property))) ||
+    (t.tag === 'meta' && ['og:title', 'og:type', 'og:description', 'og:locale'].includes(String(t.attrs?.property))) ||
     (t.tag === 'meta' && t.attrs?.name === 'description')
   route.head = route.head.filter((t) => !replaced(t))
 
@@ -36,6 +37,7 @@ export const onRequest = defineRouteMiddleware((context) => {
     meta('property', 'og:title', full),
     meta('property', 'og:description', description),
     meta('property', 'og:type', isHome ? 'website' : 'article'),
+    meta('property', 'og:locale', 'en_US'),
   )
 
   if (NOINDEX.has(id)) {

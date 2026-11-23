@@ -1,6 +1,7 @@
 ---
-title: Documentation
-description: Self-hosted visual regression testing that uploads screenshots from CI, lets you review the changes and gates the merge.
+# The same words as HOME_TITLE and HOME_DESCRIPTION in src/lib/seo.ts (the <title> and meta description); site search reads these.
+title: "CirCI: self-hosted visual regression testing"
+description: "CirCI is open source visual regression testing you host yourself: CI uploads screenshots, your team reviews the changes, and the result gates the merge."
 template: splash
 ---
 
@@ -29,7 +30,7 @@ import ThemeSelect from '../../components/overrides/ThemeSelect.astro'
 <section class="l-hero" aria-labelledby="hero-title">
   <div>
     <h1 id="hero-title" class="l-title"><span class="l-name">CirCI:</span> review every visual change before it merges</h1>
-    <p class="l-lead">CirCI is self-hosted visual regression testing. CI uploads screenshots, CirCI compares them with the baseline, and your team approves or rejects what changed.</p>
+    <p class="l-lead">CirCI is self-hosted <a href="/introduction/what-is-visual-regression-testing/">visual regression testing</a>. CI uploads screenshots, CirCI compares them with the baseline, and your team approves or rejects what changed.</p>
     <div class="l-actions">
       <a class="primary" href="/getting-started/run-it-locally/">Run it locally</a>
       <a href="/self-hosting/requirements/">Self-host it</a>
