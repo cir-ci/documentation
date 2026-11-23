@@ -31,6 +31,11 @@ export default defineConfig({
   // output as the former `markdown.smartypants: false`, which is deprecated in favor of the processor's option).
   markdown: { processor: satteri({ features: { smartPunctuation: false }, hastPlugins: [/** @type {any} */ (wrapTables)] }) },
   site: 'https://circi.dev',
+  // Pages that were removed or moved: the old address sends readers and search engines to the closest page now
+  // (GitHub Pages can't send a 301, so Astro writes a page that redirects at once with a canonical link to the target).
+  redirects: {
+    '/ci/argos-compatible-api/': '/ci/cli/',
+  },
   server: { port: 4321 },
   integrations: [
     starlight({
@@ -80,7 +85,8 @@ export default defineConfig({
           },
         },
       },
-      lastUpdated: false,
+      // The date each page last changed, from git (the deploy checks out the full history), shown under the page.
+      lastUpdated: true,
       pagination: true,
       sidebar: [
         {

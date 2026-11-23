@@ -2,6 +2,8 @@
 // A real dashboard screenshot in a frame, light and dark. Files live in src/assets/screens/ as
 // `<name>-dark.jpg` and `<name>-light.jpg`; the one matching the reader's theme shows.
 // <ScreenFrame name="build-review" alt="The build page with one changed screenshot." caption="Reviewing build #101." />
+// Only the dark framed image carries `alt`: the light copy and the enlarged pair have `alt=""`, so search engines index
+// one image per screenshot with its description (the zoom dialog has the description as its label).
 import { Image } from 'astro:assets'
 
 interface Props {
@@ -43,15 +45,15 @@ const ratio = asked !== undefined && Number.isFinite(asked) && asked > natural ?
       <button type="button" class="shot-button" aria-label={`Enlarge: ${alt}`}>
         <div class="shot" style={`aspect-ratio:${ratio}`}>
           <Image src={dark} alt={alt} class="shot-dark" widths={[720, 1080, 1440, 2160]} sizes="(min-width: 50rem) 46rem, 100vw" loading={loading} decoding="async" />
-          <Image src={light} alt={alt} class="shot-light" widths={[720, 1080, 1440, 2160]} sizes="(min-width: 50rem) 46rem, 100vw" aria-hidden="true" loading={loading} decoding="async" />
+          <Image src={light} alt="" class="shot-light" widths={[720, 1080, 1440, 2160]} sizes="(min-width: 50rem) 46rem, 100vw" aria-hidden="true" loading={loading} decoding="async" />
         </div>
       </button>
     </div>
     <dialog class="zoom" aria-label={alt}>
       <div class="zoom-bar"><span class="zoom-title">{title}</span><button type="button" class="zoom-close" aria-label="Close">Close <kbd>Esc</kbd></button></div>
       <div class="zoom-stage">
-        <Image src={dark} alt={alt} class="zoom-dark" widths={[1440, 2160, 2880]} sizes="95vw" loading="lazy" decoding="async" />
-        <Image src={light} alt={alt} class="zoom-light" widths={[1440, 2160, 2880]} sizes="95vw" aria-hidden="true" loading="lazy" decoding="async" />
+        <Image src={dark} alt="" class="zoom-dark" widths={[1440, 2160, 2880]} sizes="95vw" loading="lazy" decoding="async" />
+        <Image src={light} alt="" class="zoom-light" widths={[1440, 2160, 2880]} sizes="95vw" aria-hidden="true" loading="lazy" decoding="async" />
       </div>
     </dialog>
   </screen-zoom>
