@@ -1,0 +1,84 @@
+---
+title: Compared with Visual Regression Tracker, BackstopJS and Lost Pixel
+seoTitle: Open source visual regression testing tools
+description: "How CirCI compares with the open source tools you can run yourself: Visual Regression Tracker, BackstopJS and Lost Pixel, and how to move your screenshots over."
+---
+{/* Sources for CirCI: README.md, packages/cli, the CI, integrations and self-hosting pages of these docs. Sources for the others: each project's GitHub README, repository status and releases, and the backstopjs and lost-pixel packages on npm, read on November 23, 2026. */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+[Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/) are services. If you want visual regression testing that runs on your own machines, the open source tools people compare CirCI with are Visual Regression Tracker, BackstopJS and Lost Pixel. They don't all do the same job: one is a server with a review dashboard like CirCI, one is a command line tool that captures and compares on its own, and one has been archived.
+
+This page lists what each project's own README, repository and npm package say. It doesn't rank them. Facts about the other projects were read on **November 23, 2026**, and a project can change after that. Where a source says nothing about a point, this page says so and doesn't guess.
+
+## At a glance
+
+| | CirCI | Visual Regression Tracker | BackstopJS | Lost Pixel |
+|---|---|---|---|---|
+| **What it is** | A server and dashboard you run: CI uploads screenshots, the team reviews them | A server and dashboard you run (backend and frontend), with agents and SDKs | A command line tool that captures, compares and writes a report | A command line engine and GitHub Action; the review UI was a hosted platform |
+| **Who takes the screenshots** | Your tests. CirCI compares and reviews them | Your tests, sent through an agent, an SDK or the REST API | BackstopJS, from the URLs and scenarios in its config, with Playwright or Puppeteer | Lost Pixel, for Storybook, Ladle, Histoire and app pages; or your own tests ("custom shots") |
+| **Review** | In the dashboard: approve or reject per screenshot or per build, comments on regions | In the dashboard: side by side, diff and fade, bulk approve or reject, undo, comments | An HTML report in the browser; `backstop approve` promotes the last test run to the reference | The approval flow and review UI are listed as **Lost Pixel Platform only**, the hosted product |
+| **Pull requests** | Checks on GitHub, commit statuses and comments on GitLab and Bitbucket, and a merge gate | Not stated in the README | A JUnit report for CI; pull request checks aren't stated | The job can fail on a difference (`failOnDifference`) |
+| **Runs on** | Docker image, Postgres and file storage; Docker Compose, Terraform or Helm | Docker Compose; images on local disk or S3 | Node.js, with an optional `--docker` flag for rendering | Node.js or its GitHub Action |
+| **License** | GPL-3.0-only | Apache-2.0 | MIT | MIT |
+| **Status** | Pre-1.0, in active development | Active: release 6.1.0 on November 13, 2026 | The README says it "needs a new maintainer/owner"; the latest npm release, 6.3.25, is from September 7, 2024 | Archived on GitHub; the README says the team is joining Figma and "sunsetting the product". Last release v3.22.0, November 14, 2024 |
+
+## Visual Regression Tracker
+
+The closest to CirCI in shape: a self-hosted server with projects, builds, baselines and a review dashboard. Its README lists agents for Playwright, Cypress and CodeceptJS, SDKs for JavaScript, Java, Python and .NET, per-project comparators (pixelmatch, looks-same, odiff and vision-language models), baselines per branch, ignore areas, roles and password, LDAP or OIDC sign-in.
+
+The difference is mostly in how screenshots get in and how the result reaches a pull request. Visual Regression Tracker takes screenshots one by one through its SDKs while the tests run. CirCI takes a folder of PNG files after the tests, through [`circi upload`](/ci/cli/) or a plugin, and reports to the [git host](/integrations/overview/) with a merge gate.
+
+## BackstopJS
+
+A long-standing tool that does everything in one command: `backstop test` opens the pages in its config with Playwright or Puppeteer, captures them, compares them with the reference screenshots and opens a report; `backstop approve` updates the reference. It has no server, and the reference images live in your repository.
+
+It fits a small site where one person runs the tests and reads the report. It doesn't keep a history of builds, and the team has nowhere shared to review or comment. Its README asks for a new maintainer.
+
+## Lost Pixel
+
+Lost Pixel captured Storybook, Ladle and Histoire stories and app pages, or compared a folder of your own screenshots. The engine was open source, and the review UI and approval flow were part of the hosted Lost Pixel Platform. The repository is now archived, and its README announces that the team is joining Figma and sunsetting the product.
+
+If you used Lost Pixel for Storybook, [`@circi/storybook`](/ci/storybook/) screenshots every story in your CI and uploads them. For your own screenshots, upload the folder with [`circi upload`](/ci/cli/).
+
+## What CirCI adds
+
+- **A shared review with a merge gate.** Builds, per-screenshot decisions, comments on regions, review requests by rule, and a check that blocks the pull request until it's reviewed. See [How a build flows](/introduction/how-a-build-flows/) and [Reviewing a build](/using/reviewing-a-build/).
+- **Works with what your tests already write.** Any tool that writes PNG files, plus plugins for [Vitest](/ci/vitest/), [Cypress](/ci/cypress/) and [Storybook](/ci/storybook/); [Playwright](/ci/playwright/) needs no plugin.
+- **Flaky screenshots over time.** A [triage queue](/using/triage-and-flaky-screenshots/) and [insights](/using/insights/) across builds.
+- **Integrations.** GitHub, GitLab, Bitbucket, Slack, Linear, Jira, Figma and signed webhooks. See [Integrations](/integrations/overview/).
+- **Hosted sites.** A built Storybook or test report next to the screenshots ([Hosted sites](/using/hosted-sites/)).
+
+## What CirCI doesn't do
+
+- **It doesn't take screenshots.** BackstopJS and Lost Pixel open the pages themselves; with CirCI, your tests or a plugin do.
+- **It needs a server.** Postgres, file storage and a Docker host ([Requirements](/self-hosting/requirements/)). BackstopJS needs none of that.
+- **No SDKs for Java, Python or .NET.** Anything that writes PNG files can upload with the CLI, but there's no per-language client like Visual Regression Tracker's.
+- **It's pre-1.0.** Parts of it are verified only against fakes.
+
+## Moving your screenshots over
+
+There's no import from these tools. Your current baselines aren't carried over: the first build you upload and approve becomes the baseline.
+
+1. [Run CirCI](/getting-started/run-it-locally/), [create a project](/getting-started/create-a-project/) and copy its CI token.
+2. Point the upload at the folder your tool writes its new screenshots to (with BackstopJS, a run's folder under `bitmaps_test`). Each `.png` file is one screenshot, named by its path:
+
+   ```sh
+   CIRCI_TOKEN=circi_… CIRCI_API_URL=https://circi.example.com npx @circi/cli upload ./screenshots --wait
+   ```
+
+3. Approve the first build in the dashboard ([First review](/getting-started/first-review/)); later builds are compared with it.
+
+CirCI reads PNG files only. Keep file names stable between runs: a renamed file is a new screenshot.
+
+## Where this page comes from
+
+- Visual Regression Tracker: [the repository and README](https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker) and [its releases](https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/releases).
+- BackstopJS: [the repository and README](https://github.com/garris/BackstopJS) and [the backstopjs package on npm](https://www.npmjs.com/package/backstopjs).
+- Lost Pixel: [the repository and README](https://github.com/lost-pixel/lost-pixel) and [the announcement it links to](https://lost-pixel.com/blog/lost-pixel-team-is-joining-figma).
+
+<Aside type="note" title="Spot a mistake?">
+If a statement about another project is wrong or out of date, [open a documentation issue](https://github.com/cir-ci/documentation/issues) with a link to the project's page and it will be corrected.
+</Aside>
+
+New to CirCI? Start with [What is CirCI?](/introduction/what-is-circi/) or the [FAQ](/introduction/faq/).

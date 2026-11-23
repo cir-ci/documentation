@@ -1,0 +1,61 @@
+---
+title: Playwright toHaveScreenshot and CirCI
+seoTitle: "Playwright toHaveScreenshot: baselines and review"
+description: When Playwright's toHaveScreenshot and baselines in git are enough, where they get hard in CI, and how CirCI moves baselines and review out of the repo.
+---
+{/* Sources: for Playwright, https://playwright.dev/docs/test-snapshots, https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1, https://playwright.dev/docs/api/class-testconfig#test-config-update-snapshots and https://playwright.dev/docs/test-cli (read from microsoft/playwright docs/src on November 23, 2026). For CirCI: ci/playwright, ci/cli, using/baselines-and-ignore-regions, using/triage-and-flaky-screenshots, using/reviewing-a-build, introduction/how-a-build-flows, introduction/how-screenshots-are-compared (and the repo files they cite). */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+Playwright Test can already do visual regression testing on its own: `await expect(page).toHaveScreenshot()` compares the page with a reference image and fails the test when they differ. This page is about that built-in assertion: what it does, when it's all you need, where it gets hard once a team and a CI pipeline are involved, and what changes when CirCI does the comparing instead. The setup itself is on [Playwright](/ci/playwright/).
+
+## What toHaveScreenshot does
+
+From [Playwright's visual comparisons guide](https://playwright.dev/docs/test-snapshots):
+
+- **Reference images live in your repository.** On the first run there's no reference, so Playwright writes one and the test fails ("A snapshot doesn't exist at …, writing actual"). The images go in a folder next to the test file (`example.spec.ts-snapshots/`), and Playwright's docs say to commit that folder and review changes to it.
+- **One reference per browser and platform.** A generated name such as `example-test-1-chromium-darwin.png` carries the browser (or project) name and the operating system, because rendering and fonts differ between them. Playwright warns that rendering also varies with the OS version, settings, hardware, power source and headless mode, and that tests should run where the references were made. In practice that means generating them in the same Linux container your CI uses.
+- **It waits for a stable page.** It takes screenshots until two in a row match, then compares the last one ([`toHaveScreenshot`](https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1)). By default it stops CSS animations and hides the text caret, and `mask` covers elements with a solid box.
+- **Tolerances are per test or per project.** `threshold` (0 strict to 1 lax, default `0.2`) sets how different one pixel's color may be, and `maxDiffPixels` or `maxDiffPixelRatio` how many pixels may differ. Defaults go under `expect.toHaveScreenshot` in `playwright.config.ts`.
+- **Updating is a flag.** `npx playwright test --update-snapshots` rewrites the references; on its own the flag means `changed` (only the ones that didn't match, plus missing ones), and `--update-snapshots=all` rewrites every one ([command line](https://playwright.dev/docs/test-cli)). Then you commit the new images.
+
+## When it's enough
+
+Keep `toHaveScreenshot` as it is when:
+
+- a few people own the UI and the screenshots, and the count stays in the tens;
+- everyone can run the tests in the same container image, so a reference made on a laptop matches CI;
+- a changed PNG in a pull request is something your reviewers will actually open and look at;
+- you don't want another service to run, even one you host.
+
+It's free, it's already in your test runner, and nothing leaves the repository.
+
+## Where it gets hard
+
+The same design starts to cost more as screenshots and people grow:
+
+- **Binary files in git.** Every accepted change adds new PNGs to the history, per browser and per platform. The repository only grows.
+- **Reviewing images in a pull request.** The diff a reviewer sees is a binary file changing. Whether the new image is right depends on someone opening the old and new versions side by side, for every file.
+- **Updating references from CI.** References made on a developer's Mac don't match a Linux CI runner, so someone runs `--update-snapshots` in the CI image, gets the files out, and commits them. Two pull requests that both touch a screenshot then conflict on a binary file.
+- **No record of who approved what.** An updated reference is a commit like any other. Nothing says a person looked at the change and accepted it, and nothing stops a blanket `--update-snapshots=all` from accepting a real regression with the noise.
+- **Flaky screenshots.** A screenshot that renders slightly differently now and then fails the test, the run is retried or the tolerance is raised for everyone, and the cause stays hidden.
+
+## What changes with CirCI
+
+CirCI keeps Playwright as the thing that takes the screenshots and moves the comparison, the baselines and the review out of the test run.
+
+- **Your tests barely change.** The setup on [Playwright](/ci/playwright/) keeps `toHaveScreenshot` (or plain `page.screenshot({ path })`) and changes only the config: `snapshotPathTemplate` writes every screenshot to one `screenshots` folder, and `updateSnapshots: 'all'` overwrites it on each run, so a test never fails on pixels. The folder goes in `.gitignore`.
+- **CI uploads the folder.** `npx playwright test && npx @circi/cli upload ./screenshots --wait` sends every PNG as one build ([CLI reference](/ci/cli/)). With `--wait`, the job exits `1` while changes need review, unless the git host's check is the gate ([exit codes](/ci/cli/#--wait-and-exit-codes)).
+- **Baselines live on the server, not in git.** Each build is compared with an earlier **approved** build: the nearest one in the branch's commit history, or the newest one on the default branch. A rejected screenshot never becomes a baseline. There's nothing to regenerate and commit, and no binary merge conflicts. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/#how-a-build-gets-its-baseline).
+- **Review is a decision, and it's recorded.** The build page shows each changed screenshot with its baseline and a diff, and people approve or reject each screenshot (or **Approve all** when every change is fine), with comments pinned to a region. The baseline page says which build it came from and who approved it. See [Reviewing a build](/using/reviewing-a-build/) and [Comments and regions](/using/comments-and-regions/).
+- **The pull request waits for it.** With a repository linked on GitHub, GitLab or Bitbucket, the check stays pending by default until someone approves, and fails on a rejection; mark it as required to block the merge ([Merge gate](/using/reviewing-a-build/#merge-gate)). The step-by-step pipeline is in the [GitHub Actions guide](/ci/github-actions/).
+- **Flaky screenshots are found, not tolerated.** CirCI watches the last 10 commits on the default branch, and a screenshot whose image keeps coming back to an earlier one is marked flaky and goes to the project's triage queue, with whoever is on triage that week notified. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+- **Noise is cut per screenshot, not per suite.** An [ignore region](/using/baselines-and-ignore-regions/#ignore-regions) blanks one rectangle (a clock, a banner) on both images for one screenshot name, instead of raising a threshold for every test. The project's diff threshold defaults to 0%, so any other changed pixel is a change ([How screenshots are compared](/introduction/how-screenshots-are-compared/)).
+
+<Aside type="note" title="Playwright's masks still help">
+Masking with `mask` and a fixed viewport, fonts, data and clock in the test make screenshots stable before they reach CirCI. [Make screenshots stable](/ci/playwright/#make-screenshots-stable) lists what matters most.
+</Aside>
+
+## What you take on
+
+CirCI is software you run: one Docker image, Postgres and file storage. Updates, backups and uptime are yours ([Requirements](/self-hosting/requirements/)). To try it before deciding, [run it locally](/getting-started/run-it-locally/) with Docker Compose and upload one Playwright run. For how it compares with hosted services, see [Compared with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/).

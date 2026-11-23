@@ -1,0 +1,139 @@
+---
+title: Self-hosted Percy alternative
+seoTitle: Open source, self-hosted Percy alternative
+description: "Moving from Percy to CirCI, an open source tool you host yourself: how the two differ, when each fits, and how to port Playwright, Cypress and Storybook setups."
+---
+{/* Sources for CirCI: packages/cli (main.ts: CIRCI_API_URL, CIRCI_TOKEN), packages/cypress, packages/storybook in cir-ci/repo, and this site's ci/playwright, ci/cypress, ci/storybook, ci/github-actions and getting-started/first-review pages. Sources for Percy: the public pages listed at the end, read on November 23, 2026. */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+
+Percy and CirCI both take the screenshots of your UI from CI, compare them with approved ones and ask your team to review what changed. Percy is a hosted service, part of BrowserStack. CirCI is open source software (GPL-3.0-only) that you run on your own servers, and there's no hosted version of it.
+
+This page is for teams weighing a move from Percy to CirCI: what's different, when Percy is still the better fit, and how each kind of Percy setup maps to CirCI. Facts about Percy come from its public documentation, read on **November 23, 2026**, and Percy can change after that. Prices and plan limits are left out because they change: check BrowserStack's pricing page. For Chromatic and Argos too, see [Compared with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/).
+
+## At a glance
+
+| | CirCI | Percy |
+|---|---|---|
+| **Where it runs** | On your own servers: one Docker image, Postgres and file storage ([Requirements](/self-hosting/requirements/)) | Percy's hosted service, a BrowserStack product |
+| **Self-hosting** | The only way to run it | Not mentioned on the pages read |
+| **License** | GPL-3.0-only | The service's license isn't stated on the pages read; the SDKs are public repositories on GitHub |
+| **What gets compared** | The PNG files your tests write. CirCI doesn't render pages | The SDK captures the page's DOM in your test browser, and Percy renders it into screenshots in its own browsers and at the widths you choose |
+| **Browsers** | Whatever your tests run. Upload one build per browser to keep them apart | Chrome, Firefox, Edge and Safari, plus Safari on iPhone and Chrome on Android, rendered by Percy |
+| **How a run uploads** | `circi upload` after the tests, or a plugin for [Cypress](/ci/cypress/), [Storybook](/ci/storybook/) or [Vitest](/ci/vitest/) | Tests run inside `percy exec --`, with a `PERCY_TOKEN` |
+| **Review and merge gate** | Approve or reject in the dashboard or on the pull request; checks on GitHub, GitLab and Bitbucket ([Integrations](/integrations/overview/)) | Review in Percy's dashboard; Percy updates the commit status on the pull request ([source control integrations](https://www.browserstack.com/docs/percy/integrations/source-control/overview)) |
+
+## When CirCI fits
+
+- **Screenshots can't leave your network.** Every image, build and review stays in your own Postgres and storage ([Security](/self-hosting/security/), [Storage](/self-hosting/storage/)).
+- **You want free software with nothing to buy.** All of CirCI is GPL-3.0-only.
+- **Your tests already take the screenshots.** Playwright, Cypress, Storybook or any tool that writes PNG files works, and what your tests render is exactly what gets compared.
+- **You want to review from your git host.** A check per build on the pull request with Approve and Reject buttons, review rules, and [flaky screenshot triage](/using/triage-and-flaky-screenshots/).
+
+## When Percy fits
+
+- **You don't want to run a server.** With CirCI, updates, backups and uptime are yours ([Upgrades and migrations](/self-hosting/upgrades-and-migrations/), [Backups](/self-hosting/backups/)).
+- **You want one test run rendered in many browsers.** Percy renders a captured DOM in several browsers and widths on its own infrastructure. With CirCI you run each browser in your own CI and upload a build per browser.
+- **You need a mature product today.** CirCI is pre-1.0, and parts of it are verified only against fakes.
+
+## Moving from Percy
+
+There's no import of Percy builds and no Percy-compatible API. The move is to let your tests write PNG files and send them to CirCI. Your test code mostly stays as it is: the Percy snapshot calls become screenshot calls.
+
+### Set up CirCI and the token
+
+<Steps>
+
+1. Run a CirCI server ([Run it locally](/getting-started/run-it-locally/) to try it, then [Docker Compose](/self-hosting/docker-compose/), [Kubernetes](/self-hosting/kubernetes/) or [Terraform](/self-hosting/terraform/) for real use).
+
+2. Create a project and copy its CI token ([Create a project](/getting-started/create-a-project/)).
+
+3. In your CI's secret store, replace `PERCY_TOKEN` with `CIRCI_TOKEN` (the project's token) and add `CIRCI_API_URL` (your CirCI address).
+
+4. Drop the `percy exec --` wrapper from your test command. CirCI uploads after the tests, as below.
+
+</Steps>
+
+### Playwright
+
+Percy's `percySnapshot(page, 'name')` from `@percy/playwright` becomes Playwright's own screenshot, written to a folder:
+
+```ts title="e2e/home.spec.ts"
+import { expect, test } from '@playwright/test'
+
+test('home page', async ({ page }) => {
+  await page.goto('/')
+  // Was: await percySnapshot(page, 'Home page')
+  await expect(page).toHaveScreenshot('home.png', { fullPage: true })
+})
+```
+
+Set `snapshotPathTemplate` and `updateSnapshots: 'all'` in `playwright.config.ts` so the screenshots land in `./screenshots` on every run, then upload the folder:
+
+```sh
+npx playwright test && npx @circi/cli upload ./screenshots --wait
+```
+
+The full configuration, naming rules and tips for stable screenshots are in [Playwright](/ci/playwright/). Percy rendered each snapshot at several widths; in Playwright, use one project per viewport or device, and each one writes its own folder.
+
+### Cypress
+
+`cy.percySnapshot('name')` from `@percy/cypress` becomes Cypress's own `cy.screenshot('name')`, and `@circi/cypress` uploads what Cypress writes when `cypress run` ends:
+
+```sh
+npm uninstall @percy/cli @percy/cypress
+npm install --save-dev @circi/cypress
+```
+
+In your Cypress support file (`cypress/support/e2e.ts` in current Cypress; Percy's README still names the older `cypress/support/index.js`), replace `import '@percy/cypress'` with `import '@circi/cypress/support'`, and add `setupNodeEvents: circi({ name: 'cypress' })` to the Cypress config. Then rename the calls:
+
+```ts title="cypress/e2e/home.cy.ts"
+it('looks right', () => {
+  cy.visit('/')
+  cy.screenshot('home') // was: cy.percySnapshot('Home')
+})
+```
+
+Run `npx cypress run` with `CIRCI_TOKEN` and `CIRCI_API_URL` set. Unlike Percy, where the name defaults to the test's title, CirCI uploads only screenshots that have a name. Details are in [Cypress](/ci/cypress/).
+
+### Storybook
+
+`percy storybook ./storybook-static` from `@percy/storybook` becomes `@circi/storybook`, which screenshots every story with Playwright in your CI and uploads them:
+
+```sh
+npm uninstall @percy/cli @percy/storybook
+npm install --save-dev @circi/storybook playwright
+npx playwright install chromium
+```
+
+Add `circi({ name: 'storybook', viewports: ['1280x720'] })` to `addons` in `.storybook/main.ts`, then in CI:
+
+```sh
+npx storybook build
+npx circi-storybook upload --wait
+```
+
+Percy's per-story `percy` parameter has a CirCI counterpart, `parameters.circi`: `skip`, `viewports`, `selector`, `padding` and `delay`. See [Storybook](/ci/storybook/).
+
+### Baselines
+
+Old Percy builds aren't imported. The first build of each name has nothing to compare with, so every screenshot is new: approve it once on your default branch and it becomes the baseline for later builds ([First review](/getting-started/first-review/), [Baselines and ignore regions](/using/baselines-and-ignore-regions/)).
+
+### Pull request checks
+
+Link the project to its repository and every build shows on the pull request as a check, with Approve and Reject buttons and a summary comment: [GitHub](/integrations/github/), [GitLab](/integrations/gitlab/), [Bitbucket](/integrations/bitbucket/). Make the check required in branch protection to block merging until the changes are reviewed. Without a linked git host, `--wait` makes the CI job itself the gate: it exits `1` while changes need review ([How a build flows](/introduction/how-a-build-flows/#merge-gate)). A complete workflow is in the [GitHub Actions guide](/ci/github-actions/).
+
+## Where this page comes from
+
+- [Percy SDK and screenshot capture workflow](https://www.browserstack.com/docs/percy/integrate/percy-sdk-workflow): the SDK captures the DOM and Percy renders it in its browsers and widths.
+- [Browser compatibility and maximum page dimensions](https://www.browserstack.com/docs/percy/common-issue/browser-compatibility): the browsers Percy renders in.
+- [Integrate Percy with Playwright](https://www.browserstack.com/docs/percy/playwright/getting-started/nodejs/integrate-your-tests) and [percy/percy-playwright](https://github.com/percy/percy-playwright): `percySnapshot(page, name)`, `PERCY_TOKEN`, `percy exec`.
+- [Integrate your Cypress tests with Percy](https://www.browserstack.com/docs/percy/cypress/getting-started/integrate-your-tests) and [percy/percy-cypress](https://github.com/percy/percy-cypress): `cy.percySnapshot()`, the support file import, the name defaulting to the test title.
+- [percy/percy-storybook](https://github.com/percy/percy-storybook) and [Storybook advanced topics](https://www.browserstack.com/docs/percy/references/storybook-advance-topics): `percy storybook`, the per-story `percy` parameter.
+- [The Percy product page](https://www.browserstack.com/percy).
+
+<Aside type="note" title="Spot a mistake?">
+If a statement about Percy is wrong or out of date, [open a documentation issue](https://github.com/cir-ci/documentation/issues) with a link to Percy's page and it will be corrected.
+</Aside>
+
+New to CirCI? Start with [What is CirCI?](/introduction/what-is-circi/) or the [FAQ](/introduction/faq/).

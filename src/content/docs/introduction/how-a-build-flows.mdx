@@ -29,7 +29,7 @@ A **build** is one upload of screenshots for one commit. It passes through four 
 
    - A screenshot only in this build is <StatusChip status="added" />, only in the baseline <StatusChip status="removed" />, with the same hash <StatusChip status="unchanged" /> (no work), and otherwise it's diffed.
    - A different image size is always a change, whatever the share of changed pixels. Otherwise a change is a change when it's bigger than the project's diff threshold. [How screenshots are compared](/introduction/how-screenshots-are-compared/) has the detail.
-   - The worker writes a diff image and thumbnails, and sets the build's conclusion.
+   - The worker writes a diff image and thumbnails, and sets the build's conclusion (see [Build and screenshot statuses](/reference/build-statuses/)).
 
 3. **Review.** If anything changed, the build is <StatusChip status="needs-review" />. People open it in the dashboard (or from the GitHub check) and approve or reject each screenshot, or the whole build. Screenshots known to be <StatusChip status="flaky" /> are marked so reviewers can skip them. See [Reviewing a build](/using/reviewing-a-build/).
 
@@ -62,4 +62,4 @@ A project's first build has nothing to compare with, so all its screenshots are 
 - A new build for the same project, build name and commit whose screenshots are identical to an already approved build is approved automatically, so "approve, then re-run the CI job" goes green. It never carries over a rejection or a changed screenshot.
 - Parallel jobs upload as shards of one build (`--shard 2/4`). CirCI processes the build when the last shard arrives. A shard that never arrives fails the build after `UPLOAD_TIMEOUT_MINUTES` (default 60), naming the missing shards.
 
-Next: [Key concepts](/introduction/key-concepts/).
+Next: [Key concepts](/introduction/key-concepts/). For the words used here, see the [Glossary](/reference/glossary/); for short answers, the [FAQ](/introduction/faq/).
