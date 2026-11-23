@@ -3,7 +3,7 @@ title: FAQ
 seoTitle: "CirCI FAQ: self-hosted visual regression testing"
 description: Short answers to the questions people ask first, each with the page that has the details.
 ---
-{/* Source: README.md, packages/cli/src/files.ts, packages/cli/src/ci-env.ts, packages/core/src/builds/limits.ts, packages/core/src/builds/flaky.ts, apps/server/src/http/routes/argos, existing pages of this site */}
+{/* Source: README.md, packages/cli/src/files.ts, packages/cli/src/ci-env.ts, packages/core/src/builds/limits.ts, packages/core/src/builds/flaky.ts, existing pages of this site */}
 
 ## Getting screenshots in
 
@@ -13,7 +13,7 @@ Your own tests do. CirCI compares and reviews screenshots; it doesn't capture th
 
 ### Which image formats work?
 
-PNG only. A file that isn't a valid PNG is marked "Couldn't read" and can't be approved, and the Argos-compatible API refuses JPEG. A single file may be up to 25 MiB.
+PNG only. A file that isn't a valid PNG is marked "Couldn't read" and can't be approved. A single file may be up to 25 MiB.
 
 ### Which CI systems are supported?
 
@@ -29,7 +29,7 @@ Make one [project](/getting-started/create-a-project/) per thing you test. Each 
 
 ### Can I switch from Argos?
 
-Not by changing two variables yet. CirCI implements the Argos upload API, but the real Argos SDK refuses CirCI's project tokens today (see [Argos-compatible API](/ci/argos-compatible-api/)). The move that works is to write your tests' screenshots to a folder and upload it with `circi upload`: see [Playwright](/ci/playwright/), [Cypress](/ci/cypress/) and [The CLI](/ci/cli/). Old builds aren't imported, so the first approved build on your default branch becomes the baseline. See also [how CirCI compares with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/).
+Yes, by changing how screenshots get uploaded: CirCI doesn't accept uploads from the Argos SDKs. Write your tests' screenshots to a folder and upload it with `circi upload`: see [Playwright](/ci/playwright/), [Cypress](/ci/cypress/) and [The CLI](/ci/cli/). Old builds aren't imported, so the first approved build on your default branch becomes the baseline. See also [how CirCI compares with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/).
 
 ## Baselines and reviews
 

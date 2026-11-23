@@ -72,7 +72,7 @@ Two things keep the dashboard quick and let it open without the network. Both ar
 - Pages load from the network first, so a new version appears on the next load. When the network fails, the kept copy of the app shell is shown.
 - Once the first page has loaded, the worker fetches the rest of the app's built files in the background, so later pages open without waiting. The built assets (`/assets/…`, content-hashed) are served from the cache first, up to 700 of them, oldest dropped first. Icons and the manifest are served from the cache while a fresh copy loads behind them.
 - Screenshots (`/api/files/<hash>`) are kept too, up to 300 files and 200 MB, the least recently used dropped first; a file over 20 MB isn't kept. A kept screenshot is used for one hour (the lifetime of the server's signed link) and only for the person it was kept for; after that, or for someone else, it is fetched again, so losing access to a project stops its screenshots within the hour. If the server answers that you may no longer see one, the kept copy is deleted.
-- Nothing else from `/api`, `/v1`, `/v2`, `/webhooks` or `/internal` is kept by the worker. Offline, the app opens, and a page draws from the stored data where it has some. This hasn't been tried against a real network outage; what isn't stored doesn't load.
+- Nothing else from `/api`, `/v1`, `/webhooks` or `/internal` is kept by the worker. Offline, the app opens, and a page draws from the stored data where it has some. This hasn't been tried against a real network outage; what isn't stored doesn't load.
 - Tapping a push notification marks its Inbox item read, then focuses a window already on that page, else reuses an open app window, else opens one.
 
 <Aside type="caution" title="On a shared computer, sign out">

@@ -1,19 +1,18 @@
 ---
 title: HTTP API overview
 seoTitle: CirCI HTTP API overview
-description: The CI API under /v1, the Argos-compatible /v2, the dashboard's JSON API, webhooks and health endpoints.
+description: The CI API under /v1, the dashboard's JSON API, webhooks and health endpoints.
 ---
-{/* Source: apps/server/src/http/app.ts, apps/server/src/http/routes (v1, argos, dashboard, auth.ts, health.ts, internal.ts, integration-webhook.ts), packages/api, apps/server/src/http/hooks */}
+{/* Source: apps/server/src/http/app.ts, apps/server/src/http/routes (v1, dashboard, auth.ts, health.ts, internal.ts, integration-webhook.ts), packages/api, apps/server/src/http/hooks */}
 
 import { Aside, Steps } from '@astrojs/starlight/components'
 import Diagram from '../../../components/Diagram.astro'
 
-CirCI's server answers on seven groups of paths. Scripts should use only the CI API (`/v1`) and the Argos-compatible API (`/v2`); webhooks are for git hosts and other tools sending events to CirCI.
+CirCI's server answers on six groups of paths. Scripts should use only the CI API (`/v1`); webhooks are for git hosts and other tools sending events to CirCI.
 
 | Prefix | For | Authentication |
 |---|---|---|
 | `/v1` | The CI API: what `circi upload` uses. | `Authorization: Bearer circi_…` (a project CI token). |
-| `/v2` | The Argos-compatible upload protocol. | The same token. |
 | `/api` | The dashboard's JSON API. | The session cookie; changes need a same-origin request. Not a stable public API. |
 | `/api/auth/*` | Sign-in and sessions (better-auth). | Public: you sign in here. |
 | `/webhooks/:kind`, `/api/integrations/:kind/webhook` | Incoming webhooks of git hosts and other integrations. | Each provider's own signature. |
@@ -21,7 +20,7 @@ CirCI's server answers on seven groups of paths. Scripts should use only the CI 
 | `/internal/*` | Answers the reverse proxy only (Caddy's `tls-ask`). | Never reachable from browsers. |
 
 <Aside type="caution">
-Scripts should use only `/v1` and `/v2`. The dashboard API under `/api` changes with the dashboard. Its wire types are in the `@circi/api` package (types only), one namespace per resource.
+Scripts should use only `/v1`. The dashboard API under `/api` changes with the dashboard. Its wire types are in the `@circi/api` package (types only), one namespace per resource.
 </Aside>
 
 ## The CI API (`/v1`)

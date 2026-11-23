@@ -1,9 +1,9 @@
 ---
 title: CI API reference
-seoTitle: CirCI CI API reference (/v1 and /v2)
-description: Every endpoint under /v1 and /v2 with its fields, status codes and retry rules, plus the health and proxy endpoints.
+seoTitle: CirCI CI API reference (/v1)
+description: Every endpoint under /v1 with its fields, status codes and retry rules, plus the health and proxy endpoints.
 ---
-{/* Source: apps/server/src/http/routes/v1 (builds.ts, files.ts, project.ts, sites.ts, schemas.ts), apps/server/src/http/routes/argos (routes.ts, schemas.ts, uploads.ts), apps/server/src/http/routes/health.ts, apps/server/src/http/routes/internal.ts, apps/server/src/http/hooks/project-token.ts, apps/server/src/http/lib (errors.ts, validation.ts), packages/core/src/builds (limits.ts, outcome.ts), packages/db/src/repositories (builds-create.ts, builds-shards.ts), packages/services/src/uploads, packages/cli/src/api.ts, packages/sites/src */}
+{/* Source: apps/server/src/http/routes/v1 (builds.ts, files.ts, project.ts, sites.ts, schemas.ts), apps/server/src/http/routes/health.ts, apps/server/src/http/routes/internal.ts, apps/server/src/http/hooks/project-token.ts, apps/server/src/http/lib (errors.ts, validation.ts), packages/core/src/builds (limits.ts, outcome.ts), packages/db/src/repositories (builds-create.ts, builds-shards.ts), packages/services/src/uploads, packages/cli/src/api.ts, packages/sites/src */}
 
 import { Aside } from '@astrojs/starlight/components'
 
@@ -168,20 +168,6 @@ The reply is `201`:
 Repeating an upload of the same commit replaces that version, so a resend is harmless. Errors: `404` when hosting isn't set up on the server (no `STATIC_SITES_HOST`), `403` when **Host static sites** is off for the project, `415` when the body isn't gzip, `413` for a size or expansion limit, `400` for an unsafe archive or one with no files or no entry page.
 
 `GET /v1/sites/served?name=<site>&branch=<branch>` answers `{ "commit": "<sha>" }` with the commit the branch address serves, or `{ "commit": null }` when it serves none yet.
-
-## The Argos-compatible API (`/v2`)
-
-The paths and what works are in [Argos-compatible API](/ci/argos-compatible-api/). The shapes, for debugging an SDK:
-
-| Call | Request | Reply |
-|---|---|---|
-| `GET /v2/project` | Token. | `{ id, defaultBaseBranch, hasRemoteContentAccess: false }`. |
-| `POST /v2/baseline` | Token. `{ commits: [≤2,000 SHAs], name? }`. | `{ baseline: { id, commit, commitSha, branch } }`, or `{ baseline: null }` when none of the commits has a baseline. |
-| `POST /v2/builds` | Token. `commit`, `screenshots` (`{ key, contentType? }`, key a SHA-256, at most 10,000), and optionally `branch`, `name`, `prNumber`, `referenceBranch`, `referenceCommit`, `parentCommits` (≤2,000), `parallel`, `parallelNonce`, `author`. Body at most 4 MB. | `201` with `{ build: { id, url, number, status }, screenshots: [{ key, postUrl, fields: {} }], pwTraces: [] }`. |
-| `POST /v2/uploads/:buildId/:sha256` | No token. Multipart form with one file, at most 25 MB. | `204`. `404` if the build didn't ask for that file, `413` if too large, `422` if the bytes hash to something else, `400` if it isn't a multipart form. |
-| `PUT /v2/builds/:id` | Token. `screenshots` (`{ key, name, metadata? }`), `parallel`, `parallelTotal`, `parallelIndex`, `final`. Body at most 4 MB. | `{ build: { id, url, number, status } }`. `400` with `missing` when files weren't uploaded; `404` for an unknown build. |
-
-Differences from `/v1`: a name that isn't a valid build name is cleaned up instead of refused (other characters become `-`, then it is cut to 64); screenshots arrive in several `PUT` calls and the shard ends with the one that has `final: true`; a parallel build starts with room for 1,000 shards and takes its real total from `parallelTotal`; a `parallelTotal` below 1 (manual finalization) is refused with `400`.
 
 ## Health and proxy endpoints
 

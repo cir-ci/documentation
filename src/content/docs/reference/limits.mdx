@@ -3,7 +3,7 @@ title: Limits
 seoTitle: "CirCI limits: uploads, API and background jobs"
 description: Every size, count, length, time and retry limit of uploads, the CI API, the dashboard and the background jobs.
 ---
-{/* Source: packages/core/src (builds/limits.ts, builds/flaky.ts, instance/index.ts, project/project-settings-rules.ts, project/workspace-picture.ts, project/workspace-deletion.ts, project/account-name.ts, node/file-urls.ts), packages/config/src/schema.ts, packages/auth/src (constants.ts, plugins), packages/cli/src (files.ts, upload.ts, git.ts, api.ts), packages/sites/src/ingest.ts, apps/server/src/http/routes (v1/schemas.ts, argos, internal.ts, dashboard), packages/db/src (queue, repositories), packages/services/src */}
+{/* Source: packages/core/src (builds/limits.ts, builds/flaky.ts, instance/index.ts, project/project-settings-rules.ts, project/workspace-picture.ts, project/workspace-deletion.ts, project/account-name.ts, node/file-urls.ts), packages/config/src/schema.ts, packages/auth/src (constants.ts, plugins), packages/cli/src (files.ts, upload.ts, git.ts, api.ts), packages/sites/src/ingest.ts, apps/server/src/http/routes (v1/schemas.ts, internal.ts, dashboard), packages/db/src (queue, repositories), packages/services/src */}
 
 import { Aside } from '@astrojs/starlight/components'
 
@@ -22,7 +22,7 @@ Limits are grouped by what they bound. A value that an administrator can change 
 | Ancestor commits sent to find a baseline | 2,000 at most. The CLI collects up to 200 first-parent commits and deepens a shallow checkout up to 2,000 commits. |
 | Shards of one parallel build | 1 to 1,000. A shard's ID is at most 128 characters, and so is the nonce. |
 | Author fields | `login` 255, `email` 320, `provider` 64, `providerId` 128 characters. |
-| JSON body of `POST /v1/builds` and finalize | 16 MB. On `/v2`, 4 MB. |
+| JSON body of `POST /v1/builds` and finalize | 16 MB. |
 | Idempotency key | 1 to 128 characters. |
 | Shard that never completes | The build fails after **Upload timeout**: 60 minutes by default, 0 to 10,080 (`UPLOAD_TIMEOUT_MINUTES`). 0 means never. |
 | Files sent at once by the CLI | 8 |

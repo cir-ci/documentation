@@ -28,7 +28,7 @@ Secrets in the dashboard are write-only: a saved password or client secret is ne
 
 ## Tokens
 
-- **Project CI tokens** are `circi_` followed by 43 characters of base64url (32 random bytes). A token belongs to one project and is shown once, when it is created or rotated. CirCI keeps only its SHA-256 hash and a short hint (`circi_AbC1…`). Rotating a token ends the old one at once. Requests to `/v1` and `/v2` without a valid token get 401 with `WWW-Authenticate: Bearer`.
+- **Project CI tokens** are `circi_` followed by 43 characters of base64url (32 random bytes). A token belongs to one project and is shown once, when it is created or rotated. CirCI keeps only its SHA-256 hash and a short hint (`circi_AbC1…`). Rotating a token ends the old one at once. Requests to `/v1` without a valid token get 401 with `WWW-Authenticate: Bearer`.
 - **Webhook signing secrets** (`whsec_…`) are shown once when a webhook is added or regenerated. Each delivery carries `CirCI-Signature: t=<unix seconds>,v1=<hex>`, an HMAC-SHA256 over `<t>.<raw body>`, so a captured request can't be replayed later. Receivers should reject old timestamps; the reference verifier allows 300 seconds. See [Webhooks](/integrations/webhooks/#verify-the-signature).
 - **Git host webhooks** into CirCI are verified against the exact bytes received (a signature or a token, by host) before the body is parsed. The secrets are derived from the instance secret.
 

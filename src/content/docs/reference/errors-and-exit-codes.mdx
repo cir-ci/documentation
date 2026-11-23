@@ -16,7 +16,7 @@ A CI job sees a failure in two places: the exit code of `circi upload`, and the 
 | `circi upload` | `0` | The upload succeeded. With `--wait`: the build passed, or the git host's check is the merge gate and the job doesn't fail on changes. |
 | | `1` | With `--wait`: visual changes need review and this job is the gate. Approve them in the dashboard, then re-run the job. |
 | | `2` | An error. Bad flags or setup, the server couldn't be reached, the build failed to process or had screenshots it couldn't read in a project that blocks merges, or `--wait` timed out. |
-| `circi site upload`, `circi storybook upload`, `circi argos-env` | `0` / `2` | Done, or an error (printed as one line). |
+| `circi site upload`, `circi storybook upload` | `0` / `2` | Done, or an error (printed as one line). |
 
 An error before the upload finishes (code `2`) comes with a line `error: <message>`. An error that is a bug rather than a mistake of yours also prints `(Run again with --debug, or set DEBUG=1, for the stack trace.)`; with `--debug` the stack follows the message.
 
@@ -96,8 +96,6 @@ The reply is `{ "error": "…" }`, with `fields` on validation failures; see [Co
 | `415` | `Send the file as image/png or application/octet-stream`; `Send the site as application/gzip (a .tar.gz)`. | Fix the `content-type`. |
 | `422` | `The uploaded bytes hash to <hash>, not <hash>`. | The file changed or was damaged in transit; send it again. |
 | `500` | `Internal server error`. | See the server log. |
-
-On the Argos-compatible `/v2`, a build with files not uploaded answers `400` instead of `409`, and screenshots that aren't PNG are refused with `CirCI compares PNG screenshots; "<type>" isn't supported`.
 
 <Aside type="note">
 A request that fails in the dashboard's own JSON API (`/api`) uses the same `{ "error": "…" }` shape, with `400` for invalid input, `403` for a forbidden action and `404` for something that doesn't exist or that you can't see. Errors from an integration's provider map to `400`, `404`, `409` or `502` when the provider is unreachable.

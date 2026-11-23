@@ -210,7 +210,6 @@ export default defineConfig({
             'ci/cypress',
             'ci/ci-examples',
             'ci/github-actions',
-            'ci/argos-compatible-api',
           ],
         },
         {
