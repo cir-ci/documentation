@@ -1,8 +1,11 @@
 // Checks the built site (dist/) for what search engines and link previews need, and fails the build when a page
-// is missing it: a unique <title> (60 characters or fewer) and description (70 to 160), a canonical link, Open
+// is missing it: a unique <title> and description, a canonical link, Open
 // Graph and Twitter tags with an image that exists, valid JSON-LD (SoftwareApplication, WebSite and Organization on the
 // home page, each WebSite and Organization with an alternateName, a BreadcrumbList elsewhere), `noindex` on the 404 page and the design kit, a robots.txt that
-// names the sitemap, and an icon search results can show. Run by `pnpm build`, after astro build.
+// names the sitemap, an icon search results can show, and a working redirect for each removed page (`redirects` in
+// astro.config.mjs). Run by `pnpm build`, after astro build.
+// A title over 60 characters or a description outside 70 to 160 is only a warning: Google sets no length for either
+// and cuts what doesn't fit, so these are the lengths a result usually shows in full, not rules to bend the words for.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
@@ -10,7 +13,10 @@ const dist = new URL('../dist/', import.meta.url).pathname
 const SITE = 'https://circi.dev'
 const NOINDEX = new Set(['404.html', 'design-kit/index.html'])
 const problems = []
+const warnings = []
 const fail = (page, message) => problems.push(`${page}: ${message}`)
+const warn = (page, message) => warnings.push(`${page}: ${message}`)
+const redirects = new Map()
 
 function* htmlFiles(dir) {
   for (const name of readdirSync(dir)) {
@@ -43,6 +49,19 @@ for (const file of htmlFiles(dist)) {
   const page = relative(dist, file)
   const html = readFileSync(file, 'utf8')
   const head = html.slice(0, html.indexOf('</head>'))
+
+  // A page Astro writes for an entry of `redirects`: it must send readers on at once, name its target as the
+  // canonical, and stay out of search; it has none of a real page's tags.
+  const refresh = metas(head).find((t) => attr(t, 'http-equiv') === 'refresh')
+  if (refresh) {
+    const target = /^0;url=(.*)$/.exec(attr(refresh, 'content') ?? '')?.[1]
+    if (!target) fail(page, `redirect isn't immediate: ${attr(refresh, 'content')}`)
+    else redirects.set(page, target)
+    if (!metaContent(head, 'name', 'robots')?.includes('noindex')) fail(page, 'redirect page must be noindex')
+    const canonical = /<link rel="canonical" href="([^"]*)"/.exec(head)?.[1]
+    if (target && canonical !== new URL(target, `${SITE}/`).href) fail(page, `redirect's canonical (${canonical}) isn't its target`)
+    continue
+  }
   const robots = metaContent(head, 'name', 'robots')
 
   if (NOINDEX.has(page)) {
@@ -54,9 +73,10 @@ for (const file of htmlFiles(dist)) {
   const title = decode(/<title>([^<]*)<\/title>/.exec(head)?.[1] ?? '')
   const description = metaContent(head, 'name', 'description') ?? ''
   if (!title) fail(page, 'no <title>')
-  if (title.length > 60) fail(page, `<title> is ${title.length} characters (60 at most): ${title}`)
-  if (title.length > 0 && title.length < 15) fail(page, `<title> is only ${title.length} characters: ${title}`)
-  if (description.length < 70 || description.length > 160) fail(page, `description is ${description.length} characters (70 to 160)`)
+  if (!description) fail(page, 'no description')
+  if (title.length > 60) warn(page, `<title> is ${title.length} characters; a result may cut it after about 60: ${title}`)
+  if (title.length > 0 && title.length < 15) warn(page, `<title> is only ${title.length} characters: ${title}`)
+  if (description && (description.length < 70 || description.length > 160)) warn(page, `description is ${description.length} characters; results usually show 70 to 160`)
   unique('title', title, page)
   unique('description', description, page)
 
@@ -131,7 +151,14 @@ const robotsTxt = existsSync(join(dist, 'robots.txt')) ? readFileSync(join(dist,
 if (!robotsTxt.includes(`Sitemap: ${SITE}/sitemap-index.xml`)) problems.push('robots.txt: no Sitemap line')
 if (/^Disallow:\s*\/\s*$/m.test(robotsTxt)) problems.push('robots.txt: disallows everything')
 if (!existsSync(join(dist, 'sitemap-index.xml'))) problems.push('sitemap-index.xml: missing')
-if (readFileSync(join(dist, 'sitemap-0.xml'), 'utf8').includes('/design-kit/')) problems.push('sitemap: lists the design kit')
+const sitemapXml = readFileSync(join(dist, 'sitemap-0.xml'), 'utf8')
+if (sitemapXml.includes('/design-kit/')) problems.push('sitemap: lists the design kit')
+for (const [page, target] of redirects) {
+  const from = `${SITE}/${page.replace(/index\.html$/, '')}`
+  if (sitemapXml.includes(`<loc>${from}</loc>`)) problems.push(`sitemap: lists ${from}, which redirects`)
+  const path = new URL(target, `${SITE}/`).pathname
+  if (!existsSync(join(dist, path, 'index.html'))) problems.push(`${page}: redirects to ${path}, which wasn't built`)
+}
 
 // The icon search results show: a raster `rel="icon"` whose size is a multiple of 48 px (Google shows a globe for an
 // SVG-only shortcut icon), and /favicon.ico, the fallback crawlers ask for.
@@ -147,8 +174,9 @@ if (readFileSync(join(dist, 'sitemap-0.xml'), 'utf8').includes('/design-kit/')) 
   if (!existsSync(join(dist, 'favicon.ico'))) fail('favicon.ico', 'missing')
 }
 
+if (warnings.length > 0) console.warn(`SEO check warnings (${warnings.length}):\n- ${warnings.join('\n- ')}`)
 if (problems.length > 0) {
   console.error(`SEO check failed (${problems.length}):\n- ${problems.join('\n- ')}`)
   process.exit(1)
 }
-console.log(`SEO check passed: ${seen.title.size} pages with unique titles and descriptions, social images and structured data.`)
+console.log(`SEO check passed: ${seen.title.size} pages with unique titles and descriptions, social images and structured data; ${redirects.size} redirect(s).`)

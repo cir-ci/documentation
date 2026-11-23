@@ -10,7 +10,8 @@ export const collections = {
     schema: docsSchema({
       // The words a search result and a link preview show, when the page's own title is short for them
       // ("Storage" is the sidebar entry and the h1; "Storage for CirCI: local disk or S3" is the `<title>`).
-      extend: z.object({ seoTitle: z.string().max(52).optional() }),
+      // Aim for 60 characters or fewer with the ` | CirCI` suffix, which a result usually shows in full; longer only warns.
+      extend: z.object({ seoTitle: z.string().optional() }),
     }),
   }),
   // The release notes of the app, the CLI and the Vitest plugin, read from the main repository's CHANGELOG.md files
