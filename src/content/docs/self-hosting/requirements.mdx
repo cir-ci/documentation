@@ -3,7 +3,7 @@ title: Requirements
 seoTitle: Self-hosting requirements for CirCI
 description: What you need to self-host CirCI (Docker, Postgres and file storage), what it is made of, and how big a machine to use.
 ---
-{/* Source: README.md (Self-hosting, Development), deploy/README.md, deploy/docker-compose.yml */}
+{/* Source: README.md (Self-hosting, Development), deploy/README.md, deploy/docker-compose.yml, .github/workflows/release.yml (the platforms) */}
 
 import { Aside } from '@astrojs/starlight/components'
 
@@ -51,6 +51,6 @@ The worker wakes on Postgres `LISTEN/NOTIFY`, so give it a **direct connection o
 
 ## The image
 
-Each release is published as `ghcr.io/cir-ci/circi:<version>` (`linux/amd64`), and the compose files build the same image from the repository. It includes a Rust build of the native diff engine and runs one bundle plus `sharp`, `pg` and the AWS SDK: about 457 MB, and it answers `/healthz` about 0.6 seconds after it starts, migrations of an empty database included.
+Each release is published as `ghcr.io/cir-ci/circi:<version>` for `linux/amd64` and, from 0.2.1, `linux/arm64` (AWS Graviton, Ampere, a Raspberry Pi 4 or 5 with a 64-bit OS, Apple Silicon); Docker pulls the one that matches the host. The compose files build the same image from the repository, for the machine they run on. It includes a Rust build of the native diff engine and runs one bundle plus `sharp`, `pg` and the AWS SDK: about 457 MB, and it answers `/healthz` about 0.6 seconds after it starts, migrations of an empty database included.
 
 Next, pick how to run it: [Docker Compose](/self-hosting/docker-compose/) on one machine, the [Terraform module](/self-hosting/terraform/) on a Docker host, or the [Helm chart](/self-hosting/kubernetes/) on a Kubernetes cluster such as EKS.
