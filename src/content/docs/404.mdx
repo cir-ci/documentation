@@ -1,0 +1,25 @@
+---
+title: Page not found
+description: This address has no page. It may have moved or been removed; search the docs or start from one of the pages below.
+prev: false
+next: false
+pagefind: false
+editUrl: false
+lastUpdated: false
+---
+{/* Replaces Starlight's default 404 (route-data.ts keeps it noindex). Pages that move get an entry in `redirects` in astro.config.mjs, so a reader rarely lands here. */}
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+This address has no page. It may have moved or been removed. Search the docs with the field at the top, or start from one of these:
+
+<CardGrid>
+  <LinkCard title="What is CirCI?" description="What it does and how a build gets from CI to the merge gate." href="/introduction/what-is-circi/" />
+  <LinkCard title="Run it locally" description="Start CirCI with Docker Compose in a few minutes." href="/getting-started/run-it-locally/" />
+  <LinkCard title="Upload from CI" description="The circi CLI, and setups for GitHub Actions, GitLab, Jenkins and more." href="/ci/cli/" />
+  <LinkCard title="Self-hosting" description="Requirements, Docker Compose, Kubernetes and Terraform." href="/self-hosting/requirements/" />
+  <LinkCard title="FAQ" description="Short answers to the questions people ask first." href="/introduction/faq/" />
+  <LinkCard title="Glossary" description="The terms the dashboard and these docs use." href="/reference/glossary/" />
+</CardGrid>
+
+If a link on this site brought you here, [open a documentation issue](https://github.com/cir-ci/documentation/issues) with the address.

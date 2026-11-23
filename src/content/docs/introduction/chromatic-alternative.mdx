@@ -1,0 +1,117 @@
+---
+title: Self-hosted Chromatic alternative
+seoTitle: Self-hosted, open source Chromatic alternative
+description: "Run Storybook visual testing without Chromatic: how CirCI differs, when each one fits, and a step-by-step guide to moving your CI from Chromatic to CirCI."
+---
+{/* Sources for CirCI: packages/storybook (README, src/main.ts), packages/cypress, packages/vitest, packages/cli in cir-ci/repo, and the ci/storybook, ci/cypress, ci/vitest, ci/playwright, ci/github-actions and using/hosted-sites pages of this site. Sources for Chromatic: the public pages listed at the end, read on November 23, 2026. */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+
+Chromatic and CirCI both compare screenshots of your UI with approved baselines and ask your team to review what changed before it merges. The difference is where the work happens. Chromatic is a hosted service: it builds and renders your stories and tests in its own cloud browsers. CirCI is open source software you run yourself: your CI takes the screenshots and uploads them to your CirCI server, which compares them and hosts the review.
+
+This page covers Chromatic only. For Percy and Argos as well, see [Compared with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/). Facts about Chromatic come from its own public pages, read on **November 23, 2026**; it can change after that. Prices and plan limits are left out because they change: check Chromatic's pricing page.
+
+## At a glance
+
+| | CirCI | Chromatic |
+|---|---|---|
+| **Where it runs** | Your servers: one Docker image, Postgres and file storage ([Requirements](/self-hosting/requirements/)) | Chromatic's hosted service |
+| **License** | GPL-3.0-only | Not stated on the pages read |
+| **Who renders the screenshots** | Your CI, with your browsers. CirCI compares and reviews PNG files | Chromatic's cloud browsers. For Storybook it builds and publishes your Storybook; for Vitest, Playwright and Cypress it uploads an archive of the page (DOM, styles and assets) and renders it in the cloud |
+| **Storybook** | [`@circi/storybook`](/ci/storybook/) screenshots every story with Playwright in your CI job | Stories become tests automatically |
+| **Other test tools** | [Vitest plugin](/ci/vitest/), [Cypress plugin](/ci/cypress/), and any tool that writes PNG files, such as [Playwright](/ci/playwright/) | Vitest, Playwright and Cypress integrations, which capture an archive of the UI (DOM, styles and assets) and render it in Chromatic's cloud browsers |
+| **Testing only what changed** | No equivalent. Every screenshot is taken each run; split a slow run into [shards](/ci/github-actions/#4-shard-a-slow-suite) | TurboSnap: snapshots only the stories that depend on files changed since the baseline (off by default) |
+| **Baselines** | The nearest earlier approved build of the same project and build name, found from the pull request's merge base ([How a build flows](/introduction/how-a-build-flows/#which-baseline)) | Tracked independently for each branch ([Branches and baselines](https://www.chromatic.com/docs/branching-and-baselines/)) |
+| **Review** | Approve or reject per screenshot or per build, comments on regions, review requests by rule, and a check on the pull request ([Reviewing a build](/using/reviewing-a-build/)) | Approve or reject changes in UI Tests; UI Review, a separate workflow, has reviewers approve a changeset |
+| **Where the images live** | Your Postgres and your own storage: local disk or an S3-compatible bucket ([Storage](/self-hosting/storage/)) | Chromatic's service |
+
+## When CirCI fits
+
+- **Screenshots must stay on your network.** Nothing about a build leaves your servers ([Security](/self-hosting/security/)).
+- **You want free software with no per-snapshot bill.** CirCI is GPL-3.0-only, with nothing to buy to use all of it.
+- **You already take screenshots in tests.** CirCI takes any PNG files, so Playwright, Vitest, Cypress or your own script can feed it without a vendor SDK.
+- **You use GitLab or Bitbucket as well as GitHub.** CirCI reports to all three ([Integrations](/integrations/overview/)).
+
+## When Chromatic fits
+
+- **You don't want to run anything.** With CirCI, updates, backups, storage and uptime are yours ([Upgrades and migrations](/self-hosting/upgrades-and-migrations/), [Backups](/self-hosting/backups/)).
+- **You want rendering done for you, in several browsers.** Chromatic renders in its cloud browsers. With CirCI, your CI runs the browsers, and each browser is its own build ([one build per browser](/ci/vitest/#one-build-per-browser-and-shards)).
+- **Your Storybook is large and TurboSnap saves you a lot.** CirCI has no dependency-graph skipping.
+- **You want a 1.0 product.** CirCI is pre-1.0, and parts of it are verified only against simulated services.
+
+## Move from Chromatic to CirCI
+
+There's no import from Chromatic and no compatible API: Chromatic's CLI, action and SDKs can't upload to CirCI. The move is a change to one CI step, plus a first review.
+
+<Steps>
+
+1. **Run CirCI and create a project.** Start a server ([Run it locally](/getting-started/run-it-locally/) to try it, [Docker Compose](/self-hosting/docker-compose/) or [Kubernetes](/self-hosting/kubernetes/) for real use) that your CI runners can reach. Create a project and copy its CI token, shown once ([Create a project](/getting-started/create-a-project/)).
+
+2. **Swap the token.** Where your CI stores `CHROMATIC_PROJECT_TOKEN`, add a secret `CIRCI_TOKEN` with the CirCI token, and your server's address as `CIRCI_API_URL` (on GitHub, a repository variable). Remove the Chromatic token when you're done.
+
+3. **Replace the Chromatic step.** Pick the row for how you use Chromatic today:
+
+   | You use | Replace it with |
+   |---|---|
+   | Storybook with `chromaui/action` or `npx chromatic` | [`@circi/storybook`](/ci/storybook/): add `circi()` to `.storybook/main.ts`, then run `npx storybook build` and `npx circi-storybook upload --wait` |
+   | Chromatic for Playwright | Keep Playwright, write screenshots to a folder, and upload them with `npx @circi/cli upload ./screenshots --wait` or the [`cir-ci/action`](/ci/github-actions/) step ([Playwright](/ci/playwright/)) |
+   | Chromatic for Cypress | [`@circi/cypress`](/ci/cypress/): add the plugin, import its support file, and take named screenshots with `cy.screenshot('name')` |
+   | Chromatic for Vitest | [`@circi/vitest`](/ci/vitest/): add the plugin and capture with Vitest's `toMatchScreenshot` |
+
+   Chromatic's test integrations capture an archive of each test's UI and render it in the cloud. CirCI's upload only the screenshots your tests take, by name, so add a named screenshot wherever you want one compared.
+
+4. **Upload from your default branch too.** Pull requests are compared with approved builds of the branch they target, so run the same job on pushes to `main` ([GitHub Actions setup guide](/ci/github-actions/#2-write-the-workflow)).
+
+5. **Approve the first build.** Chromatic's baselines stay in Chromatic. CirCI starts with none, so the first build shows every screenshot as added: approve it once on `main`, and it becomes the baseline ([First review](/getting-started/first-review/)).
+
+6. **Turn on the pull request check.** Link the project to its repository, and require the `CirCI / <build name>` check in your branch rules instead of Chromatic's ([GitHub](/integrations/github/), [GitLab](/integrations/gitlab/), [Bitbucket](/integrations/bitbucket/)).
+
+7. **Host the built Storybook, if you published it with Chromatic.** `npx circi-storybook upload --site` also uploads the built Storybook as a [hosted site](/using/hosted-sites/), behind sign-in, with an address per commit and per branch. Your instance needs a sites domain for this ([Site domains](/self-hosting/site-domains/)).
+
+</Steps>
+
+A GitHub Actions job for Storybook, after the move:
+
+```yaml title=".github/workflows/visual.yml"
+name: Visual tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  storybook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx storybook build
+      - run: npx circi-storybook upload --wait --site
+        env:
+          CIRCI_TOKEN: ${{ secrets.CIRCI_TOKEN }}
+          CIRCI_API_URL: ${{ vars.CIRCI_API_URL }}
+```
+
+Expect the first CirCI screenshots to differ from Chromatic's even where nothing changed: they're rendered by another browser on another machine. That's why the first build is approved as a whole. After that, keep the screenshots on the same runner image every time ([Make story screenshots stable](/ci/storybook/#make-story-screenshots-stable)).
+
+## Where this page comes from
+
+- [Why Chromatic?](https://www.chromatic.com/docs/), [Visual tests](https://www.chromatic.com/docs/visual/) and [Snapshots](https://www.chromatic.com/docs/snapshots/): cloud browsers, how snapshots are taken, baselines per branch, the Vitest, Playwright and Cypress integrations.
+- [Visual testing for Storybook](https://www.chromatic.com/storybook): stories as tests, building and publishing Storybook.
+- [TurboSnap setup](https://www.chromatic.com/docs/turbosnap/setup/) and [Configuration reference](https://www.chromatic.com/docs/configure/): TurboSnap and `onlyChanged`.
+- [Automate Chromatic with GitHub Actions](https://www.chromatic.com/docs/github-actions/) and [CLI](https://www.chromatic.com/docs/cli/): `chromaui/action` and `CHROMATIC_PROJECT_TOKEN`.
+- [Review](https://www.chromatic.com/docs/review/): UI Review.
+
+<Aside type="note" title="Spot a mistake?">
+If a statement about Chromatic is wrong or out of date, [open a documentation issue](https://github.com/cir-ci/documentation/issues) with a link to Chromatic's page and it will be corrected.
+</Aside>
+
+New to CirCI? Start with [What is CirCI?](/introduction/what-is-circi/) or the [FAQ](/introduction/faq/).

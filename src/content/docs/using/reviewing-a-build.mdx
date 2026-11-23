@@ -91,7 +91,7 @@ In the reason field, <Kbd keys="Mod+Enter" /> sends it. Approve and Reject only 
 
 ### How decisions set the build's status
 
-The build's review status is derived from its screenshots: all changed screenshots approved means the build is **Approved**; one rejected means **Rejected**; anything else is still **Needs review**. Unchanged screenshots need no decision. When the status moves, the author is notified, webhooks fire (see [Webhooks](/integrations/webhooks/)), and the check on the pull request is updated. People who were asked to review stop being asked once the build is decided.
+The build's review status is derived from its screenshots: all changed screenshots approved means the build is **Approved**; one rejected means **Rejected**; anything else is still **Needs review**. Unchanged screenshots need no decision. [Build and screenshot statuses](/reference/build-statuses/) has the full rules. When the status moves, the author is notified, webhooks fire (see [Webhooks](/integrations/webhooks/)), and the check on the pull request is updated. People who were asked to review stop being asked once the build is decided.
 
 On the project's default branch, an approved screenshot becomes the baseline later builds are compared with. A default-branch screenshot can become the baseline even while the rest of the build is still pending. Other branches only count once the whole build is approved. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
 

@@ -12,7 +12,7 @@ CirCI has no Playwright plugin, and it doesn't need one. Playwright takes the sc
 
 ## Write screenshots to a folder
 
-Playwright's `toHaveScreenshot()` normally compares against reference images committed next to your tests and fails the test on a difference. With CirCI doing the comparing, point it at an output folder and let it overwrite on every run:
+Playwright's `toHaveScreenshot()` normally compares against reference images committed next to your tests and fails the test on a difference ([when that's enough, and when it isn't](/ci/playwright-tohavescreenshot/)). With CirCI doing the comparing, point it at an output folder and let it overwrite on every run:
 
 ```ts title="playwright.config.ts"
 import { defineConfig } from '@playwright/test'
