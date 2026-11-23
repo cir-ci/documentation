@@ -1,7 +1,7 @@
 // Checks the built site (dist/) for what search engines and link previews need, and fails the build when a page
 // is missing it: a unique <title> (60 characters or fewer) and description (70 to 160), a canonical link, Open
-// Graph and Twitter tags with an image that exists, valid JSON-LD (SoftwareApplication and Organization on the
-// home page, a BreadcrumbList elsewhere), `noindex` on the 404 page and the design kit, a robots.txt that
+// Graph and Twitter tags with an image that exists, valid JSON-LD (SoftwareApplication, WebSite and Organization on the
+// home page, each WebSite and Organization with an alternateName, a BreadcrumbList elsewhere), `noindex` on the 404 page and the design kit, a robots.txt that
 // names the sitemap, and an icon search results can show. Run by `pnpm build`, after astro build.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -94,8 +94,15 @@ function checkHome(page, data) {
   const nodes = data['@graph'] ?? []
   const app = nodes.find((n) => n['@type'] === 'SoftwareApplication')
   const org = nodes.find((n) => n['@type'] === 'Organization')
+  const site = nodes.find((n) => n['@type'] === 'WebSite')
   if (!app) return fail(page, 'no SoftwareApplication')
   if (!org) return fail(page, 'no Organization')
+  if (!site) return fail(page, 'no WebSite (the site name search results show)')
+  for (const [label, node] of [['WebSite', site], ['Organization', org]]) {
+    if (node.name !== 'CirCI') fail(page, `${label} name must be CirCI`)
+    if (!Array.isArray(node.alternateName) || !node.alternateName.includes('circi')) fail(page, `${label} alternateName must include "circi"`)
+  }
+  if (site.url !== `${SITE}/`) fail(page, `WebSite url must be ${SITE}/`)
   for (const key of ['name', 'description', 'url', 'applicationCategory', 'operatingSystem', 'license', 'offers', 'sameAs']) {
     if (!app[key]) fail(page, `SoftwareApplication has no ${key}`)
   }

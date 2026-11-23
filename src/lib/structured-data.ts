@@ -6,6 +6,8 @@ import { groupsOf, HOME_DESCRIPTION, pathOf, SITE, SITE_NAME } from '#lib/seo.ts
 
 const REPOSITORY = 'https://github.com/cir-ci/repo'
 const ORGANIZATION_ID = `${SITE}/#organization`
+/** Other names people search for: lowercase (Google may otherwise correct "circi" to "circleci") and what it is. */
+const ALTERNATE_NAMES = ['circi', 'CirCI visual regression testing']
 
 /** The home page: the application, the website and its organization (`@circi/cli` and `@circi/vitest` are the packages on npm). */
 export function homeData(): Graph {
@@ -31,6 +33,7 @@ export function homeData(): Graph {
         '@type': 'WebSite',
         '@id': `${SITE}/#website`,
         name: SITE_NAME,
+        alternateName: ALTERNATE_NAMES,
         url: `${SITE}/`,
         description: HOME_DESCRIPTION,
         inLanguage: 'en',
@@ -40,6 +43,7 @@ export function homeData(): Graph {
         '@type': 'Organization',
         '@id': ORGANIZATION_ID,
         name: SITE_NAME,
+        alternateName: ALTERNATE_NAMES,
         url: `${SITE}/`,
         logo: `${SITE}/icons/512.png`,
         sameAs: ['https://github.com/cir-ci', REPOSITORY],
