@@ -1,13 +1,13 @@
 ---
 title: Argos-compatible API
-seoTitle: "Argos-compatible API: use Argos SDKs with CirCI"
-description: Point the Argos SDKs at CirCI by changing two variables, designed to work and not yet verified with the real SDKs.
+seoTitle: "Argos-compatible API: status with the real SDKs"
+description: CirCI implements the Argos upload API, but the real Argos SDK refuses CirCI tokens today. What was tried, what fails and what to use instead.
 ---
 {/* Source: apps/server/src/http/routes/argos, packages/cli/src/main.ts (argos-env) */}
 
 import { Aside } from '@astrojs/starlight/components'
 
-CirCI accepts uploads from the Argos SDKs under `/v2`, so a project that uploads with `@argos-ci/playwright`, `@argos-ci/cypress`, `@argos-ci/storybook` or `@argos-ci/cli` can switch by changing two values:
+CirCI implements the upload API of the Argos SDKs under `/v2`, so that a project that uploads with `@argos-ci/playwright`, `@argos-ci/cypress`, `@argos-ci/storybook` or `@argos-ci/cli` could switch by changing two values. **It doesn't work with the real SDK yet** (see the status below):
 
 ```sh
 ARGOS_API_BASE_URL=https://ci.acme.io/v2
@@ -16,8 +16,8 @@ ARGOS_TOKEN=circi_…          # the project's CI token
 
 `circi argos-env` prints exactly these two lines from `CIRCI_API_URL` and `CIRCI_TOKEN`. To use Playwright without the Argos SDK, write its screenshots to a folder for the CLI: see [Playwright](/ci/playwright/).
 
-<Aside type="caution" title="Status">
-Designed to work with the SDKs, from the source of `@argos-ci/core` `upload()`; not yet verified with the real SDKs. If an SDK refuses the token's format or sends something unexpected, the error is in the SDK's output and the CirCI server log.
+<Aside type="caution" title="Status: tried with the real SDK, and it fails">
+Built from the source of `@argos-ci/core` `upload()`, and then tried with the real `@argos-ci/cypress` 7.6.0 (`@argos-ci/core` 6.9.1) and Cypress 16.3.0 against a local CirCI. The SDK refuses the setup before it uploads anything: its token check accepts only 40 characters (or an `argos_oat_` prefix) and a CirCI token has 49, and it refuses `localhost` as an address. After removing the token check in a scratch copy of the SDK, it crashed on the shape of CirCI's baseline reply (`baseline.head.sha` is missing); with that read changed too, a build was created, processed and showed the screenshot. The details are on the [Cypress page](/ci/cypress/#the-argos-sdk-for-cypress-doesnt-work-with-circi-yet). The SDKs share `@argos-ci/core`, so the same checks apply to the others, which weren't run. Use `circi upload`, the [Vitest plugin](/ci/vitest/) or the [Cypress plugin](/ci/cypress/) until it's fixed.
 </Aside>
 
 ## What works

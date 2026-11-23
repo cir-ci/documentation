@@ -1,0 +1,48 @@
+---
+title: Visual regression testing without a SaaS
+seoTitle: Self-hosted visual regression testing, no SaaS
+description: "Run visual regression testing on your own servers instead of a hosted service: what you gain, what it costs to run, and what you take on yourself."
+---
+{/* Source: README.md, apps/server (self-hosting), packages/config/src/schema.ts, and the pages linked below: self-hosting/security (what leaves the instance), self-hosting/requirements, self-hosting/performance, compared-with-chromatic-percy-argos. Nothing on this page was measured beyond what those pages report. */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+Most visual regression testing tools are services: your CI uploads screenshots to someone else's servers, and you review them in their dashboard. CirCI is the other kind. It's open source software that you run yourself, and there is no hosted CirCI to sign up for. This page is for deciding whether that trade suits your team. It doesn't rank products: [Compared with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/) lists what each product's own pages say.
+
+## What the work is, with or without a service
+
+Whichever tool you use, the loop is the same. Your tests take screenshots, a tool compares each with the approved one, a person reviews what changed, and the result gates the merge ([How a build flows](/introduction/how-a-build-flows/)). A hosted service runs the comparison, the storage and the dashboard for you. With CirCI you run them, and in exchange you decide where everything lives.
+
+## Why teams self-host
+
+- **The screenshots stay with you.** Screenshots can show unreleased designs, customer data in a test fixture or an internal tool. With CirCI, builds, reviews and settings live in your Postgres and every image in your storage, local disk or an S3-compatible bucket you own ([Storage](/self-hosting/storage/)). No screenshot goes to a third party.
+- **No per-screenshot bill.** Hosted services commonly price by the number of screenshots or builds, which is a reason to take fewer of them. CirCI is GPL-3.0-only free software with no plan or meter: you pay for the machine and the storage, and nothing is metered ([Limits](/reference/limits/) lists what is capped per screenshot and per build). Check each vendor's pricing page for theirs; this site doesn't quote prices that change.
+- **Few outside connections.** CirCI makes outbound requests only to services you configure, such as your storage, your mail server and the git hosts you link, and its code has no analytics, error-reporting client or update check ([What leaves the instance](/self-hosting/security/#what-leaves-the-instance)). With local-disk storage and no integrations, that list is short enough to run on a network with no route to the internet. Running it in a fully air-gapped network hasn't been tried, so check your own setup, for example whether your CI can pull the image and the `circi` CLI from a mirror.
+- **You set the rules around it.** Sign-in through your own identity provider, your own TLS and proxy, retention to match your policy, backups on your schedule ([Authentication](/self-hosting/authentication/), [Retention and garbage collection](/self-hosting/retention-and-gc/)).
+
+## What it costs to run
+
+CirCI is one Docker image (the server, the dashboard and the background worker), Postgres, and file storage ([Requirements](/self-hosting/requirements/)).
+
+- **A small install is one machine.** About 2 vCPUs and 4 GB with a small Postgres serves dozens to a couple of hundred people browsing and a few CI builds per minute. These are estimates from reading the code and one set of load tests, not a promise: measure on your own hardware.
+- **Image processing is the limit, not browsing.** Comparing screenshots is the only CPU-heavy work. In the load tests, on a 12-core Mac, the default native engine finished about 260 builds of 10 screenshots per minute, and the worker's memory peaked near 700 MB. A server with fewer cores gets less ([Performance](/self-hosting/performance/)).
+- **Storage is usually the biggest bill.** Every screenshot, diff and thumbnail is an object, though an unchanged screenshot is stored once. Object storage with free egress and shorter retention keep it down ([Performance](/self-hosting/performance/#cost-levers)).
+- **The browsers are yours, too.** CirCI doesn't take screenshots. Your tests do, in CI minutes you already pay for, using Playwright, Vitest, Cypress, Storybook or anything that writes PNG files ([Upload from CI](/ci/cli/)).
+
+## What you give up
+
+- **You operate it.** Updates, backups, monitoring, TLS and uptime are your job, and a failed worker or a full disk is your page, not a vendor's status page. [Upgrades and migrations](/self-hosting/upgrades-and-migrations/), [Backups](/self-hosting/backups/) and [Monitoring](/self-hosting/monitoring/) cover what that involves.
+- **No hosted service to fall back on.** There is no CirCI cloud, trial account or managed plan.
+- **You choose and run the browsers.** There's no fleet that renders the same snapshot in Chrome, Firefox and Safari for you. Whatever your tests render is what gets compared.
+- **Capture is a separate step.** CirCI has no add-on that snapshots your stories or pages by itself; see [Playwright](/ci/playwright/) and [The CLI](/ci/cli/) for how the screenshots get in.
+- **It's pre-1.0.** Some parts have been tested only against simulated services, and the Argos SDKs can't upload to it yet ([Argos-compatible API](/ci/argos-compatible-api/)). The [changelog](/changelog/) shows what each release changed.
+
+<Aside type="tip" title="A fair test">
+Try it where it costs nothing: [run it locally](/getting-started/run-it-locally/) with Docker Compose, upload one real build and review it. If the first hour doesn't show you a reason to stop, the operating cost is the remaining question, and [Requirements](/self-hosting/requirements/) answers it.
+</Aside>
+
+## When a service is the better choice
+
+Pick a hosted service when nobody on the team wants to run another server, when you need the same page rendered in several real browsers without building that yourself, or when a vendor's support contract matters more to you than where the images live. Pick CirCI when the data has to stay on your side, when per-screenshot pricing shapes what you test, or when you already run your CI and your Postgres and one more container is cheap.
+
+To go on: [Run it locally](/getting-started/run-it-locally/), [Self-host it](/self-hosting/requirements/), or [set up CI for GitHub Actions](/ci/github-actions/) or [another CI](/ci/ci-examples/).

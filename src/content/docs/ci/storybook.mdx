@@ -1,0 +1,133 @@
+---
+title: Storybook
+seoTitle: Storybook visual regression testing with CirCI
+description: Screenshot every Storybook story with @circi/storybook, cropped to the component, and upload them to CirCI so your team reviews each visual change.
+---
+{/* Source: packages/storybook (README, src/{config,capture,run,main}.ts, test/run.integration.test.ts) in cir-ci/repo, and packages/vitest for the second route. The integration test builds a real Storybook 10.6.8 (React and Vite), screenshots it with Playwright on Chromium and uploads to a simulated CirCI server; the Vitest route was run end to end against a CirCI server from `pnpm dev`. */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+
+`@circi/storybook` screenshots every story of a built Storybook with Playwright and uploads the PNGs to your CirCI server, which compares each one with its baseline and asks your team to review what changed. Each screenshot holds the component and nothing around it: no empty canvas, no Storybook interface.
+
+## Set it up
+
+<Steps>
+
+1. Install the addon and Playwright, and Playwright's browser:
+
+   ```sh
+   npm install --save-dev @circi/storybook playwright
+   npx playwright install chromium
+   ```
+
+   Playwright is a peer dependency, so you choose its version. Node 22 or later is needed (22.18 or later to read a `.storybook/main.ts`).
+
+2. List the addon in `.storybook/main.ts`. Its options live there:
+
+   ```ts title=".storybook/main.ts"
+   import { circi } from '@circi/storybook'
+
+   export default {
+     // your framework, stories and other addons
+     addons: [circi({ name: 'storybook', viewports: ['1280x720'] })],
+   }
+   ```
+
+3. In CI, with the project's token as `CIRCI_TOKEN` and your CirCI address as `CIRCI_API_URL` ([Create a project](/getting-started/create-a-project/)), build Storybook and upload:
+
+   ```sh
+   npx storybook build
+   npx circi-storybook upload --wait
+   ```
+
+   `--build` runs `storybook build` for you instead. Without the token or the address, the screenshots are written to `.circi/screenshots/storybook` and nothing is uploaded, so you can look at them locally.
+
+4. Open the build in the dashboard. The first build has nothing to compare with, so approve every screenshot once ([First review](/getting-started/first-review/)).
+
+</Steps>
+
+A story's screenshot is named by its title and story name: `Components/Button` and `Primary` become `components/button/primary`. Renaming a story starts a new baseline.
+
+## What a screenshot is
+
+- **Most stories:** cropped to what the story renders, with its box shadows, plus anything it renders into the page outside Storybook's root (tooltips, menus and dialogs in portals). The `centered` and `padded` layouts add no whitespace.
+- **`layout: 'fullscreen'`:** the whole page, at the viewport's width and the content's full height.
+- **A story that renders nothing** fails with "rendered nothing" instead of uploading a blank image.
+
+Before each screenshot the story has to be still: Storybook has reported it rendered and its `play` function finished, fonts and images are loaded, and animations, transitions and the caret are off. A story that throws, or whose `play` function throws, is reported with its message. The other stories still run, but nothing is uploaded and the command exits `2`: a partial build would show the failed stories as removed.
+
+## Per story
+
+`parameters.circi` (typed as `CirciParameters`) changes one story:
+
+```ts title="Dialog.stories.ts"
+import type { CirciParameters } from '@circi/storybook'
+
+export const Open = {
+  parameters: {
+    circi: { viewports: ['390x844', 'wide=1440x900'], delay: 200 } satisfies CirciParameters,
+  },
+}
+```
+
+| Key | What it does |
+|---|---|
+| `skip: true` | Leaves the story out. |
+| `viewports` | Replaces the configured viewports for this story. |
+| `selector` | Captures that element instead of the story's content. |
+| `padding` | Pixels of space around the crop. |
+| `delay` | Milliseconds to wait after the story renders. |
+
+A viewport the story chose with Storybook's Viewport addon (`globals.viewport`, or `parameters.viewport.defaultViewport` in Storybook 8) is its screenshot's viewport, unless `parameters.circi.viewports` is set. With more than one viewport or browser, a screenshot's name gets `@<viewport>` or `@<browser>`: `components/button/primary@mobile`.
+
+## Options
+
+All optional. In `circi({ … })` they are `circi.Options`; `circi-storybook upload` takes each as a flag, which overrides the config.
+
+| Option | Flag | What it does |
+|---|---|---|
+| `name` | `--name` | Build name. Default `storybook`. |
+| `wait` | `--wait` | Wait for the result; exit `1` while changes need review and this job is the gate. |
+| `strict` | `--strict` | Exit `2` if the upload fails. |
+| `shard` | `--shard 2/4` | Screenshot and upload one share of the stories, as one shard of a parallel build. |
+| `browsers` | `--browser` | `chromium` (default), `firefox`, `webkit`. |
+| `viewports` | `--viewport` | `1280x720` (default), or named: `mobile=390x844`. |
+| `include`, `exclude` | `--include`, `--exclude` | Globs over a story ID or `Title/Story name`. |
+| `concurrency` | `--concurrency` | Stories screenshotted at once. Default 4. |
+| `site` | `--site [name]` | Also upload the built Storybook as a [hosted site](/using/hosted-sites/), so reviewers can open the live story. |
+| `staticDir`, `build` | the folder argument, `--build` | The built Storybook (default `storybook-static`), and whether to build it first. |
+| `dir`, `clean`, `root` | `--dir`, `--clean`, `--root` | Where screenshots are written (default `.circi/screenshots`, in its `storybook` folder), whether to empty that folder first, and the project root. |
+| `apiUrl`, `token` | `--api-url`, `CIRCI_TOKEN` | Default `CIRCI_API_URL` and `CIRCI_TOKEN`. Keep the token in the environment. |
+
+`apiUrl`, `token`, `name`, `dir`, `clean`, `root`, `wait`, `strict` and `shard` mean the same as in the [Vitest plugin](/ci/vitest/). Exit codes: `0` done, `1` changes need review (with `--wait`), `2` a story failed, bad flags or setup, or a failed upload with `--strict`.
+
+Give the build its own name if the same commit also uploads other screenshots ([several builds per commit](/ci/ci-examples/#several-builds-per-commit)). The complete CI workflow, with the pull request check, is in the [GitHub Actions guide](/ci/github-actions/): replace its test and upload steps with the two commands above.
+
+<Aside type="note" title="What was tested">
+The package's integration test builds a real Storybook 10.6.8 (React and Vite), screenshots it with Playwright on Chromium, and checks each image's size: a centered badge, a padded button, a box shadow, a full-screen page, a tooltip in a portal, a selector with padding, a `play` function, and viewports from the Viewport addon. The uploads went to a simulated CirCI server. Not tried yet: Firefox and WebKit, other Storybook versions and frameworks, and a real CI service.
+</Aside>
+
+## Without the addon: Vitest and portable stories
+
+If your components already have Vitest browser tests, a test can render each story with Storybook's portable stories and let the [Vitest plugin](/ci/vitest/) capture it. This covers the story files you list in a test, and Storybook's `.storybook/preview` setup applies only if you pass it to `setProjectAnnotations` (see Storybook's [portable stories documentation](https://storybook.js.org/docs/api/portable-stories/portable-stories-vitest)).
+
+```jsx title="src/Button.visual.test.jsx"
+import { composeStories } from '@storybook/react-vite'
+import { expect, test } from 'vitest'
+import { render } from 'vitest-browser-react'
+import * as stories from './Button.stories.jsx'
+
+// One screenshot per story, named by the story's export: "Primary" is the name "primary".
+for (const [name, Story] of Object.entries(composeStories(stories))) {
+  test(name, async () => {
+    const screen = await render(<Story />)
+    await expect.element(screen.container).toMatchScreenshot(name.toLowerCase())
+  })
+}
+```
+
+With `circi({ name: 'storybook' })` in the Vitest config, `CIRCI_API_URL=… CIRCI_TOKEN=… npx vitest run` uploads them as `src/Button.visual.test.jsx/primary` and so on ([names](/ci/vitest/#names)). This route was run end to end with Storybook 10.6.8, Vitest 5.1.1 and `@circi/vitest` 0.3.0 against a real CirCI server.
+
+## Make story screenshots stable
+
+CirCI marks a pixel as changed once its color moves past a fixed tolerance, and the default diff threshold is 0% ([How screenshots are compared](/introduction/how-screenshots-are-compared/)). Take the screenshots on the same machine image every time (fonts differ between operating systems), and keep data and dates in stories fixed. For a part that still moves, draw an [ignore region](/using/baselines-and-ignore-regions/#ignore-regions).

@@ -1,4 +1,4 @@
-# Builds the site and deploys it to GitHub Pages (https://circi.dev) on every push to main.
+# Builds the site and deploys it to GitHub Pages (https://circi.dev) on every push to main and after each CirCI release.
 # Pages must be set to "GitHub Actions" as its source (Settings > Pages). CircleCI runs the checks.
 name: Deploy to GitHub Pages
 
@@ -6,6 +6,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # The changelog page is built from the main repository's CHANGELOG.md files: cir-ci/repo's release workflow sends
+  # this event after each release (its `docs` job), so the changelog is current right after a release.
+  repository_dispatch:
+    types: [circi-release]
 
 permissions:
   contents: read

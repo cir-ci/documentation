@@ -8,7 +8,7 @@ description: Copy-paste setups for uploading screenshots from GitHub Actions, Gi
 import { Aside, Tabs, TabItem } from '@astrojs/starlight/components'
 import StatusChip from '../../../components/StatusChip.astro'
 
-Every example uploads a directory of PNG screenshots with `circi upload` (for Playwright, see [how to write its screenshots there](/ci/playwright/)). Put the project's token in your CI's secret store as `CIRCI_TOKEN`, and your CirCI address in `CIRCI_API_URL`. The CLI reads the commit, branch and pull request from the CI's environment. It also needs enough git history to find the baseline. Shallow checkouts work, because it fetches the base branch and a little more, but a full fetch is faster for large repositories.
+Every example uploads a directory of PNG screenshots with `circi upload` (for Playwright, see [how to write its screenshots there](/ci/playwright/)). For a step-by-step setup with pull request checks, gating and sharding, see the [GitHub Actions guide](/ci/github-actions/). Put the project's token in your CI's secret store as `CIRCI_TOKEN`, and your CirCI address in `CIRCI_API_URL`. The CLI reads the commit, branch and pull request from the CI's environment. It also needs enough git history to find the baseline. Shallow checkouts work, because it fetches the base branch and a little more, but a full fetch is faster for large repositories.
 
 <Tabs>
 <TabItem label="GitHub Actions">

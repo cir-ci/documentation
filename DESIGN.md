@@ -124,6 +124,10 @@ Screenshots on disk (`src/assets/screens/`): `host-instance-settings`, `host-ins
 `hero-before.jpg`, `hero-after.jpg`, `hero-diff.jpg` (the same screenshot's baseline, new version and diff, for the landing page).
 The `.jpg` files are Chrome captures of the dashboard, so they are 1x; add more by the same naming.
 
+## Changelog
+
+`/changelog/` (`src/content/docs/changelog.mdx`) draws the `CHANGELOG.md` files of the main repository (`apps/server`, `packages/cli`, `packages/vitest`) with `src/components/Changelog.astro`. The `changelog` collection's loader (`src/lib/changelog.ts`) fetches them from GitHub's raw URLs at build time, drops the commit and author noise Changesets adds, and demotes the headings. When a fetch fails (offline, rate limit) it logs a warning and uses the copy in `src/data/changelog/`, so a build never breaks on the network; refresh those copies now and then, they are only a fallback. `.github/workflows/pages.yml` also builds on a `circi-release` event, which cir-ci/repo's release workflow sends after each release, so a release shows without a commit here. `CHANGELOG_RAW_URL` points the build at another address (an unreachable one shows the fallback).
+
 ## Site address
 
 `astro.config.mjs` sets `site: 'https://circi.dev'` (GitHub Pages with the custom domain `circi.dev` at the root, so there is no `base`; `public/CNAME` keeps the domain on each deploy).

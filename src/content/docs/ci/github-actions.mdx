@@ -1,0 +1,149 @@
+---
+title: GitHub Actions setup guide
+seoTitle: Visual regression testing in GitHub Actions
+description: Add visual regression testing to GitHub Actions step by step. Store the CirCI token, write the workflow, get a check on each pull request, gate merges, shard.
+---
+{/* Source: packages/cli/src/ci-env.ts, packages/cli/src/main.ts, packages/cli/src/upload.ts, the cir-ci/action README (v1.0.0), integrations/github and introduction/how-a-build-flows of this site. The workflow's detection was run with the published @circi/cli 0.2.0 and simulated GitHub Actions variables; the workflow was not run on GitHub. */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+
+This guide takes a repository from nothing to a visual check on every pull request: a CirCI project and token, a workflow that takes screenshots and uploads them, a check that blocks the merge until someone reviews the changes, and sharding for a slow suite. [CI examples](/ci/ci-examples/) has the short versions for every CI system.
+
+The CLI needs Node 22 or newer. You need a running CirCI server ([Run it locally](/getting-started/run-it-locally/) or [Self-hosting](/self-hosting/requirements/)) that GitHub's runners can reach over the network, and tests that write PNG screenshots to a folder. The examples use Playwright writing to `./screenshots` ([how to set that up](/ci/playwright/)); the [Vitest plugin](/ci/vitest/), [Cypress](/ci/cypress/) and [Storybook](/ci/storybook/) have their own pages, and the workflow changes only in the step that takes the screenshots.
+
+## 1. Create the project and store its token
+
+<Steps>
+
+1. In CirCI, create a project for the thing you test and copy its CI token, which is shown once ([Create a project](/getting-started/create-a-project/)).
+
+2. In the repository on GitHub, open **Settings** › **Secrets and variables** › **Actions**. Add a repository secret named `CIRCI_TOKEN` with the token.
+
+3. Add your CirCI address (for example `https://ci.acme.io`) as a repository variable named `CIRCI_API_URL`. It isn't secret, so a variable is enough, and you can read it back later.
+
+</Steps>
+
+The token can only upload builds and read the status of its own project's builds. If it leaks, rotate it in the project's settings and update the secret; the old one stops working at once.
+
+## 2. Write the workflow
+
+The upload is one step, the [CirCI GitHub Action](https://github.com/cir-ci/action) (`cir-ci/action@v1`), which runs the `circi` CLI for you. The CLI reads the commit, branch, pull request number and base branch from the environment GitHub Actions sets, so the workflow passes none of them. On a `pull_request` event it takes the pull request's **head** commit from the event payload, not `GITHUB_SHA`, which is a synthetic merge commit that exists only on the runner. Save this as `.github/workflows/visual.yml`:
+
+```yaml title=".github/workflows/visual.yml"
+name: Visual tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: cir-ci/action@v1
+        with:
+          path: ./screenshots
+          token: ${{ secrets.CIRCI_TOKEN }}
+          api-url: ${{ vars.CIRCI_API_URL }}
+          wait: true
+```
+
+Without the action, the same step is `npx @circi/cli upload ./screenshots --wait` with `CIRCI_TOKEN` and `CIRCI_API_URL` in its `env`.
+
+Why each part is there:
+
+- **`push` to `main` as well as `pull_request`.** A pull request is compared with the nearest earlier approved build of the same project and build name, found from the pull request's merge base. Builds of `main` are those baselines, so `main` must upload too. With **Approve default-branch builds automatically** on, which is the default, a build of `main` moves the baseline without another review ([How a build flows](/introduction/how-a-build-flows/#which-baseline)).
+- **`fetch-depth: 0`.** The CLI needs the history to find the baseline. A shallow checkout works, because the CLI fetches the base branch and a little more, but a full fetch is faster on large repositories ([CLI reference](/ci/cli/#git-history)).
+- **`wait: true`.** Without it the job ends when the upload does. With it the job waits for the result and writes it to the job summary: how many screenshots changed, were added or removed, and a link to review them. The action's outputs (`build-url`, `status`, `changed`, ...) are listed in [its README](https://github.com/cir-ci/action#outputs).
+- **Playwright's browsers.** Screenshots differ between operating systems and font sets, so take them on the same image every time: the runner for every job, never your laptop. [Make screenshots stable](/ci/playwright/#make-screenshots-stable) lists what else moves a pixel.
+
+<Aside type="note" title="What was run, and what wasn't">
+The workflow wasn't run against a real CirCI server. The action's own tests run it on GitHub against a simulated server (upload, `wait`, shards, the fork skip). What was run against a real one: the published `@circi/cli` 0.2.0, given the variables GitHub Actions sets for a pull request (a `pull_request` event file, `GITHUB_RUN_ID`, `GITHUB_ACTOR`), reported the pull request's head commit, its branch, the pull request number, the base branch `main`, the actor as the author and no fork, and uploaded to a CirCI server started from the repository's `pnpm dev`. The checks and buttons in step 3 are described from [the GitHub integration](/integrations/github/), which has been tested only against simulated GitHub services.
+</Aside>
+
+## 3. Get a check on each pull request
+
+Without a linked repository, the job itself is the gate: with `wait` the step fails while changes need review, and the pull request shows a red job. To get a check with **Approve** and **Reject** buttons and a summary comment instead:
+
+<Steps>
+
+1. Set up the CirCI GitHub App once for your server ([GitHub](/integrations/github/#set-up)), and connect the installation to your workspace.
+
+2. Link the project to the repository, on the GitHub integration's page or in the project's settings ([Link a project to a repository](/integrations/github/#link-a-project-to-a-repository)).
+
+3. In the repository's **Settings** › **Branches** (or Rulesets), add a rule for `main` that requires the status check `CirCI / default`. The check is named `CirCI / <build name>`, and the build name is `default` until you pass `--name`.
+
+</Steps>
+
+Now every pull request shows the check. It stays at "action required" while changes wait for review (when **Unreviewed changes block merging** is on, which is the default), turns green when someone approves in the dashboard, with the button or with a `/circi approve` comment, and updates within seconds, with no re-run. With a linked project, the step passes even with unreviewed changes, so a green job isn't mistaken for a reviewed one; the check is the gate. Who may approve from GitHub is explained in [the GitHub integration](/integrations/github/#who-may-approve-from-github).
+
+To make the job the gate instead, set the action's `gate: exit-code` (the CLI's `--gate exit-code`); `gate: status` makes the git host's check the gate. The choice is explained in [How a build flows](/introduction/how-a-build-flows/#merge-gate).
+
+## 4. Shard a slow suite
+
+Run the tests in parallel jobs and give each its share. Every job uploads its own screenshots, and CirCI joins them into one build and processes it when the last shard arrives:
+
+```yaml title=".github/workflows/visual.yml"
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --shard=${{ matrix.shard }}/4
+      - uses: cir-ci/action@v1
+        with:
+          path: ./screenshots
+          token: ${{ secrets.CIRCI_TOKEN }}
+          api-url: ${{ vars.CIRCI_API_URL }}
+          shard: ${{ matrix.shard }}/4
+          wait: true
+```
+
+The shards find each other through the workflow run's ID. A shard that never arrives fails the build after `UPLOAD_TIMEOUT_MINUTES` (default 60), naming the missing shards. `fail-fast: false` keeps one failed test job from cancelling the others, which would leave the build waiting for shards that never come. A re-run of the workflow is a new attempt and starts a new build, and shards of different attempts don't join, so re-run all the jobs rather than only the failed one.
+
+## Pull requests from forks
+
+GitHub doesn't give a repository's secrets to workflows triggered by a pull request from a fork, so `CIRCI_TOKEN` is empty there. The action then skips the upload with a notice (its `status` output is `skipped`) and the job passes. With the CLI, the upload stops with `Set CIRCI_TOKEN to the project CI token`; skip that step for forks with this condition, which is true for pushes and for pull requests from the same repository:
+
+```yaml
+- run: npx @circi/cli upload ./screenshots --wait
+  if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+```
+
+Don't switch to `pull_request_target` to get the secret: it runs with your secrets on code from the fork.
+
+## When something goes wrong
+
+| What you see | What to do |
+|---|---|
+| `Set CIRCI_TOKEN to the project CI token` | The secret isn't set, or the job can't see it (a fork, or an environment secret on a job without that `environment`). |
+| `Couldn't reach https://ci.acme.io` | The runner can't reach your server: check the address, the firewall and the certificate. |
+| `The server refused the token` | The token belongs to another project, or was rotated. |
+| The check never appears | The project isn't linked to this repository, or the App isn't installed on it ([GitHub troubleshooting](/integrations/github/#troubleshooting)). |
+| Every screenshot is "added" on a pull request | The project has no approved baseline yet. Approve the first build, on `main`, once. |
+| The upload step fails (the CLI exits `1`) | A project that isn't linked uses the job as the gate. Approve the changes in the dashboard, then re-run the job. |
+
+Every message the CLI prints is in [Errors and exit codes](/reference/errors-and-exit-codes/).

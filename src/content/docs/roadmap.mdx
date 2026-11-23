@@ -7,7 +7,7 @@ description: What is planned for CirCI, grouped by area. Plans can change, and n
 
 import { Aside } from '@astrojs/starlight/components'
 
-This page lists what is planned and not built yet. It has no dates, and the order inside a group isn't a promise. Anything not listed here either exists or isn't planned.
+This page lists what is planned and not built yet; what has shipped is in the [changelog](/changelog/). It has no dates, and the order inside a group isn't a promise. Anything not listed here either exists or isn't planned.
 
 <Aside type="note" title="Tested against simulated services">
 CirCI's integrations with GitHub, GitLab, Bitbucket, Slack, Linear, Jira and Figma, email delivery (SMTP) and OpenID Connect sign-in have been tested against simulated services that copy the providers' responses, not against the live services. Expect rough edges the first time you connect a real account, and report what you find.
@@ -34,7 +34,7 @@ CirCI's integrations with GitHub, GitLab, Bitbucket, Slack, Linear, Jira and Fig
 - **Jira**: choose the issue type when creating an issue.
 - **Figma**: compare a screenshot with its frame, use frames as baselines, and post results to Figma.
 - **More providers**: Gitea and Forgejo for git hosting; Azure DevOps, Microsoft Teams and Penpot.
-- **Argos**: a test of the Argos-compatible API against Argos's real SDK.
+- **Argos**: make the real Argos SDKs upload to CirCI. Tried with `@argos-ci/cypress`, they refuse CirCI's project tokens (the SDK wants 40 characters, a token has 49) and crash on the shape of the baseline reply. See [Argos-compatible API](/ci/argos-compatible-api/).
 
 ## Hosted sites
 

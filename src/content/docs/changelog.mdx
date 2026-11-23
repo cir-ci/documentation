@@ -1,0 +1,28 @@
+---
+title: Changelog
+seoTitle: "CirCI changelog: app, CLI and Vitest releases"
+description: What changed in each release of the CirCI app, the circi CLI and the Vitest plugin, kept in step with the project's release notes.
+---
+{/* Source: apps/server/CHANGELOG.md, packages/cli/CHANGELOG.md and packages/vitest/CHANGELOG.md of the main repository, read when this site is built (src/lib/changelog.ts) */}
+
+import Changelog from '../../components/Changelog.astro'
+
+Release notes for the three things that are versioned and released: the app (the Docker image `ghcr.io/cir-ci/circi:<version>`), the `circi` CLI and the Vitest plugin. The newest release is first in each list. The notes are the `CHANGELOG.md` files of the [main repository](https://github.com/cir-ci/repo), and this page is rebuilt from them after each release, so it follows a release without anyone editing it. Before you upgrade a server, read [Upgrades and migrations](/self-hosting/upgrades-and-migrations/).
+
+## The app
+
+The version of `@circi/server`: what `circi --version` and `/healthz` report, and the tag of the image.
+
+<Changelog id="server" />
+
+## The CLI
+
+`@circi/cli` on npm, the `circi` command that uploads screenshots from CI ([CLI reference](/ci/cli/)).
+
+<Changelog id="cli" />
+
+## The Vitest plugin
+
+`@circi/vitest` on npm ([Vitest plugin](/ci/vitest/)).
+
+<Changelog id="vitest" />

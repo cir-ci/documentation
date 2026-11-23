@@ -1,0 +1,112 @@
+---
+title: Cypress
+seoTitle: Cypress visual regression testing with CirCI
+description: Upload Cypress screenshots to CirCI with @circi/cypress. Keep cy.screenshot(); each image is cropped to the element or page, and the run uploads when it ends.
+---
+{/* Source: packages/cypress (README, src/{plugin,support,page}.ts, test/plugin.integration.test.ts) in cir-ci/repo; the Argos section: apps/server/src/http/routes/argos and packages/core/src/node/token.ts. The plugin's integration test runs real Cypress 16.3.0 (Electron) against a simulated CirCI server; the Argos steps were run with @argos-ci/cypress 7.6.0 (@argos-ci/core 6.9.1) against a CirCI server from `pnpm dev`. */}
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+
+`@circi/cypress` uploads the screenshots your Cypress tests take to your CirCI server, which compares each one with its baseline and asks your team to review what changed. Your tests keep Cypress's own `cy.screenshot('name')`; the plugin crops each screenshot to the element or the page's content, and `cypress run` uploads them when it ends.
+
+## Set it up
+
+<Steps>
+
+1. Install the plugin:
+
+   ```sh
+   npm install --save-dev @circi/cypress
+   ```
+
+2. Add it to the Cypress config:
+
+   ```ts title="cypress.config.ts"
+   import { circi } from '@circi/cypress'
+   import { defineConfig } from 'cypress'
+
+   export default defineConfig({
+     e2e: {
+       setupNodeEvents: circi({ name: 'cypress' }),
+     },
+   })
+   ```
+
+   If you already have a `setupNodeEvents`, call the plugin inside it: `circi({ name: 'cypress' })(on, config)`, then return `config`.
+
+3. Import its support file in `cypress/support/e2e.ts` (and `component.ts` for component tests):
+
+   ```ts title="cypress/support/e2e.ts"
+   import '@circi/cypress/support'
+   ```
+
+4. Take named screenshots in your specs:
+
+   ```ts title="cypress/e2e/home.cy.ts"
+   it('looks right', () => {
+     cy.visit('/')
+     cy.screenshot('home')
+     cy.get('header').screenshot('header')
+   })
+   ```
+
+5. In CI, with the project's token as `CIRCI_TOKEN` and your CirCI address as `CIRCI_API_URL` ([Create a project](/getting-started/create-a-project/)), run `npx cypress run`. The upload happens when the run ends. Without the token or the address the plugin prints `[circi] skipped: set CIRCI_API_URL and CIRCI_TOKEN to upload screenshots` and the run is unaffected.
+
+6. Open the build in the dashboard. The first build has nothing to compare with, so approve every screenshot once ([First review](/getting-started/first-review/)).
+
+</Steps>
+
+Screenshots are named by the spec's path from the project root, then the name you pass: `cypress/e2e/home.cy.ts/home` and `cypress/e2e/home.cy.ts/header`, the way the [Vitest plugin](/ci/vitest/) names its own. Two specs with the same file name in different folders don't collide. Always pass a name, and note that moving or renaming a spec file starts new baselines. A name with nothing usable in it (only punctuation or non-Latin characters, such as `'!!'`) is skipped with a `[circi] skipped screenshot` line, and the test is unaffected. Add `.circi` to `.gitignore`.
+
+## What is uploaded
+
+Every screenshot a `cypress run` takes with a name, from that run only: the plugin's folder, `.circi/screenshots/cypress`, is emptied when the run starts. The other CirCI plugins have their own folders next to it (`vitest`, `storybook`), which Cypress never touches or uploads. Cypress's automatic screenshot of a failing test isn't uploaded, and neither is a `cy.screenshot()` without a name. `cypress open` uploads nothing.
+
+## What a screenshot shows
+
+The support file keeps `cy.screenshot()`'s signature and what it yields, and changes what it captures so a screenshot holds the thing and nothing around it:
+
+- **An element** (`cy.get(sel).screenshot('x')`): its own box, cropped tight.
+- **The page** (`cy.screenshot('x')`): the page's content, as tall as the content. A short page isn't padded to the viewport's height, and Cypress's own interface isn't in it.
+- **Component testing:** the mounted component's box, not the viewport.
+- **A hidden element, or one with no size,** is an error (`nothing to capture`), not a blank image.
+- **`padding`** adds space on purpose: `cy.get(sel).screenshot('x', { padding: 10 })`. An explicit `capture` or `clip` is left as you wrote it.
+
+Before it captures it waits for fonts and stops animations, transitions and the caret. The image's size follows the display's pixel ratio, so take the screenshots on the same machine image every time, which in practice means CI.
+
+## Options
+
+The same names and meanings as the [Vitest plugin](/ci/vitest/):
+
+| Option | Default | What it does |
+|---|---|---|
+| `name` | `cypress` | Build name. Give each browser or suite its own (`cypress-chrome`). |
+| `wait` | `false` | Wait for the result and fail the run while changes need review and this job is the gate. |
+| `strict` | `false` | Also fail the run if the upload fails. By default the tests pass or fail on their own. |
+| `shard` | `CIRCI_SHARD` (`2/4`) | This machine's share of a parallel run: give every machine the same `name` and its own shard, and they become one build. |
+| `dir` | `.circi/screenshots` | The folder the plugins share, under the project root; this plugin writes to its `cypress` folder. |
+| `clean` | `true` | Empty the plugin's own folder when the run starts. |
+| `root` | Cypress's project root | The project root. |
+| `apiUrl`, `token` | `CIRCI_API_URL`, `CIRCI_TOKEN` | Where to upload, and the project's token. Keep the token in the environment. |
+
+Cypress keeps one handler per event, so your own `before:run`, `after:screenshot` or `after:run` handler replaces the plugin's (or the other way round); a helper such as `cypress-on-fix` lets both run. The complete CI workflow, with the pull request check, is in the [GitHub Actions guide](/ci/github-actions/): replace its test and upload steps with `npx cypress run`.
+
+<Aside type="note" title="What was tested">
+The plugin's integration test runs real Cypress 16.3.0 (Electron, end-to-end and component tests) and checks the images: an element's exact box, padding, a short page, a hidden element, a mounted component, the failing test's screenshot left out, and a run that fails while changes need review. The uploads went to a simulated CirCI server. Not tried yet: Chrome and Firefox, Cypress versions before 16.3, and a real CI service.
+</Aside>
+
+## The Argos SDK for Cypress doesn't work with CirCI yet
+
+CirCI answers the Argos upload API under `/v2`, and `circi argos-env` prints the two variables that point an Argos SDK at it, so `@argos-ci/cypress` looks like the shortcut: `cy.argosScreenshot('home')` in a spec and no plugin. It was tried with the real SDK, and it fails before anything reaches CirCI.
+
+<Aside type="caution" title="Result with the real SDK">
+Run with `@argos-ci/cypress` 7.6.0 (`@argos-ci/core` 6.9.1) against a local CirCI: the spec passed and the SDK took the screenshot, then its upload step refused the configuration `circi argos-env` printed. Don't use this route until the checks below are fixed in CirCI.
+</Aside>
+
+- **The token is refused.** The SDK accepts only a token that is exactly 40 characters long (or one that starts with `argos_oat_`, which `argos login` stores). A CirCI project token is `circi_` and 43 more characters, 49 in all, so the SDK stops with "Invalid Argos repository token (must be 40 characters)". There's no setting to turn this off.
+- **`localhost` is refused as the address.** The SDK wants a host name with a dot in it. `http://localhost:3000/v2` fails with "Invalid Argos API base URL", while `http://127.0.0.1:3000/v2` and a name such as `https://ci.acme.io/v2` pass. This one only affects trying it on your own machine.
+- **The baseline reply has the wrong shape.** To see how far the rest goes, the token check was removed in a scratch copy of the SDK. The SDK then crashed on its next call: it reads the baseline's commit from `baseline.head.sha`, and CirCI's `POST /v2/baseline` answers with `commitSha` directly on the baseline, so a project that already has a baseline for the commit history fails with "Cannot read properties of undefined (reading 'sha')". With that read changed too, in the same scratch copy, the build was created and processed, and its screenshot appeared with the name `home`.
+
+So the protocol after those points did work in that run, and the blockers are the token's length and the baseline's shape. Both need a change in CirCI, not in your setup, and both are on the [roadmap](/roadmap/#integrations). Editing the SDK in `node_modules` isn't a setup to rely on. `@circi/cypress` above is the route to use.
+
+If you already use `@argos-ci/cypress` and want to keep `cy.argosScreenshot()`, the SDK writes its screenshots to a temporary folder before it uploads, so `@circi/cypress` doesn't see them. Switching those calls to `cy.screenshot()` with the plugin is the supported move.

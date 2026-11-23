@@ -28,8 +28,8 @@ import ThemeSelect from '../../components/overrides/ThemeSelect.astro'
 
 <section class="l-hero" aria-labelledby="hero-title">
   <div>
-    <h1 id="hero-title" class="l-title">Review every visual change before it merges</h1>
-    <p class="l-lead">CirCI is visual regression testing you run yourself. CI uploads screenshots, CirCI compares them with the baseline, and your team approves or rejects what changed.</p>
+    <h1 id="hero-title" class="l-title"><span class="l-name">CirCI:</span> review every visual change before it merges</h1>
+    <p class="l-lead">CirCI is self-hosted visual regression testing. CI uploads screenshots, CirCI compares them with the baseline, and your team approves or rejects what changed.</p>
     <div class="l-actions">
       <a class="primary" href="/getting-started/run-it-locally/">Run it locally</a>
       <a href="/self-hosting/requirements/">Self-host it</a>
@@ -48,12 +48,12 @@ import ThemeSelect from '../../components/overrides/ThemeSelect.astro'
     </div>
     <div class="l-path">
       <h3><a href="/self-hosting/requirements/">Self-host</a></h3>
-      <p>Requirements, TLS, storage, upgrades, backups and every environment variable.</p>
+      <p>Requirements, TLS, storage, upgrades, backups and every environment variable. Why <a href="/introduction/visual-regression-testing-without-saas/">without a SaaS</a>.</p>
       <span class="hint">One image: server, worker and dashboard.</span>
     </div>
     <div class="l-path">
       <h3><a href="/ci/cli/">Set up CI</a></h3>
-      <p>Upload from any CI with the <code>circi</code> CLI or the Vitest plugin. Shallow checkouts work.</p>
+      <p>Upload from any CI with the <code>circi</code> CLI or the Vitest plugin. A step-by-step guide for <a href="/ci/github-actions/">GitHub Actions</a>.</p>
       <CopyCommand client:visible command="npx @circi/cli upload ./screenshots --wait" />
     </div>
     <div class="l-path">
