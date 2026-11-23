@@ -88,6 +88,7 @@ export default defineConfig({
           collapsed: true,
           items: [
             'introduction/what-is-circi',
+            'introduction/what-is-visual-regression-testing',
             'introduction/how-a-build-flows',
             'introduction/key-concepts',
             'introduction/how-screenshots-are-compared',
