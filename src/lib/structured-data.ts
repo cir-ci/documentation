@@ -21,7 +21,9 @@ export function homeData(): Graph {
         description: HOME_DESCRIPTION,
         url: `${SITE}/`,
         applicationCategory: 'DeveloperApplication',
-        operatingSystem: 'Any operating system that runs Docker',
+        // A linux/amd64 Docker image (ghcr.io/cir-ci/circi), which Docker Desktop also runs on macOS and Windows.
+        operatingSystem: 'Linux, macOS, Windows',
+        downloadUrl: `${REPOSITORY}/releases`,
         license: 'https://www.gnu.org/licenses/gpl-3.0.html',
         isAccessibleForFree: true,
         offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
