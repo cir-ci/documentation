@@ -46,7 +46,7 @@ module "circi" {
 
 To use the module without the registry, point `source` at the repository and pin it to the release tag with `?ref=`: `source = "git::https://github.com/cir-ci/repo.git//deploy/terraform?ref=@circi/server@0.1.0"` (and no `version`).
 
-The images come from GitHub's container registry: `ghcr.io/cir-ci/circi:<version>` for the app and `ghcr.io/cir-ci/circi-caddy:<version>` for Caddy, both `linux/amd64`. To pull from a mirror, set `image_repository` to it (the Caddy image is `<repository>-caddy`). If your registry needs a login, give the Docker provider its credentials:
+The images come from GitHub's container registry: `ghcr.io/cir-ci/circi:<version>` for the app and `ghcr.io/cir-ci/circi-caddy:<version>` for Caddy, both for `linux/amd64` and, from 0.2.1, `linux/arm64` (Docker pulls the one that matches the host). To pull from a mirror, set `image_repository` to it (the Caddy image is `<repository>-caddy`). If your registry needs a login, give the Docker provider its credentials:
 
 ```hcl
 provider "docker" {
