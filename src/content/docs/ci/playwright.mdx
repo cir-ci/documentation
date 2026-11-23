@@ -89,10 +89,6 @@ For Storybook stories there's [`@circi/storybook`](/ci/storybook/), and for Cypr
 
 The same job can put the HTML report next to the screenshots: `npx @circi/cli site upload ./playwright-report --name playwright`. See [Hosted sites](/using/hosted-sites/).
 
-## Another way: the Argos SDK
-
-CirCI implements the upload API of the Argos SDKs, including `@argos-ci/playwright`, but **the real SDK refuses CirCI's project tokens today** (tried with `@argos-ci/cypress`, which shares the upload code), so the folder and `circi upload` above is the route to use. See [Argos-compatible API](/ci/argos-compatible-api/).
-
 <Aside type="caution" title="What was tested">
 The Playwright configuration on this page was run with `@playwright/test` 1.65.1 on Chromium, and it wrote the files named above. The upload itself is the ordinary `circi upload` documented in the [CLI reference](/ci/cli/); it wasn't run against a CirCI server in this check.
 </Aside>

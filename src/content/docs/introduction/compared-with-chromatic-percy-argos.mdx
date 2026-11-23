@@ -3,7 +3,7 @@ title: Compared with Chromatic, Percy and Argos
 seoTitle: CirCI vs Chromatic, Percy and Argos
 description: How CirCI differs from the hosted services Chromatic, Percy and Argos, from where it runs and its license to how screenshots get in.
 ---
-{/* Sources for CirCI: README.md, packages/cli, packages/vitest, apps/server/src/http/routes/argos. Sources for the others: the public pages linked below, read on November 22, 2026. */}
+{/* Sources for CirCI: README.md, packages/cli, packages/vitest. Sources for the others: the public pages linked below, read on November 22, 2026. */}
 
 import { Aside } from '@astrojs/starlight/components'
 
@@ -19,14 +19,14 @@ This page lists what each product's own public pages say. It doesn't rank them, 
 | **License** | GPL-3.0-only | Not stated on the pages read | Not stated on the pages read | MIT, for the open source repository |
 | **Self-hosting** | The only way to run it | Not mentioned on the pages read | Not mentioned on the pages read | Documented as not officially supported or documented; the Enterprise plan is for strict hosting needs |
 | **Who takes the screenshots** | Your tests. CirCI compares and reviews them, it doesn't capture them | Chromatic runs your tests' snapshots in its own browsers | Percy's SDKs capture them during your tests | Your tests, through Argos's tools or any pipeline that produces screenshots |
-| **Test tools named in the docs** | Any tool that writes PNG files; a Vitest plugin; the Argos SDKs, which don't work yet | Storybook, React Native, Vitest, Playwright, Cypress | Selenium, Playwright, Cypress, Puppeteer, Storybook and others | Playwright, Storybook, Cypress, Vitest, and any pipeline that produces screenshots |
+| **Test tools named in the docs** | Any tool that writes PNG files; plugins for Vitest, Cypress and Storybook | Storybook, React Native, Vitest, Playwright, Cypress | Selenium, Playwright, Cypress, Puppeteer, Storybook and others | Playwright, Storybook, Cypress, Vitest, and any pipeline that produces screenshots |
 
 ## What you give up with CirCI
 
 - **You run it.** Updates, backups, storage and uptime are yours. [Requirements](/self-hosting/requirements/) says what it needs, and [Upgrades and migrations](/self-hosting/upgrades-and-migrations/) and [Backups](/self-hosting/backups/) cover the rest.
 - **You choose and run the browsers.** CirCI stores and compares PNG files. Chromatic's pages describe snapshots taken in Chrome, Firefox, Safari and Edge on its infrastructure; with CirCI, whatever your tests render is what gets compared. To keep browsers apart, upload one build per browser ([Vitest](/ci/vitest/#one-build-per-browser-and-shards)).
 - **Capture runs in your CI.** The CirCI server doesn't render your stories: [`@circi/storybook`](/ci/storybook/) screenshots them with Playwright in your own CI job and uploads the images, and the [Cypress](/ci/cypress/) and [Vitest](/ci/vitest/) plugins do the same from your tests. CirCI can also host a built Storybook next to the screenshots ([Hosted sites](/using/hosted-sites/)).
-- **It's pre-1.0.** Parts of it are verified only against fakes, and its [Argos-compatible API](/ci/argos-compatible-api/) was tried with the real Argos SDK, which refuses CirCI's tokens today.
+- **It's pre-1.0.** Parts of it are verified only against fakes.
 
 ## What you get with CirCI
 
@@ -37,8 +37,7 @@ This page lists what each product's own public pages say. It doesn't rank them, 
 
 ## Moving from another service
 
-- **From Argos:** the Argos SDKs upload to CirCI under `/v2` when `ARGOS_API_BASE_URL` and `ARGOS_TOKEN` point at it. That path is built from the SDKs' source, and the real SDK refuses CirCI's tokens today, so it doesn't work yet. Old builds aren't imported. See [Argos-compatible API](/ci/argos-compatible-api/).
-- **From Chromatic or Percy:** there's no import and no compatible API. Your tests write PNG files, and `circi upload` or the [Vitest plugin](/ci/vitest/) sends them. See the [CLI reference](/ci/cli/) and [Playwright visual regression testing with CirCI](/ci/playwright/).
+- **From Argos, Chromatic or Percy:** there's no import and no compatible API, and the Argos SDKs can't upload to CirCI. Your tests write PNG files, and `circi upload` or the [Vitest plugin](/ci/vitest/) sends them. See the [CLI reference](/ci/cli/) and [Playwright visual regression testing with CirCI](/ci/playwright/).
 
 ## Where this page comes from
 
