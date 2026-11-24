@@ -17,6 +17,14 @@ import Default from '@astrojs/starlight/components/Header.astro'
     if (!document.querySelector('site-search')) return
     for (const incoming of event.newDocument.querySelectorAll('site-search')) incoming.remove()
   })
+
+  // Links to other sites in the header (the GitHub icon, drawn by Starlight) open in a new tab, like every other
+  // external link (see externalLinks in astro.config.mjs). The header is kept between pages, so once is enough.
+  for (const a of document.querySelectorAll<HTMLAnchorElement>('.persist a[href^="http"]')) {
+    if (new URL(a.href).origin === location.origin) continue
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+  }
 </script>
 
 <style>

@@ -12,7 +12,7 @@ const [b, a, d] = await Promise.all([before, after, diff].map((src) => getImage(
 <ReviewCompare client:load before={b.src} after={a.src} diff={d.src} width={before.width} height={before.height} />
 
 <style is:global>
-  /* The captures are 760px wide: the card stops at their natural size instead of upscaling them. */
+  /* The captures are 1520px wide, 2x of a 760px crop: the card stops near 760 CSS px so they stay sharp on retina. */
   .review-compare {
     max-width: 800px;
     margin-inline: auto;

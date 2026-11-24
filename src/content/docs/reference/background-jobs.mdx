@@ -9,7 +9,7 @@ import { Aside } from '@astrojs/starlight/components'
 
 Anything slow or outward-facing in CirCI runs as a job in a queue in Postgres, taken by the worker (`circi worker`, or the worker part of `circi all`). How to run more workers is in [Scaling the worker](/self-hosting/scaling-the-worker/). This page is what the jobs are and how they behave.
 
-## Outbox: a job exists exactly when its change does
+## The outbox
 
 A service queues a job in the same database transaction as the change that needs it. If the transaction rolls back, there is no job; once it commits, the job can't be lost. The same goes for the wake-up: queuing sends a Postgres `NOTIFY` that is delivered when the transaction commits, so a worker learns about the job at the moment it becomes visible. A worker without that listener finds it at its next poll.
 
@@ -80,7 +80,7 @@ The upload timeout, garbage-collection grace period, job retention and webhook t
 
 ## Seeing what's stuck
 
-**Instance** › **Health** shows each queue under Background jobs, with the number of jobs waiting, running and failed, how long the oldest has waited, and how many are retrying and at which attempt ("1 retrying (attempt 3 of 8)"). See [Instance administration](/using/instance-administration/#health).
+**Instance** › **Health** shows each queue under Background jobs, with the number of jobs waiting, running and failed, how long the oldest has waited, and how many are retrying and at which attempt ("1 retrying (attempt 3 of 8)"). See [Instance administration](/settings/instance-administration/#health).
 
 | You see | Usually means |
 |---|---|
@@ -89,7 +89,7 @@ The upload timeout, garbage-collection grace period, job retention and webhook t
 | Retrying, with an attempt count | The job is failing and backing off: look at the worker log, whose line says which job and why |
 | Failed is above 0 | A job used all its attempts. It stays until pruned, and no command retries it |
 
-Failed jobs aren't re-run from the dashboard or the admin CLI. A failed `process-build` has already marked its build as **Failed**: upload the build again, or use **Re-run comparison** in [Triage](/using/triage-and-flaky-screenshots/) or `/circi rerun` on a pull request to queue a new job. Webhook and notification failures are lost for that event; the webhook delivery history shows them.
+Failed jobs aren't re-run from the dashboard or the admin CLI. A failed `process-build` has already marked its build as **Failed**: upload the build again, or use **Re-run comparison** in [Triage](/review/triage-and-flaky-screenshots/) or `/circi rerun` on a pull request to queue a new job. Webhook and notification failures are lost for that event; the webhook delivery history shows them.
 
 <Aside type="note">
 The worker logs every job as it ends ("build processed", "build processing failed, will retry", "build processing failed for good"), with the job ID and the error. The log is where to look first.

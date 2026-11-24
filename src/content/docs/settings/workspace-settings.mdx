@@ -1,5 +1,7 @@
 ---
 title: Workspace settings
+sidebar:
+  label: 'Workspace'
 seoTitle: CirCI workspace settings
 description: A workspace's name and address, defaults for its projects, sign-in methods and email domains, integrations, storage and deletion.
 ---
@@ -26,7 +28,7 @@ The hub groups the pages, each with a summary on the right:
 | Connections | Integrations | Owners and admins |
 | Data | Storage and retention | Owners and admins |
 
-A member who isn't an owner or admin sees only Members and projects, and is redirected to Members from the others. Someone outside the workspace sees "You're not a member of this workspace". See [Members and roles](/using/members-and-roles/) for the roles.
+A member who isn't an owner or admin sees only Members and projects, and is redirected to Members from the others. Someone outside the workspace sees "You're not a member of this workspace". See [Members and roles](/settings/members-and-roles/) for the roles.
 
 ## General
 
@@ -42,21 +44,21 @@ A name or slug field shows a check mark when it differs from what is saved, and 
 
 ### Merge gate defaults
 
-**Flaky-only changes block merging**: when the only changes in a pull request are to flaky screenshots, the check still waits for review. On by default; turned off, the check passes. Every project follows this unless its own settings override it, and the page lists how many follow it and which override, linking to those projects. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+**Flaky-only changes block merging**: when the only changes in a pull request are to flaky screenshots, the check still waits for review. On by default; turned off, the check passes. Every project follows this unless its own settings override it, and the page lists how many follow it and which override, linking to those projects. See [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/).
 
 ### Triage defaults
 
-**Assign new triage items to whoever is on triage**: items nobody has go to the person on the project's weekly rotation, and move to the next person at the handover. Projects can override it. See [Review requests and rules](/using/review-requests-and-rules/).
+**Assign new triage items to whoever is on triage**: items nobody has go to the person on the project's weekly rotation, and move to the next person at the handover. Projects can override it. See [Review requests and rules](/review/review-requests-and-rules/).
 
 These two are defaults that change how people work, so **Save changes** applies them ("Defaults saved"), and **Discard** reverts.
 
 ### Danger zone
 
-**Delete workspace** is for owners only. Its projects, builds, screenshots and settings disappear for everyone at once, and are deleted for good after **30 days**. In that time an instance admin can restore it. You type the workspace's slug to confirm. An instance admin finds a deleted workspace in the instance's workspace list and opens its hub, which shows the days left, **Restore** and **Delete permanently** (deletes everything now, after a confirmation, and can't be undone). See [Instance administration](/using/instance-administration/).
+**Delete workspace** is for owners only. Its projects, builds, screenshots and settings disappear for everyone at once, and are deleted for good after **30 days**. In that time an instance admin can restore it. You type the workspace's slug to confirm. An instance admin finds a deleted workspace in the instance's workspace list and opens its hub, which shows the days left, **Restore** and **Delete permanently** (deletes everything now, after a confirmation, and can't be undone). See [Instance administration](/settings/instance-administration/).
 
 ## Projects
 
-A list of every project in the workspace, each opening that project's settings. See [Project settings](/using/project-settings/).
+A list of every project in the workspace, each opening that project's settings. See [Project settings](/settings/project-settings/).
 
 ## Sign-in and domains
 

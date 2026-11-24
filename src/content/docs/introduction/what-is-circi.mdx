@@ -10,19 +10,19 @@ import BuildFlow from '../../../components/BuildFlow.astro'
 import StatusChip from '../../../components/StatusChip.astro'
 import ScreenFrame from '../../../components/ScreenFrame.astro'
 
-CirCI is a [visual regression testing](/introduction/what-is-visual-regression-testing/) tool you run yourself. Your tests take screenshots, CI uploads them after each run, and CirCI compares each one with the last approved version. When something looks different, your team reviews the change in a web dashboard and approves or rejects it. The result can block a pull request until someone has looked.
+CirCI is a tool for [visual regression testing](/introduction/what-is-visual-regression-testing/) (also called visual or screenshot testing) that you run yourself. Your tests take screenshots, CI uploads them after each run, and CirCI compares each one with the last approved version. When something looks different, your team reviews the change in a web dashboard and approves or rejects it. The result can block a pull request until someone has looked.
 
-It's a self-hosted alternative to hosted services such as Chromatic, Percy and Argos ([how they differ](/introduction/compared-with-chromatic-percy-argos/), and what [visual regression testing without a SaaS](/introduction/visual-regression-testing-without-saas/) means in practice): one Docker image, a Postgres database and somewhere to keep files (local disk or any S3-compatible bucket).
+It's a self-hosted alternative to hosted services such as Chromatic, Percy and Argos ([how they differ](/compare/compared-with-chromatic-percy-argos/), and what [visual regression testing without a SaaS](/compare/visual-regression-testing-without-saas/) means in practice): one Docker image, a Postgres database and somewhere to keep files (local disk or any S3-compatible bucket).
 
 <BuildFlow />
 
-<ScreenFrame name="intro-builds" alt="A project's builds list: each build with its branch, author and the number of changed screenshots." caption="A project's builds. Each row is one upload, with its review status." width={900} />
+<ScreenFrame name="intro-builds" alt="A project's builds list: each build with its branch, author and the number of changed screenshots." caption="A project's builds. Each row is one upload, with its review status." />
 
 ## What you get
 
 - **Uploads from CI.** The `circi` CLI uploads a folder of PNG screenshots, from [Playwright](/ci/playwright/) or any tool that writes PNG files, with [examples for each CI](/ci/ci-examples/). The `@circi/vitest` plugin takes stable screenshots in Vitest browser mode.
 - **A fast comparison.** The worker diffs each screenshot with its baseline in a native Rust engine by default. Screenshots with the same SHA-256 are never opened.
-- **A review dashboard.** Side-by-side, diff and slider views. Approve or reject per screenshot or per build, comment on regions, request reviews by rule, and follow it all in the [Inbox](/using/inbox-and-reviews/), [saved views](/using/saved-views/) and [insights](/using/insights/).
+- **A review dashboard.** Side-by-side, diff and slider views. Approve or reject per screenshot or per build, comment on regions, request reviews by rule, and follow it all in the [Inbox](/review/inbox-and-reviews/), [saved views](/dashboard/saved-views/) and [insights](/dashboard/insights/).
 - **Flaky screenshot handling.** CirCI notices screenshots that keep flipping back to an image they already had, marks them <StatusChip status="flaky" />, and can let a pull request that only changes flaky screenshots pass.
 - **A merge gate.** With a git host linked, each build is a **CirCI** check with Approve and Reject buttons. Without one, the CI job fails until the changes are approved.
 - **Integrations.** GitHub, GitLab and Bitbucket (checks or statuses, pull request comments), Slack, Linear, Jira, Figma and signed outgoing webhooks.

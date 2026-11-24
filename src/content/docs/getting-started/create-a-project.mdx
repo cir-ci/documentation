@@ -13,7 +13,7 @@ A project is one thing you test. Each project has its own CI token, baselines, r
 
 Use **New project** on the projects page. Give it a **Name** (the address is derived from it), choose the **Workspace**, and set the **Default branch** (`main` unless yours differs). You can **Link a repository** at the same time; it's optional and needs a connected git host. If a GitHub App is connected, you can also import projects from your repositories, which links each one to its repository. You and the workspace's owners and admins can then open the project's **Settings** from its page.
 
-<ScreenFrame name="start-projects" alt="The projects page: projects grouped by workspace, each with its members, latest build and changes. New project is at the top right." caption="The projects page." width={900} />
+<ScreenFrame name="start-projects" alt="The projects page: projects grouped by workspace, each with its members, latest build and changes. New project is at the top right." caption="The projects page." />
 
 ## From the command line
 
@@ -44,6 +44,6 @@ circi admin project rotate-token --org acme --project web-app
 | **Approve default-branch builds automatically** | On | Builds on the default branch are approved when they have a baseline. |
 | **Unreviewed changes block merging** | On | Unreviewed changes keep the check red. |
 
-See [Project settings](/using/project-settings/) for all of them.
+See [Project settings](/settings/project-settings/) for all of them.
 
 Next: [First upload](/getting-started/first-upload/).

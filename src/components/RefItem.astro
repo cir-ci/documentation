@@ -1,0 +1,70 @@
+---
+// One entry of a <RefList>. The `term` slot is the code it's about (markdown works: several messages joined by
+// "or" are fine); the default slot says what it means and what to do. `label` is a short tag shown at the end of
+// the term line, such as an HTTP status (`409`) or an exit code (`exit 2`); the `meta` slot takes richer content in
+// that place (EnvTable puts the default there). On a narrow screen it drops under the term, aligned to the end.
+// `labelName` says what the label is for screen readers, which don't see the column header a table had
+// (`labelName="HTTP status"` reads "HTTP status 409").
+interface Props {
+  label?: string
+  labelName?: string
+}
+const { label, labelName } = Astro.props
+---
+
+<li class="ref-item">
+  <div class="term">
+    <div class="term-text"><slot name="term" /></div>
+    {label && <code class="label">{labelName && <span class="sr-only">{labelName} </span>}{label}</code>}
+    {Astro.slots.has('meta') && <div class="meta"><slot name="meta" /></div>}
+  </div>
+  <div class="body"><slot /></div>
+</li>
+
+<style>
+  /* margin 0 throughout: Starlight spaces every sibling in prose by 1rem, which would open gaps in the entry. */
+  .ref-item {
+    margin: 0;
+    padding: 0.625rem 0.75rem;
+    font-size: var(--sl-text-sm);
+    line-height: 1.5;
+  }
+  .ref-item + .ref-item {
+    border-block-start: 1px solid var(--circi-line-subtle);
+  }
+  .term {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.125rem 0.75rem;
+    margin: 0;
+  }
+  .term-text {
+    flex: 1 1 12rem;
+    min-width: 0;
+    margin: 0;
+    font-weight: 500;
+    color: var(--circi-text-primary);
+  }
+  .label,
+  .meta {
+    flex: none;
+    max-width: 100%;
+    margin: 0 0 0 auto;
+    color: var(--circi-text-secondary);
+  }
+  .meta {
+    font-size: var(--sl-text-xs);
+  }
+  .body {
+    margin: 0.25rem 0 0;
+    color: var(--circi-text-secondary);
+  }
+  .body > :global(*),
+  .term-text > :global(*) {
+    margin-block: 0;
+  }
+  .body > :global(* + *) {
+    margin-block-start: 0.5rem;
+  }
+</style>

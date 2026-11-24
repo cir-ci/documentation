@@ -12,10 +12,10 @@ Inter and JetBrains Mono, small radii.
 | Component-level CSS on Starlight's markup | `src/styles/docs.css` |
 | Shared components | `src/components/` (`EnvTable.astro`, `InstanceSettingNote.astro`, `CopyCommand.tsx` React island) |
 | Data behind generated tables | `src/data/env.ts` (the environment variable reference) |
-| Sidebar and Starlight config | `astro.config.mjs` (explicit sidebar: add a page = add the file and its slug) |
+| Sidebar and Starlight config | `astro.config.mjs` (explicit sidebar: add a page = add the file and its slug; see **Sidebar and table of contents** below) |
 | Logo, favicon | `src/assets/logo.svg` (header), `public/favicon.svg`, `public/icons/` (copied from `apps/web`) |
 | Component overrides | `astro.config.mjs` `components: { Header: './src/components/overrides/Header.astro' }` |
-| Search and sharing: `<title>`, description, social image, JSON-LD | `src/route-data.ts` (head tags per page), `src/lib/seo.ts`, `src/lib/structured-data.ts`, `src/pages/og/` (one 1200x630 image per page, colors read from `circi-theme.css`), `scripts/check-seo.mjs` (run by `pnpm build`). A page whose title is too short for a search result adds `seoTitle:` (aim for 60 characters or fewer with the ` \| CirCI` suffix, which is left off when the title has "CirCI"; the h1 and sidebar keep `title`) and a `description`, ideally 70 to 160 characters (outside those lengths the check only warns: Google sets no limit, and the words matter more than the count). A removed or moved page gets an entry in `redirects` in `astro.config.mjs` |
+| Search and sharing: `<title>`, description, social image, JSON-LD | `src/route-data.ts` (head tags per page), `src/lib/seo.ts`, `src/lib/structured-data.ts`, `src/pages/og/` (one 1200x630 image per page, colors read from `circi-theme.css`), `scripts/check-seo.mjs` (run by `pnpm build`). A page whose title is too short for a search result adds `seoTitle:` (aim for 60 characters or fewer with the ` \| CirCI` suffix, which is left off when the title has "CirCI"; the h1 keeps `title`, the sidebar shows `title` or `sidebar.label`) and a `description`, ideally 70 to 160 characters (outside those lengths the check only warns: Google sets no limit, and the words matter more than the count). A removed or moved page gets an entry in `redirects` in `astro.config.mjs` |
 
 ## Token mapping
 
@@ -47,12 +47,13 @@ Radii: inline 4px, control 6px, popup 8px, panel 10px, command 12px (`--circi-ra
 (`--circi-state-*`: approved, review, processing, failed, rejected, added, removed, flaky) are available for
 status chips in prose; light-scheme values are darkened for 4.5:1 contrast.
 
-Body text is 16px with a 1.6 line height (`--sl-text-base`, set on `.sl-markdown-content`) where the app uses 13px: documentation is read, not scanned. Paragraphs are capped at 62ch.
+Body text is 16px with a 1.6 line height (`--sl-text-base`, set on `.sl-markdown-content`) where the app uses 13px: documentation is read, not scanned. The content column is 48rem (768px), which is the reading measure.
 
 ## Navigation
 
 Pages change with Astro's client router (`<ClientRouter />` in the `Head` override): a link swaps the content instead of loading a
-document. `Header` (logo, search, theme control) and `Sidebar` are wrapped in `transition:persist`, so the same DOM is kept
+document. Links are prefetched on hover or focus (`prefetch` in `astro.config.mjs`), so most clicks swap at once; the `Sidebar`
+override marks the clicked link current on `astro:before-preparation`, before the page arrives. `Header` (logo, search, theme control) and `Sidebar` are wrapped in `transition:persist`, so the same DOM is kept
 between pages; the `Sidebar` override's script moves `aria-current` and opens the groups of the new page on `astro:after-swap` and
 carries the sidebar's scroll over. The `Head` override's inline script sets `data-theme` (what Starlight's CSS reads) and
 `data-theme-pref` (auto, light, dark: the theme control draws its selected button from it in CSS) before first paint and again
@@ -61,16 +62,55 @@ are preloaded. A script that must run on every page uses `astro:page-load`, neve
 (`screen-zoom`, `starlight-tabs`) are upgraded when the new content arrives. The page fade is 120ms and off for reduced motion
 (`docs.css`).
 
+## Sidebar and table of contents
+
+Groups, in the order a reader meets them (all collapsed; the current page's group opens):
+Introduction (what CirCI is, how it works, FAQ) › Compare (CirCI next to hosted services, other self-hosted tools and
+Playwright's own `toHaveScreenshot`) › Getting started › Upload from CI (the CLI, the test-runner plugins, CI setups) ›
+Review (a build, comments, review requests, the Inbox, baselines, triage, undo) › Dashboard (insights, views, search, live
+updates, hosted sites, mobile) › Settings (project, workspace, account, members, instance administration) › Integrations ›
+Self-hosting (Install, Configure, Operate) › Reference › Contributing, then Roadmap and Changelog. A page's folder
+is its group, so the URL follows the sidebar: `introduction/`, `compare/`, `getting-started/`, `ci/` (Upload from CI),
+`review/`, `dashboard/`, `settings/`, `integrations/`, `self-hosting/`, `reference/`, `contributing/`. When a page moves,
+`git mv` it (so `git log --follow` keeps its history), update every link to it, and add the old address to `redirects`
+in `astro.config.mjs`. Nest at most one level (only
+Self-hosting has subgroups), and don't make a group for one page. A page's group is also its breadcrumb line, its JSON-LD
+breadcrumbs and the line on its social image (`src/lib/seo.ts`), so name groups as sections ("Review", not "Reviewing
+builds with CirCI").
+
+Labels: the sidebar shows the page `title` unless the frontmatter has `sidebar: { label: '…' }`. Add a label when the
+title is longer than about 28 characters or repeats what the group says: no "CirCI", no "with CirCI", no group word
+again ("Settings" › "Project", not "Project settings"; "Reference" › "HTTP API", not "HTTP API overview"). The h1,
+`seoTitle` and `<title>` keep the full title. Previous / next links under the page show the labels too.
+
+Widths (variables in `circi-theme.css`, used in `docs.css`): the text column (`--sl-content-width`) is 48rem (768px), on a
+panel 6rem wider (`--circi-panel-width`). The sidebar (`--sl-sidebar-width`) is 18rem, 20rem from 90rem (1440px). The
+table of contents (`--circi-toc-width`) is a column from 80rem (1280px), as wide as the viewport allows next to the sidebar
+and the panel, between 17rem and 22rem. Below 80rem it is the "On this page" dropdown above the panel (Starlight switches
+at 72rem, but from 72 to 80rem the three columns only fit by squeezing the text column). The three columns are one
+centered frame: on a screen wider than the frame, `--circi-gutter` is an equal margin on both sides, and the sidebar, the
+panel and the header's contents (logo, search, theme control) move in by it, so the sidebars sit right next to the text.
+The text column is 768px from 1440px up and narrows below that (about 650px at 1280, 690px at 1024).
+
+Table of contents: h2 and h3 (Starlight's default). Keep h2s short enough for the column (about 40 characters at
+most); a run of related, long h2s becomes one h2 with h3s under it (as in `reference/errors-and-exit-codes`: "CLI
+messages" › "Before the upload", "Reaching the server"…). Changing a heading changes its anchor: search `src` for
+`#old-anchor` and fix every link (the build's link validator fails on one you miss).
+
 ## Overrides (Starlight `components:` in `astro.config.mjs`)
 
 All in `src/components/overrides/`: `SiteTitle` (rounded logo mark, "CirCI", "Docs"), `ThemeSelect` (a System / Light / Dark
 segmented control like the app's, same storage key as Starlight), `PageTitle` (the sidebar group as a quiet breadcrumb line, the
 title, the page `description` as a lead; on a splash page the h1 is visually hidden), `Footer` (Starlight's pagination, then links to
-the glossary, environment variables, HTTP API and CLI). The sidebar, table of contents and pagination are CSS in `docs.css`. The header
+the glossary, environment variables, HTTP API and CLI). The sidebar, table of contents and pagination are CSS in `docs.css` (widths and breakpoints: see **Sidebar and table of contents**). The header
 has one social icon, GitHub, linking to the `cir-ci` organization (`social` in `astro.config.mjs`, styled in `docs.css`). Code blocks use Expressive Code with the vitesse themes and the app's
 surfaces (`expressiveCode.styleOverrides`).
 
-Line length: paragraphs and lists are capped at `62ch` (about 70 characters at 16px); tables, code and figures use the full column.
+Line length: the content column (`--sl-content-width: 48rem`, 768px) is the reading measure, and every block (prose, lists, steps, tables, asides, code, tabs, cards and figures) fills it, so a page has one right edge. Don't cap individual blocks with `max-width`; a table wider than the column scrolls inside `.table-wrap`. On phones a table column of text is at least 7rem wide (a cell that is only a code, key or status chip may be narrower), so a table with many columns scrolls instead of squeezing its text to a word per line. Use `width` on `ScreenFrame` or `Diagram` only for a figure that should be deliberately smaller (it's centered).
+
+Inline code wraps only at its spaces, never inside a word, so a flag like `--default-branch` is never split at its hyphen. Each word is a `span.nw` (`src/lib/code-words.mjs`, used by the `wrapInlineCode` Markdown plugin in `astro.config.mjs` and by `EnvTable`; a component that writes code itself uses `codeHtml` too). On a phone a word of 16+ characters may also break after `_`, `/`, `.`, `:` or a hyphen inside a word (not a flag's), at a `<wbr>`. Code blocks are left alone.
+
+Links to other sites open in a new tab with `rel="noopener noreferrer"`: in Markdown the `externalLinks` plugin in `astro.config.mjs` adds it, in components write it by hand (as `Footer` does). Links within circi.dev stay in the tab.
 Type scale: body 16px, h1 30px, h2 24px with a hairline above, h3 17px.
 
 Shell: like the app, the chrome color fills the page and the main pane is an inset panel (10px radius, 8px from the right and bottom, a 1px `line-subtle` border). Callouts follow the app's Banner (1px border at 40% of the status color, 8% tint, 6px radius); keys, status chips and scrollbars follow `Kbd`, `StatusChip` and `global.css`. The brand glow (`--circi-glow`) is used on the landing hero only. Smart punctuation is off (`markdown.smartypants: false`) so `--flags` stay copyable.
@@ -92,10 +132,12 @@ In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a
   Put a `CopyCommand` or a fenced block inside a step.
 - Callouts: Starlight's `<Aside type="note|tip|caution|danger">`, mapped to processing, approved, needs review and failed.
   Note is information, tip is good news, caution needs a decision, danger breaks something.
-- `ScreenFrame.astro` (a window title strip, and a click opens the image large in a native dialog: `title="…"` sets the strip's text): `<ScreenFrame name="build-review" alt="..." caption="..." width={760} />`. The frame takes the capture's own ratio; `aspect="16 / 7"` crops a tall capture shorter (never taller than the image)
+- `ScreenFrame.astro` (a window title strip, and a click opens the image large in a native dialog: `title="…"` sets the strip's text): `<ScreenFrame name="build-review" alt="..." caption="..." />`. The frame takes the capture's own ratio; `aspect="16 / 7"` crops a tall capture shorter (never taller than the image)
   (keeps the top of the capture) so a run of captures lines up; images are lazy and reserve their box (`loading="eager"` for the first one on a page). Reads
   `src/assets/screens/<name>-dark.jpg` and `<name>-light.jpg` and shows the one for the reader's theme. Capture both from the running
-  dashboard (`pnpm dev` in the repo) at 1440px wide. Alt text says what the screenshot shows, not "screenshot of".
+  dashboard (`pnpm dev` in the repo, signed in as the seeded owner): the app's panel (`div[class*="_panel_"]`) as an element
+  screenshot, light and dark through Playwright's `colorScheme`, at `deviceScaleFactor: 3` (a 984px panel is a 2952px file), JPEG
+  quality 92. That is sharp in the docs column, on the landing page and in the enlarged view. Alt text says what the screenshot shows, not "screenshot of".
 - `Kbd.astro`: `<Kbd keys="Shift+A" />`, `<Kbd keys="Mod+K" />` (Mod is Command; Shift, Alt, Ctrl, Enter, Esc also map to symbols).
   A sequence is `<Kbd keys="g then i" />` (key, release, key), never two `Kbd`s with "then" between them.
 - `Diagram.astro`: a themed, accessible inline SVG (`viewBox`, `title`, `desc`, optional `caption`, `width`). Draw its children with the
@@ -114,15 +156,16 @@ In MDX, markdown does not work inside a JSX element's text: use `<code>` and `<a
 - `CopyCommand.tsx`: one command with a Copy button, `<CopyCommand client:visible command="npx circi upload ./screenshots --wait" />`.
   For several lines use a fenced `sh` block (Expressive Code adds its own copy button).
 - `ReviewCompare.astro` / `.tsx`: the landing page's before / after / diff slider (React island). Landing page only.
-- `EnvTable.astro`: `<EnvTable />` or `<EnvTable group="mail" />`. Reads `src/data/env.ts`.
+- `RefList.astro` / `RefItem.astro`: a list of entries whose subject is a long piece of code, such as error messages or commands, with what each means under it. Use it instead of a two-column table whose first column is long code: the code gets the full column width and nothing scrolls sideways on a phone. `<RefItem labelName="HTTP status" label="409">` (an optional tag at the end of the line, such as an HTTP status or exit code; `labelName` is read before it by screen readers, since there's no column header), then `<Fragment slot="term">` with the code (markdown, several messages are fine), then the explanation. Keep real grids (several short columns) as tables.
+- `EnvTable.astro`: `<EnvTable />` or `<EnvTable group="mail" />`. Reads `src/data/env.ts` and renders a `RefList`: each variable's name with its default (or Required) at the end of the line, its meaning under it. `RefItem`'s `meta` slot holds the default.
 - `InstanceSettingNote.astro`: the dashed callout for a passage about a setting that is edited in Instance settings (sentence-case `title` prop, explicit on every use; not for settings that are read-only there).
   Searching for `InstanceSettingNote` finds every spot. The truth to state everywhere: an environment variable, when set, wins and locks the
   setting ("Set by <VAR>", and a save is refused); otherwise the saved value; otherwise the default. Changes apply within about 30 seconds
   on every server process, with no restart. Secrets are write-only and sealed at rest.
 
-Screenshots on disk (`src/assets/screens/`): `host-instance-settings`, `host-instance-limits` and `host-health` (Instance settings and Health; Health is scrolled past Services, whose rows show the server's local file path: keep personal paths out of captures), `build-review-{dark,light}.jpg` (build #22 of the seeded dev Workspace, side by side),
+Screenshots on disk (`src/assets/screens/`): `host-instance-settings`, `host-instance-limits` and `host-health` (Instance settings and Health; Health is scrolled past Services, whose rows show the server's local file path: keep personal paths out of captures), `build-review-{dark,light}.jpg` (build #102, `feat/export`, of the seeded dev workspace, side by side: a 1300px panel, because narrower panels stack the two images),
 `hero-before.jpg`, `hero-after.jpg`, `hero-diff.jpg` (the same screenshot's baseline, new version and diff, for the landing page).
-The `.jpg` files are Chrome captures of the dashboard, so they are 1x; add more by the same naming.
+The dashboard `.jpg` files are 3x captures (build-review is 3000px wide); add more by the same naming and scale. The `hero-*` files are not captures: they are the seeded `settings/profile` screen (`dev/src/screens.ts`) rendered at 2x and cropped to x 200–960, y 60–600 (1520×1080), and the app's own diff (`packages/diff`) of the two.
 
 ## Changelog
 
@@ -141,7 +184,15 @@ builds), the build flow, and a screenshot of the build page.
 
 ## Page conventions
 
-- MDX, no H1 in the body. Frontmatter `title` and `description`.
+Prices on the Compare pages: the Pricing section of `compare/compared-with-chromatic-percy-argos` (plans, a worked
+example), the "What hosting costs" table in `compare/visual-regression-testing-without-saas`, and one sentence each in the
+Chromatic and Percy pages, whose intros give the date. They are list prices from the vendors' own pricing and billing pages
+and AWS's public price list, each with the date it was read, in the page's source comment and "Where this page comes from".
+Compare like with like (month to month next to month to month, the cheapest plan for the volume) and say what an example
+assumes. They go stale: re-read every figure and update the dates together, never one page alone. Quote only what a page
+shows; leave out a figure that can't be read rather than recall it, and say when a plan can't be ordered.
+
+- MDX, no H1 in the body. Frontmatter `title` and `description`, and `sidebar: { label }` when the title is long for the sidebar (see **Sidebar and table of contents**).
 - First line after frontmatter: `{/* Source: repo files this page came from */}` (invisible).
 - Vocabulary and copy (from the repo's `CLAUDE.md`): US spelling, "project" and "workspace" lowercase in running text (capital only at a sentence start or in a UI label), "screenshot" never "snapshot", "build page", "sign in", menu paths as **Settings** › **Integrations\*\*,
   "ID", straight apostrophes, sentence case, "Delete" vs "Remove", no emojis.
@@ -159,6 +210,6 @@ with `client:visible`. Its tokens use the same `--circi-*` names as `circi-theme
 ## Open items for design
 
 - Reusing real `@circi/ui` components in islands (see above).
-- More dashboard screenshots (Baselines, Triage, Insights, settings) for the `using/` pages, both themes.
+- More dashboard screenshots (Baselines, Triage, Insights, settings) for the `review/`, `dashboard/` and `settings/` pages, both themes.
 - A single Self-hosting topology diagram (the TLS, scaling and storage pages each draw their own part with `Diagram`).
 - Section index pages: none exist; the sidebar groups open on their first page.

@@ -1,25 +1,33 @@
 ---
-// The header's brand: the logo mark (rounded, as in the app's sidebar) and the name.
+// The header's brand: the logo mark (rounded, as in the app's sidebar) and the name, which go to the landing page,
+// then "Docs", which goes to the first page of the documentation (What is CirCI?).
 // The mark is inlined: no request, no pop-in, and it stays put when the header is kept between pages.
 import logo from '../../assets/logo.svg?raw'
 const mark = logo.replace(/<\?xml[^>]*\?>/, '')
 const { siteTitleHref } = Astro.locals.starlightRoute
 ---
 
-<a href={siteTitleHref} class="brand">
-  <span class="mark" aria-hidden="true" set:html={mark} />
-  <span class="name" translate="no">CirCI</span>
-  <span class="docs">Docs</span>
-</a>
+<span class="brand">
+  <a href={siteTitleHref} class="home">
+    <span class="mark" aria-hidden="true" set:html={mark} />
+    <span class="name" translate="no">CirCI</span>
+  </a>
+  <a href="/introduction/what-is-circi/" class="docs">Docs</a>
+</span>
 
 <style>
   .brand {
     display: inline-flex;
     align-items: center;
     gap: 0.625rem;
+    white-space: nowrap;
+  }
+  .brand a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
     color: var(--circi-text-primary);
     text-decoration: none;
-    white-space: nowrap;
     border-radius: var(--circi-radius-control);
   }
   .mark {
@@ -40,10 +48,20 @@ const { siteTitleHref } = Astro.locals.starlightRoute
     font-weight: 650;
     letter-spacing: -0.01em;
   }
-  .docs {
+  .brand .docs {
     padding-inline-start: 0.625rem;
     border-inline-start: 1px solid var(--circi-line-strong);
+    border-radius: 0;
     font-size: var(--sl-text-sm);
     color: var(--circi-text-secondary);
+  }
+  .brand .docs:hover {
+    color: var(--circi-text-primary);
+  }
+  /* The narrowest phones need the room for the search, the theme control and the menu. */
+  @media (max-width: 23rem) {
+    .brand .docs {
+      display: none;
+    }
   }
 </style>

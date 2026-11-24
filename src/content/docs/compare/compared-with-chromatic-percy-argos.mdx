@@ -1,0 +1,84 @@
+---
+title: Compared with Chromatic, Percy and Argos
+sidebar:
+  label: 'Chromatic, Percy and Argos'
+seoTitle: Open source Chromatic, Percy and Argos alternative
+description: "CirCI is a self-hosted, open source alternative to Chromatic, Percy and Argos: how it differs in where it runs, its license and how screenshots get in."
+---
+{/* Sources for CirCI: README.md, packages/cli, packages/vitest. Sources for the others: the public pages linked below, read on November 22, 2026; prices and billing rules read on November 24, 2026. Hosting prices: see the sources on compare/visual-regression-testing-without-saas. */}
+
+import { Aside } from '@astrojs/starlight/components'
+
+CirCI, Chromatic, Percy and Argos all compare screenshots from your CI with an approved baseline and let your team review what changed. The main difference is where they run. Chromatic, Percy and Argos are services their companies run for you. CirCI is software you run yourself.
+
+This page lists what each product's own public pages say, and doesn't rank them. Facts about the other products were read on **November 22, 2026**, and their prices on **November 24, 2026**; both can change after that, so check the vendor's page before you decide. Where a page says nothing about a point, this page says so and doesn't guess.
+
+## At a glance
+
+| | CirCI | Chromatic | Percy | Argos |
+|---|---|---|---|---|
+| **Where it runs** | On your own servers: one Docker image, Postgres and file storage. There's no hosted CirCI | Chromatic's hosted infrastructure | Percy's web dashboard at percy.io (a BrowserStack product) | Argos's managed cloud service |
+| **License** | GPL-3.0-only for the server; MIT for the CLI and test plugins | Not stated on the pages read | Not stated on the pages read | MIT, for the open source repository |
+| **Self-hosting** | The only way to run it | Not mentioned on the pages read | Not mentioned on the pages read | Documented as not officially supported or documented; the Enterprise plan is for strict hosting needs |
+| **Who takes the screenshots** | Your tests. CirCI compares and reviews them, it doesn't capture them | Chromatic runs your tests' snapshots in its own browsers | Percy's SDKs capture them during your tests | Your tests, through Argos's tools or any pipeline that produces screenshots |
+| **Test tools named in the docs** | Any tool that writes PNG files; plugins for Vitest, Cypress and Storybook | Storybook, React Native, Vitest, Playwright, Cypress | Selenium, Playwright, Cypress, Puppeteer, Storybook and others | Playwright, Storybook, Cypress, Vitest, and any pipeline that produces screenshots |
+
+## Pricing
+
+The three services charge by plan, with a monthly allowance of screenshots. CirCI has no plan or meter: you pay for the server and the storage it runs on, and for the CI minutes your tests already use to take the screenshots. List prices in US dollars, before tax, from each pricing page on November 24, 2026. Chromatic and Argos bill monthly; Percy shows a lower price billed annually and a higher one month to month, and both are given:
+
+| | CirCI | Chromatic | Percy | Argos |
+|---|---|---|---|---|
+| **Free** | All of it, with no monthly screenshot or user limit ([Limits](/reference/limits/) caps each build); you pay for hosting | Free: 5,000 snapshots a month, Chrome only | Free: 5,000 screenshots a month | Hobby: 5,000 screenshots a month, for one person |
+| **Paid plans** | None | Starter $179 a month (35,000 snapshots), Pro $399 a month (85,000) | Desktop: $249 a month, or $199 billed annually (10,000 screenshots); $549, or $449 billed annually (25,000). Desktop & Mobile: $729, or $599 billed annually (25,000) | Pro $100 a month (35,000 screenshots) |
+| **Past the allowance** | Nothing is metered | Free pauses testing until the next month. Paid plans keep running and bill extra snapshots at the end of the period: $0.008 each on Starter; the page shows no rate for Pro | $0.036 a screenshot on Desktop, $0.048 on Desktop & Mobile | Hobby pauses uploads until the next period. Pro bills $0.004 a screenshot ($0.0015 for Storybook) |
+| **What counts as one** | Nothing is counted: there's no billing unit | Tests × builds × browsers × modes; TurboSnap's copied snapshots count as 0.2 | One page in one browser at one width | Each screenshot a build uploads, counted once the upload completes |
+| **Larger teams** | The same software; a bigger server ([Scaling the worker](/self-hosting/scaling-the-worker/)) | Enterprise, custom | Enterprise, on request | Enterprise, custom |
+| **Hosting** | About $24 to $80 a month, depending on the setup ([estimates](/compare/visual-regression-testing-without-saas/#what-hosting-costs)) | Included | Included | Included |
+
+### A worked example
+
+A suite of 150 screenshots, run 10 times a workday for 20 workdays, is 30,000 screenshots a month at one browser and one width. The same suite in three browsers is 90,000. At list prices, month to month, each on its cheapest plan for that volume:
+
+| A month | 30,000 screenshots (one browser) | 90,000 screenshots (three browsers) |
+|---|---|---|
+| **CirCI** | Hosting: about $24 to $43 | Hosting with a little more storage, and three times the CI minutes to render three browsers |
+| **Chromatic** | $179 (Starter) | $619 on Starter ($179 plus 55,000 × $0.008); Pro's $399 covers 85,000, and its page shows no rate past that |
+| **Percy** | $729 on Desktop with 25,000 ($549 plus 5,000 × $0.036); $629 billed annually | $2,889 on Desktop with 25,000 ($549 plus 65,000 × $0.036); $2,789 billed annually |
+| **Argos** | $100 (Pro) | $320 ($100 plus 55,000 × $0.004) |
+
+- **The example is a sketch, not a quote.** Chromatic's TurboSnap bills unchanged stories at 0.2 of a snapshot, so a suite where most stories don't change between builds costs less there. Percy's page shows one rate for extra screenshots on Desktop, $0.036, and the example assumes it applies to the 25,000 allowance too; Percy also counts every width as well as every browser. Discounts and Enterprise plans change the totals.
+- **CirCI's cost is mostly a person's time.** The server bill is small. Someone still installs it, keeps it updated and checks its backups, and your CI renders every browser you test, where Chromatic and Percy render them in their own cloud ([What you give up](/compare/visual-regression-testing-without-saas/#what-you-give-up)).
+- **Volume doesn't change CirCI's bill much.** An unchanged screenshot is stored once, however many builds include it, so storage grows with what changes, not with how often you run ([Storage](/self-hosting/storage/)).
+
+## What you give up with CirCI
+
+- **You run it.** Updates, backups, storage and uptime are yours. [Requirements](/self-hosting/requirements/) says what it needs, and [Upgrades and migrations](/self-hosting/upgrades-and-migrations/) and [Backups](/self-hosting/backups/) cover the rest.
+- **You choose and run the browsers.** CirCI stores and compares PNG files. Chromatic's pages describe snapshots taken in Chrome, Firefox, Safari and Edge on its infrastructure; with CirCI, whatever your tests render is what gets compared. To keep browsers apart, upload one build per browser ([Vitest](/ci/vitest/#one-build-per-browser-and-shards)).
+- **Capture runs in your CI.** The CirCI server doesn't render your stories: [`@circi/storybook`](/ci/storybook/) screenshots them with Playwright in your own CI job and uploads the images, and the [Cypress](/ci/cypress/) and [Vitest](/ci/vitest/) plugins do the same from your tests. CirCI can also host a built Storybook next to the screenshots ([Hosted sites](/dashboard/hosted-sites/)).
+- **It's pre-1.0.** Parts of it are verified only against fakes.
+
+## What you get with CirCI
+
+- **Screenshots stay on your servers.** Builds, reviews and settings live in your Postgres, and every image in your own storage, local disk or any S3-compatible bucket. See [Storage](/self-hosting/storage/) and [Security](/self-hosting/security/).
+- **Free software.** The server is GPL-3.0-only and the CLI and test plugins are MIT, with nothing to buy to use all of it ([License](/introduction/faq/#what-license-is-circi-under)).
+- **A review flow with a merge gate.** Approve or reject per screenshot or per build, comment on regions, request reviews by rule, and block a pull request until it's reviewed. See [How a build flows](/introduction/how-a-build-flows/) and [Reviewing a build](/review/reviewing-a-build/).
+- **Flaky screenshot handling, insights and integrations.** GitHub, GitLab, Bitbucket, Slack, Linear, Jira, Figma and signed webhooks. See [Integrations](/integrations/overview/).
+
+## Moving from another service
+
+- **From Argos, Chromatic or Percy:** there's no import and no compatible API, and the Argos SDKs can't upload to CirCI. Your tests write PNG files, and `circi upload` or the [Vitest plugin](/ci/vitest/) sends them. See the [CLI reference](/ci/cli/) and [Playwright visual regression testing with CirCI](/ci/playwright/).
+- **Step by step:** [Self-hosted Percy alternative](/compare/percy-alternative/) and [Self-hosted Chromatic alternative](/compare/chromatic-alternative/) map each kind of setup to CirCI.
+- **Comparing open source tools you run yourself?** See [Compared with Visual Regression Tracker, BackstopJS and Lost Pixel](/compare/compared-with-self-hosted-tools/).
+
+## Where this page comes from
+
+- Chromatic: [pricing](https://www.chromatic.com/pricing), [billing](https://www.chromatic.com/docs/billing/) (how snapshots are counted) and [documentation](https://www.chromatic.com/docs/).
+- Percy: [pricing](https://www.browserstack.com/pricing?product=percy), [plans and billing](https://www.browserstack.com/docs/percy/overview/plans-and-billing) (how screenshots are counted), [Percy documentation](https://www.browserstack.com/docs/percy) and [the Percy product page](https://www.browserstack.com/percy).
+- Argos: [pricing](https://argos-ci.com/pricing), [documentation](https://argos-ci.com/docs) and [the repository](https://github.com/argos-ci/argos).
+
+<Aside type="note" title="Spot a mistake?">
+If a statement about another product is wrong or out of date, [open a documentation issue](https://github.com/cir-ci/documentation/issues) with a link to the vendor's page and it will be corrected.
+</Aside>
+
+New to CirCI? Start with [What is CirCI?](/introduction/what-is-circi/) or the [FAQ](/introduction/faq/).

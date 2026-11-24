@@ -1,5 +1,7 @@
 ---
 title: Build and screenshot statuses
+sidebar:
+  label: 'Statuses'
 seoTitle: Build and screenshot statuses in CirCI
 description: How a build's review status and conclusion are derived, what each screenshot status means, and how the result becomes a merge gate outcome and a check.
 ---
@@ -8,7 +10,7 @@ description: How a build's review status and conclusion are derived, what each s
 import { Aside } from '@astrojs/starlight/components'
 import StatusChip from '../../../components/StatusChip.astro'
 
-What you see on a build is built from three stored fields. This page defines them, shows how the screen turns them into a state, and gives the rules that turn them into a merge gate outcome. For the walk through uploading, comparing and reviewing, see [How a build flows](/introduction/how-a-build-flows/), and for the screen itself [Reviewing a build](/using/reviewing-a-build/).
+What you see on a build is built from three stored fields. This page defines them, shows how the screen turns them into a state, and gives the rules that turn them into a merge gate outcome. For the walk through uploading, comparing and reviewing, see [How a build flows](/introduction/how-a-build-flows/), and for the screen itself [Reviewing a build](/review/reviewing-a-build/).
 
 ## The three fields of a build
 
@@ -80,7 +82,7 @@ Each screenshot of a build is compared with the baseline screenshot of the same 
 | `added` | <StatusChip status="added" /> | Only in this build |
 | `removed` | <StatusChip status="removed" /> | Only in the baseline |
 | `failed` | Couldn't read | The file isn't a valid image. It can't be approved or rejected |
-| flaky | <StatusChip status="flaky" /> | Not a stored status: a label added to a changed screenshot that keeps flipping back on the default branch. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/) |
+| flaky | <StatusChip status="flaky" /> | Not a stored status: a label added to a changed screenshot that keeps flipping back on the default branch. See [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/) |
 
 The conclusion is `no_changes` only when every screenshot is unchanged. Added, removed and unreadable screenshots all make it `changes_detected`.
 

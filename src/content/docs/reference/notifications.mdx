@@ -7,7 +7,7 @@ description: Every kind of notification CirCI creates, who receives it, and when
 
 import { Aside } from '@astrojs/starlight/components'
 
-A notification is a row in a person's [Inbox](/using/inbox-and-reviews/). It is created in the same transaction as the change it reports, so it exists exactly when the change does. Some kinds are also sent as an email or as a push to the person's devices. This page lists each kind and the rules that decide what goes out. The switches themselves are in [Account settings](/using/account-settings/#notifications).
+A notification is a row in a person's [Inbox](/review/inbox-and-reviews/). It is created in the same transaction as the change it reports, so it exists exactly when the change does. Some kinds are also sent as an email or as a push to the person's devices. This page lists each kind and the rules that decide what goes out. The switches themselves are in [Account settings](/settings/account-settings/#notifications).
 
 ## The kinds
 
@@ -27,7 +27,7 @@ A person is never notified about their own action: asking yourself for a review,
 
 ### Reading it ends the request
 
-Deciding a build marks the deciding reviewer's notifications for that build read. The "please review" notifications of other people who were asked (review requested, again, overdue) are marked read too, because their requests close. Dismissing a request does the same for its reviewer. If you undo an approval or rejection, the notifications it made for others are deleted and the closed requests reopen. See [Undo](/using/undo/).
+Deciding a build marks the deciding reviewer's notifications for that build read. The "please review" notifications of other people who were asked (review requested, again, overdue) are marked read too, because their requests close. Dismissing a request does the same for its reviewer. If you undo an approval or rejection, the notifications it made for others are deleted and the closed requests reopen. See [Undo](/review/undo/).
 
 ### Nudging
 
@@ -69,7 +69,7 @@ Push is sent from your own server, signed with a VAPID key pair, straight to the
 - **Devices.** Each browser that turns push on is one device of one person, named from its browser, for example "Chrome on Android". Turning it on again from the same browser keeps one device. Turning it off, or **Remove** on another device, deletes it. The address a device registers must be a public `https` address; the server also checks that its host doesn't resolve to a private network when it sends, unless `WEBHOOK_ALLOW_PRIVATE_ADDRESSES` is on.
 - **Sending.** Each push is a request with a one-day time to live. A `404` or `410` answer means the device is gone, and it's deleted. Any other failure is counted and doesn't make the job retry, so the email before it is never repeated. A failed push is lost.
 - **What it says.** A title that says what happened ("Review requested", "Rejected"), a body that names the person, the build number, branch and project, and for a rejection the reason, and a link to the build page. A repeat for the same notification replaces the earlier one instead of stacking, and pushes from one project group together.
-- **Where it works.** In a browser that supports web push, installed or not, and on an iPhone only from the Home Screen. See [Account settings](/using/account-settings/#install-as-an-app).
+- **Where it works.** In a browser that supports web push, installed or not, and on an iPhone only from the Home Screen. See [Account settings](/settings/account-settings/#install-as-an-app).
 
 <Aside type="note">
 During a rolling deploy, an older worker can complete a push-only job without sending it. A push can be lost then; an email is never sent twice.
@@ -77,12 +77,12 @@ During a rolling deploy, an older worker can complete a push-only job without se
 
 ## Snoozing and removing
 
-Snoozing hides a notification until a time: tomorrow, next week or a date you choose. Deleting removes it from your Inbox. Marking read or unread, snoozing and deleting each carry an Undo for 30 seconds. See [Inbox and reviews](/using/inbox-and-reviews/) for the times, and [Undo](/using/undo/).
+Snoozing hides a notification until a time: tomorrow, next week or a date you choose. Deleting removes it from your Inbox. Marking read or unread, snoozing and deleting each carry an Undo for 30 seconds. See [Inbox and reviews](/review/inbox-and-reviews/) for the times, and [Undo](/review/undo/).
 
 Notifications aren't expired by retention: nothing in the code deletes them over time other than you deleting them, or the build, project or account they belong to being deleted.
 
 ## See also
 
-- [Inbox and reviews](/using/inbox-and-reviews/)
-- [Review requests and rules](/using/review-requests-and-rules/)
+- [Inbox and reviews](/review/inbox-and-reviews/)
+- [Review requests and rules](/review/review-requests-and-rules/)
 - [Slack](/integrations/slack/) and [webhooks](/integrations/webhooks/), which carry the same events to a channel or your own service

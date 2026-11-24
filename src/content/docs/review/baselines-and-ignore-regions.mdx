@@ -30,7 +30,7 @@ Within the build, screenshots are paired by name:
 | Unchanged | Byte-identical files, with no pixel comparison needed |
 | Compared | Same name, different bytes: a pixel diff decides changed or unchanged, using the project's diff threshold. A change of size is always a change |
 
-The default branch is a project setting (`main` unless changed). On it, approving a screenshot makes it the baseline that every other branch is compared with. With **Approve default-branch builds automatically** on, a default-branch build is approved without review once there is an approved baseline to compare with, so a project's first build is always reviewed. See [Project settings](/using/project-settings/) and [Reviewing a build](/using/reviewing-a-build/).
+The default branch is a project setting (`main` unless changed). On it, approving a screenshot makes it the baseline that every other branch is compared with. With **Approve default-branch builds automatically** on, a default-branch build is approved without review once there is an approved baseline to compare with, so a project's first build is always reviewed. See [Project settings](/settings/project-settings/) and [Reviewing a build](/review/reviewing-a-build/).
 
 A rejected screenshot never becomes a baseline.
 
@@ -48,7 +48,7 @@ Each row shows:
 
 <ScreenFrame name="use-baselines" alt="The Baselines page of the Web app project. Eight baselines grouped as dashboard, onboarding, settings and Ungrouped, each with a thumbnail and its build. Two show an ignored region chip and two a flaky chip." caption="Every screenshot name with its current baseline. The chips on the right say which have ignore regions or are flaky." />
 
-Press <Kbd keys="j" /> and <Kbd keys="k" /> to move, and right-click a row for Open, Open build, Open in Triage (when flaky), Open in new tab, Copy link and Copy name. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+Press <Kbd keys="j" /> and <Kbd keys="k" /> to move, and right-click a row for Open, Open build, Open in Triage (when flaky), Open in new tab, Copy link and Copy name. See [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/).
 
 ### One baseline
 
@@ -64,7 +64,7 @@ An **ignore region** is a rectangle, in whole pixels measured from the top left,
 
 - A region belongs to a **screenshot name**. It applies to every build of that screenshot, until it's removed.
 - There's no pattern or per-branch setting.
-- Insights shows how many diffs the regions kept unchanged. See [Insights](/using/insights/).
+- Insights shows how many diffs the regions kept unchanged. See [Insights](/dashboard/insights/).
 
 ### Who can change them
 
@@ -92,4 +92,4 @@ A region applies to builds processed after it's added. A build that was already 
 
 ### In project settings
 
-**Project settings** › **Ignore regions** lists every screenshot that has regions, with a count. Choosing one opens its baseline page inside settings, where the regions are edited. Members of the project can read this page too. See [Project settings](/using/project-settings/).
+**Project settings** › **Ignore regions** lists every screenshot that has regions, with a count. Choosing one opens its baseline page inside settings, where the regions are edited. Members of the project can read this page too. See [Project settings](/settings/project-settings/).

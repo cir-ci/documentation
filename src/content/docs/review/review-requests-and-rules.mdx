@@ -26,7 +26,7 @@ Requests close on their own:
 
 ## Review rules
 
-Rules ask people automatically, like code owners, for screenshots. Owners and admins manage them in **Project settings** › **Reviews and triage**. See [Project settings](/using/project-settings/) for how to get there.
+Rules ask people automatically, like code owners, for screenshots. Owners and admins manage them in **Project settings** › **Reviews and triage**. See [Project settings](/settings/project-settings/) for how to get there.
 
 <ScreenFrame name="use-review-rules" alt="The Reviews and triage page of a project in settings. Two numbered rules, each with a pattern and the people it asks, then an Otherwise row that rotates through three members, then the Review target field set to 48 hours." caption="Two rules and the rotation that catches everything else, then the review target below." />
 
@@ -38,7 +38,7 @@ Each rule has:
 - **Pattern**: a name pattern. `*` matches any run of characters except `/`, `**` matches across folders (so `checkout/**` matches everything under `checkout/`), and `?` matches one character. The whole name must match, case matters, and there are no character classes or braces. Examples: `checkout/**`, `Button*`, `release/*`.
 - **Reviewers**: one or more members of the project, up to 20.
 
-When a build finishes with changes, every rule that matches asks its reviewers. A **Screenshot name** rule matches when any screenshot of the build matches; a **Build name** rule matches the build's own name. A person named by several rules is asked once. If no rule matches, the build goes to whoever is on the triage rotation that week, when the project has a rotation (see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)); with neither, nobody is asked automatically.
+When a build finishes with changes, every rule that matches asks its reviewers. A **Screenshot name** rule matches when any screenshot of the build matches; a **Build name** rule matches the build's own name. A person named by several rules is asked once. If no rule matches, the build goes to whoever is on the triage rotation that week, when the project has a rotation (see [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/)); with neither, nobody is asked automatically.
 
 The order of the rules (set with **Move up** and **Move down** in a rule's menu) is only the order they're listed in, not a priority.
 
@@ -56,7 +56,7 @@ A request that waits past its target (strictly after the due time) gets:
 - one reminder in the reviewer's Inbox, and by email if they turned **Review overdue** email on;
 - a copy to the member chosen under **When it's missed, also tell**, if any.
 
-A request that is answered, closed or snoozed is never overdue. The reviewer can snooze a request in Reviews; see [Inbox and reviews](/using/inbox-and-reviews/).
+A request that is answered, closed or snoozed is never overdue. The reviewer can snooze a request in Reviews; see [Inbox and reviews](/review/inbox-and-reviews/).
 
 ## Automation
 

@@ -6,7 +6,7 @@ template: splash
 lastUpdated: false # a landing page, not an article: no date under it
 ---
 
-{/* Source: README.md (intro); the screenshots are build #101 of the seeded dev workspace */}
+{/* Source: README.md (intro); the screenshots are build #102 of the seeded dev workspace */}
 
 import ReviewCompare from '../../components/ReviewCompare.astro'
 import BuildFlow from '../../components/BuildFlow.astro'
@@ -14,19 +14,8 @@ import ScreenFrame from '../../components/ScreenFrame.astro'
 import Kbd from '../../components/Kbd.astro'
 import CopyCommand from '../../components/CopyCommand.tsx'
 import StatusChip from '../../components/StatusChip.astro'
-import ThemeSelect from '../../components/overrides/ThemeSelect.astro'
 
 <div class="landing">
-
-<nav class="l-mobile-nav" aria-label="Sections">
-  <a href="/getting-started/run-it-locally/">Getting started</a>
-  <a href="/self-hosting/requirements/">Self-hosting</a>
-  <a href="/using/reviewing-a-build/">Using CirCI</a>
-  <a href="/ci/cli/">Upload from CI</a>
-  <a href="/integrations/overview/">Integrations</a>
-  <a href="/reference/http-api/">Reference</a>
-  <ThemeSelect />
-</nav>
 
 <section class="l-hero" aria-labelledby="hero-title">
   <div>
@@ -50,7 +39,7 @@ import ThemeSelect from '../../components/overrides/ThemeSelect.astro'
     </div>
     <div class="l-path">
       <h3><a href="/self-hosting/requirements/">Self-host</a></h3>
-      <p>Requirements, TLS, storage, upgrades, backups and every environment variable. Why <a href="/introduction/visual-regression-testing-without-saas/">without a SaaS</a>.</p>
+      <p>Requirements, TLS, storage, upgrades, backups and every environment variable. Why <a href="/compare/visual-regression-testing-without-saas/">without a SaaS</a>.</p>
       <span class="hint">One image: server, worker and dashboard.</span>
     </div>
     <div class="l-path">
@@ -59,7 +48,7 @@ import ThemeSelect from '../../components/overrides/ThemeSelect.astro'
       <CopyCommand client:visible command="npx @circi/cli upload ./screenshots --wait" />
     </div>
     <div class="l-path">
-      <h3><a href="/using/reviewing-a-build/">Review builds</a></h3>
+      <h3><a href="/review/reviewing-a-build/">Review builds</a></h3>
       <p>Approve or reject each screenshot, comment on a region, and ask for reviews.</p>
       <span class="hint"><Kbd keys="Shift+A" /> approves every changed screenshot in a build.</span>
     </div>
@@ -75,7 +64,7 @@ import ThemeSelect from '../../components/overrides/ThemeSelect.astro'
 <section class="l-section" aria-labelledby="review">
   <h2 id="review">What a reviewer sees</h2>
   <p>The build page puts the baseline and the new screenshot side by side, with a diff and a slider one click away.</p>
-  <ScreenFrame name="build-review" aspect="16 / 8.4" alt="The build page for build #101: one changed screenshot, settings/profile, shown as baseline and this build side by side." caption="Build #101 in the dashboard." />
+  <ScreenFrame name="build-review" aspect="16 / 8.4" sizes="(min-width: 100rem) 94rem, (min-width: 50rem) calc(100vw - 4rem), 100vw" alt="The build page for build #102: one changed screenshot, settings/profile, shown as baseline and this build side by side." caption="Build #102 in the dashboard." />
 </section>
 
 <section class="l-closing" aria-labelledby="next">

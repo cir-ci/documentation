@@ -12,7 +12,7 @@ import StatusChip from '../../../components/StatusChip.astro'
 
 Triage is the queue of problems with a project's **default branch** that no single pull request owns. Where a review is about one build, triage is about the screenshots and builds that keep causing trouble. It's a page of the project, in the sidebar under the open project, with a count of items waiting. Anyone who can see the project can work the queue.
 
-<ScreenFrame name="use-triage" alt="The Triage page of the Web app project. A flaky screenshot, two screenshots with no baseline and a failed build are listed in groups. The flaky one is open on the right with why it is flaky, the last 10 commits on main with the changed ones marked, a preview, the assignee and what it blocks." caption="A queue with one of each kind of item. The pane shows why dashboard/overview is flaky." />
+<ScreenFrame name="use-triage" alt="The Triage page of the Web app project. A flaky screenshot and two screenshots with no baseline are listed in groups, with a collapsed Snoozed group of one below. The flaky one is open on the right with why it is flaky, the last 10 commits on main with the changed ones marked, a preview, the assignee and what it blocks." caption="A queue with a flaky screenshot, two missing baselines and one snoozed item. The pane shows why dashboard/overview is flaky." />
 
 ## What is in the queue
 
@@ -43,17 +43,17 @@ Select a row and use the pane's buttons or the keys. Each action takes effect at
 
 ### Snoozed items
 
-Snoozed items leave the queue and the count and wait in a **Snoozed** group at the end of the list, collapsed until you open it. Each row says when it wakes ("Snoozed until Mon", "until next push"). On a snoozed item the pane has **Unsnooze** where Snooze was, and <Kbd keys="h" />, the right-click menu and the [command menu](/using/command-menu-and-search/) offer Unsnooze too. It acts at once and the toast, "Unsnoozed", has **Undo**. A link to a snoozed item opens the Snoozed group with that item selected, so a shared link still works. While the group is open, <Kbd keys="j" /> and <Kbd keys="k" /> walk its rows too.
+Snoozed items leave the queue and the count and wait in a **Snoozed** group at the end of the list, collapsed until you open it. Each row says when it wakes ("Snoozed until Mon", "until next push"). On a snoozed item the pane has **Unsnooze** where Snooze was, and <Kbd keys="h" />, the right-click menu and the [command menu](/dashboard/command-menu-and-search/) offer Unsnooze too. It acts at once and the toast, "Unsnoozed", has **Undo**. A link to a snoozed item opens the Snoozed group with that item selected, so a shared link still works. While the group is open, <Kbd keys="j" /> and <Kbd keys="k" /> walk its rows too.
 
 When an item leaves the queue the next row is selected, so you can keep going with the keyboard.
 
 ## The weekly rotation
 
-A project can have a **triage rotation**: its members take turns, one calendar week each (Monday to Sunday, UTC). The header shows a chip such as "You're on triage until Mon" when it's you, and the name of whoever is on triage otherwise. With **Assign new items to whoever is on triage** on, unassigned items are assigned to the person on triage, and move to the next person when the week changes. Items someone assigns or unassigns by hand stay as they left them. The person gets an Inbox notice, "Assigned to you as the person on triage". See [Inbox and reviews](/using/inbox-and-reviews/).
+A project can have a **triage rotation**: its members take turns, one calendar week each (Monday to Sunday, UTC). The header shows a chip such as "You're on triage until Mon" when it's you, and the name of whoever is on triage otherwise. With **Assign new items to whoever is on triage** on, unassigned items are assigned to the person on triage, and move to the next person when the week changes. Items someone assigns or unassigns by hand stay as they left them. The person gets an Inbox notice, "Assigned to you as the person on triage". See [Inbox and reviews](/review/inbox-and-reviews/).
 
-The rotation also catches builds that no [review rule](/using/review-requests-and-rules/) matches: those are requested from whoever is on triage that week.
+The rotation also catches builds that no [review rule](/review/review-requests-and-rules/) matches: those are requested from whoever is on triage that week.
 
-All of this is set by owners and admins in **Project settings** › **Reviews and triage**: the people in the rotation, the first week's start, whether new items are assigned automatically, the flaky threshold and the snooze default. See [Project settings](/using/project-settings/). The workspace sets the default for automatic assignment, which each project can override; see [Workspace settings](/using/workspace-settings/).
+All of this is set by owners and admins in **Project settings** › **Reviews and triage**: the people in the rotation, the first week's start, whether new items are assigned automatically, the flaky threshold and the snooze default. See [Project settings](/settings/project-settings/). The workspace sets the default for automatic assignment, which each project can override; see [Workspace settings](/settings/workspace-settings/).
 
 ## How a screenshot becomes flaky
 
@@ -64,10 +64,10 @@ CirCI looks at the last **10 commits** on the default branch (several builds of 
 
 Flaky screenshots show up in several places:
 
-- the **Flaky** group (collapsed) on the build page, instead of Changed. See [Reviewing a build](/using/reviewing-a-build/);
-- a banner on the project's builds page, and a chip on the screenshot's row on the Baselines page (when its triage item is snoozed, the chip's tooltip says until when). See [Baselines and ignore regions](/using/baselines-and-ignore-regions/);
+- the **Flaky** group (collapsed) on the build page, instead of Changed. See [Reviewing a build](/review/reviewing-a-build/);
+- a banner on the project's builds page, and a chip on the screenshot's row on the Baselines page (when its triage item is snoozed, the chip's tooltip says until when). See [Baselines and ignore regions](/review/baselines-and-ignore-regions/);
 - a **Flaky** chip on review requests;
-- the "Flakiest screenshots" list and flaky chart in [Insights](/using/insights/);
+- the "Flakiest screenshots" list and flaky chart in [Insights](/dashboard/insights/);
 - an Inbox notice, "Flaky screenshot found", for the person on triage that week.
 
 ### Flaky changes and the merge gate
@@ -75,5 +75,5 @@ Flaky screenshots show up in several places:
 When every change in a pull request's build is to a flaky screenshot, and each change looks like variation already seen (it's an image the screenshot already had on the default branch, or it differs no more than the largest difference seen there, at the same size), the gate can let it pass: "Only flaky screenshots changed". Whether it does is the **Flaky-only changes block merging** setting. The workspace sets the default (blocking, unless changed), and each project can follow it or override it. A change that breaks the layout of a flaky screenshot still needs a person.
 
 <Aside type="tip">
-The fix for a flaky screenshot is usually to make it render the same every time. When part of the page is the problem, such as a clock or an animation, an [ignore region](/using/baselines-and-ignore-regions/) leaves that part out of every comparison. The Baselines page links each flaky screenshot to its triage item.
+The fix for a flaky screenshot is usually to make it render the same every time. When part of the page is the problem, such as a clock or an animation, an [ignore region](/review/baselines-and-ignore-regions/) leaves that part out of every comparison. The Baselines page links each flaky screenshot to its triage item.
 </Aside>

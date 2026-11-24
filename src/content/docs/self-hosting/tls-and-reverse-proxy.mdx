@@ -79,7 +79,7 @@ To use another DNS provider than Route53, swap the `caddy-dns/route53` module in
 
 ## Live updates need an unbuffered stream
 
-The dashboard keeps one `GET /api/live` request open for [live updates](/using/live-updates/): a `text/event-stream` response that is quiet between events and carries a heartbeat every 25 seconds. CirCI sends `Cache-Control: no-cache, no-transform` and `X-Accel-Buffering: no` with it. The proxy must pass it through as it arrives, and its read timeout must be longer than 25 seconds.
+The dashboard keeps one `GET /api/live` request open for [live updates](/dashboard/live-updates/): a `text/event-stream` response that is quiet between events and carries a heartbeat every 25 seconds. CirCI sends `Cache-Control: no-cache, no-transform` and `X-Accel-Buffering: no` with it. The proxy must pass it through as it arrives, and its read timeout must be longer than 25 seconds.
 
 - **Bundled Caddy** needs no setting; the Caddyfile is unchanged.
 - **nginx** honors `X-Accel-Buffering: no` by default. If your configuration ignores or strips that header, turn buffering off for the path:

@@ -94,7 +94,7 @@ All optional. In `circi({ … })` they are `circi.Options`; `circi-storybook upl
 | `viewports` | `--viewport` | `1280x720` (default), or named: `mobile=390x844`. |
 | `include`, `exclude` | `--include`, `--exclude` | Globs over a story ID or `Title/Story name`. |
 | `concurrency` | `--concurrency` | Stories screenshotted at once. Default 4. |
-| `site` | `--site [name]` | Also upload the built Storybook as a [hosted site](/using/hosted-sites/), so reviewers can open the live story. |
+| `site` | `--site [name]` | Also upload the built Storybook as a [hosted site](/dashboard/hosted-sites/), so reviewers can open the live story. |
 | `staticDir`, `build` | the folder argument, `--build` | The built Storybook (default `storybook-static`), and whether to build it first. |
 | `dir`, `clean`, `root` | `--dir`, `--clean`, `--root` | Where screenshots are written (default `.circi/screenshots`, in its `storybook` folder), whether to empty that folder first, and the project root. |
 | `apiUrl`, `token` | `--api-url`, `CIRCI_TOKEN` | Default `CIRCI_API_URL` and `CIRCI_TOKEN`. Keep the token in the environment. |
@@ -130,4 +130,4 @@ With `circi({ name: 'storybook' })` in the Vitest config, `CIRCI_API_URL=… CIR
 
 ## Make story screenshots stable
 
-CirCI marks a pixel as changed once its color moves past a fixed tolerance, and the default diff threshold is 0% ([How screenshots are compared](/introduction/how-screenshots-are-compared/)). Take the screenshots on the same machine image every time (fonts differ between operating systems), and keep data and dates in stories fixed. For a part that still moves, draw an [ignore region](/using/baselines-and-ignore-regions/#ignore-regions).
+CirCI marks a pixel as changed once its color moves past a fixed tolerance, and the default diff threshold is 0% ([How screenshots are compared](/introduction/how-screenshots-are-compared/)). Take the screenshots on the same machine image every time (fonts differ between operating systems), and keep data and dates in stories fixed. For a part that still moves, draw an [ignore region](/review/baselines-and-ignore-regions/#ignore-regions).

@@ -10,15 +10,15 @@ import ScreenFrame from '../../../components/ScreenFrame.astro'
 import Kbd from '../../../components/Kbd.astro'
 import StatusChip from '../../../components/StatusChip.astro'
 
-A build is one upload of screenshots from CI. When it has changes against the baseline, someone looks at each changed screenshot and approves or rejects it. The build's status follows from those decisions. This page covers the build page; [Comments and regions](/using/comments-and-regions/) covers the discussion beside it.
+A build is one upload of screenshots from CI. When it has changes against the baseline, someone looks at each changed screenshot and approves or rejects it. The build's status follows from those decisions. This page covers the build page; [Comments and regions](/review/comments-and-regions/) covers the discussion beside it.
 
 <ScreenFrame name="use-build-review" alt="Build #93 with one changed screenshot, pricing, shown side by side with its baseline. The header has the Needs review status, the overdue time and the watchers, with Request review, Reject, Approve and Approve all on the right. The Details tab lists the build and the people asked." caption="A build with one changed screenshot. The list is on the left, the viewer in the middle and the Details tab on the right." />
 
-Anyone who can see the project can approve, reject, comment and ask for reviews: project members, and owners and admins of the workspace. See [Members and roles](/using/members-and-roles/).
+Anyone who can see the project can approve, reject, comment and ask for reviews: project members, and owners and admins of the workspace. See [Members and roles](/settings/members-and-roles/).
 
 ## Open a build
 
-Open a project and choose a build from its list, follow the link in a pull request comment or check, or open a review request from [Reviews or the Inbox](/using/inbox-and-reviews/). The page title is the build number (and its name, when it isn't `default`), with the branch under it.
+Open a project and choose a build from its list, follow the link in a pull request comment or check, or open a review request from [Reviews or the Inbox](/review/inbox-and-reviews/). The page title is the build number (and its name, when it isn't `default`), with the branch under it.
 
 The header shows the build's state:
 
@@ -32,7 +32,7 @@ The header shows the build's state:
 | <StatusChip status="approved">No changes</StatusChip> | Nothing differs from the baseline. |
 | <StatusChip status="no-baseline">No baseline</StatusChip> | There was nothing to compare with. The first build of a project is like this: every screenshot is new, and later builds are compared with it once it's approved. |
 | <StatusChip status="failed" /> | The build errored. The message is shown under the header. |
-| <StatusChip status="expired" /> | Its screenshots were deleted under the project's retention. See [Project settings](/using/project-settings/). |
+| <StatusChip status="expired" /> | Its screenshots were deleted under the project's retention. See [Project settings](/settings/project-settings/). |
 
 The status, review target and watchers sit on a row of their own under the title. Next to the status the header can show the review target (for example "22h left" or "Overdue 22h"), and an eye with the number of people watching the build: its author and whoever was asked to review, with "you're watching" when you are one of them.
 
@@ -46,7 +46,7 @@ The list on the left groups the screenshots in review order. A group is only sho
 | Changed | open | Same name as a baseline screenshot, but different pixels (above the project's diff threshold) |
 | Added | open | A screenshot with no baseline |
 | Removed | open | A baseline screenshot the build didn't upload |
-| Flaky | collapsed | Changed screenshots known to be flaky on the default branch. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/) |
+| Flaky | collapsed | Changed screenshots known to be flaky on the default branch. See [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/) |
 | Unchanged | collapsed | Identical or within the threshold |
 
 A screenshot that couldn't be read has nothing to compare and nothing to decide: the build page shows the file's name and the reason instead of images, and the rest of the build stays reviewable. The build can't pass until it's uploaded again with a valid PNG. What that means for the merge follows the project's **Unreviewed changes block merging** setting; see [How a build flows](/introduction/how-a-build-flows/#couldnt-read).
@@ -67,7 +67,7 @@ The build page has three compare modes, chosen with the buttons above the image 
 
 Diff and Slider share three controls. <Kbd keys="[" /> and <Kbd keys="]" /> show less or more of this build, 10% at a time (the new value is announced, "This build 80%"), and holding <Kbd keys="Alt" /> (Option on a Mac) shows this build in full until you let go. The keys work while the pill's slider or the Slider's handle has focus. In Slider they move the divider: this build is on the right, so <Kbd keys="]" /> moves it left. Old links to the Overlay mode, which was merged into Diff, open Diff.
 
-Zoom is Fit or 100%, with buttons to step in and out. **Fit** fills the width of the viewer: a small screenshot is scaled up and a large one down, so a build with a single image fills it too. The **View options** menu (the ⋯ button) has a **Checkerboard** background for transparent screenshots, and, for owners and admins, the **Dragging draws** choice described in [Comments and regions](/using/comments-and-regions/). The up and down arrows walk the list. Click an image to enlarge it. The enlarged view steps through the baseline, this build and, in Diff, the changed pixels, in that order.
+Zoom is Fit or 100%, with buttons to step in and out. **Fit** fills the width of the viewer: a small screenshot is scaled up and a large one down, so a build with a single image fills it too. The **View options** menu (the ⋯ button) has a **Checkerboard** background for transparent screenshots, and, for owners and admins, the **Dragging draws** choice described in [Comments and regions](/review/comments-and-regions/). The up and down arrows walk the list. Click an image to enlarge it. The enlarged view steps through the baseline, this build and, in Diff, the changed pixels, in that order.
 
 ## Decide
 
@@ -84,7 +84,7 @@ Zoom is Fit or 100%, with buttons to step in and out. **Fit** fills the width of
 Decisions are made per screenshot. Each acts at once and shows a toast with **Undo**.
 
 - **Approve** (<Kbd keys="a" />) approves the screenshot on screen and moves on to the next one that still needs a decision.
-- **Reject** (<Kbd keys="r" />) asks for a reason first. The screenshot is marked rejected, which holds back the merge, and it never becomes a baseline. The reason goes to the build's author in their Inbox and to the pull request. A project can make the reason optional; see [Project settings](/using/project-settings/).
+- **Reject** (<Kbd keys="r" />) asks for a reason first. The screenshot is marked rejected, which holds back the merge, and it never becomes a baseline. The reason goes to the build's author in their Inbox and to the pull request. A project can make the reason optional; see [Project settings](/settings/project-settings/).
 - **Approve all** (<Kbd keys="Shift+A" />) approves every changed screenshot that has no decision yet. The button carries the count when there is more than one: "Approve all 3".
 
 In the reason field, <Kbd keys="Mod+Enter" /> sends it. Approve and Reject only appear on a finished build with changes. A decision can be changed later: the latest one counts.
@@ -93,31 +93,31 @@ In the reason field, <Kbd keys="Mod+Enter" /> sends it. Approve and Reject only 
 
 The build's review status is derived from its screenshots: all changed screenshots approved means the build is **Approved**; one rejected means **Rejected**; anything else is still **Needs review**. Unchanged screenshots need no decision. [Build and screenshot statuses](/reference/build-statuses/) has the full rules. When the status moves, the author is notified, webhooks fire (see [Webhooks](/integrations/webhooks/)), and the check on the pull request is updated. People who were asked to review stop being asked once the build is decided.
 
-On the project's default branch, an approved screenshot becomes the baseline later builds are compared with. A default-branch screenshot can become the baseline even while the rest of the build is still pending. Other branches only count once the whole build is approved. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
+On the project's default branch, an approved screenshot becomes the baseline later builds are compared with. A default-branch screenshot can become the baseline even while the rest of the build is still pending. Other branches only count once the whole build is approved. See [Baselines and ignore regions](/review/baselines-and-ignore-regions/).
 
 ### Merge gate
 
-With a repository linked, the pull request check follows the build. By default unreviewed changes keep it pending until someone approves; rejected changes fail it. Whether it blocks merging depends on the project's merge gate settings, and whether the repository marks the check as required. See [Project settings](/using/project-settings/) and [GitHub](/integrations/github/).
+With a repository linked, the pull request check follows the build. By default unreviewed changes keep it pending until someone approves; rejected changes fail it. Whether it blocks merging depends on the project's merge gate settings, and whether the repository marks the check as required. See [Project settings](/settings/project-settings/) and [GitHub](/integrations/github/).
 
 ## Use the sidebar
 
 Three tabs sit beside the image.
 
-- **Details**: two groups. **Build** has the pull request, commit, branch, when it was uploaded, and the baseline it was compared with and how it was chosen ("where this branch started", or the latest build on the default branch when git history wasn't available). **People** lists everyone who was asked to review and by whom ("Assigned automatically" when a [review rule](/using/review-requests-and-rules/) did). Below that: how the selected screenshot changed over recent default-branch builds ("This screenshot on main"), linked issues, and **Decisions**, every decision made so far with its reason. Identical decisions (the same outcome, person and reason) collapse into one line with a count, such as "Approved by Olivia Owner, 6 times", and **By screenshot** gives several screenshots decided the same way one line ("Approved 6 of 6 by …").
+- **Details**: two groups. **Build** has the pull request, commit, branch, when it was uploaded, and the baseline it was compared with and how it was chosen ("where this branch started", or the latest build on the default branch when git history wasn't available). **People** lists everyone who was asked to review and by whom ("Assigned automatically" when a [review rule](/review/review-requests-and-rules/) did). Below that: how the selected screenshot changed over recent default-branch builds ("This screenshot on main"), linked issues, and **Decisions**, every decision made so far with its reason. Identical decisions (the same outcome, person and reason) collapse into one line with a count, such as "Approved by Olivia Owner, 6 times", and **By screenshot** gives several screenshots decided the same way one line ("Approved 6 of 6 by …").
 - **Activity**: what happened to the build, oldest first: upload, checks, review requests, decisions, comments and issues created.
-- **Comments**: see [Comments and regions](/using/comments-and-regions/).
+- **Comments**: see [Comments and regions](/review/comments-and-regions/).
 
 When the baseline is a fallback, a warning banner says which build was used. Fetch more git history in CI (for example `fetch-depth: 0` on GitHub Actions) for an exact comparison. See [CI examples](/ci/ci-examples/).
 
 ## Ask for a review
 
-**Request review**, in the header, opens a list of the project's members (never yourself). Choosing someone creates an open request, which shows up in their Reviews and Inbox. Asking someone who is already asked does nothing. See [Review requests and rules](/using/review-requests-and-rules/).
+**Request review**, in the header, opens a list of the project's members (never yourself). Choosing someone creates an open request, which shows up in their Reviews and Inbox. Asking someone who is already asked does nothing. See [Review requests and rules](/review/review-requests-and-rules/).
 
 If the project has Linear or Jira mapped, **Create issue** also appears in the header and files an issue for the selected screenshot. See [Linear](/integrations/linear/) and [Jira](/integrations/jira/).
 
 ## Approve many builds at once
 
-On a project's builds list, press <Kbd keys="x" /> to select builds (or select rows with the checkboxes). A bar at the bottom offers **Approve**, **Reject** (with a reason), **Request review** and **Clear selection**. This works inside one project; a workspace-wide list can't select builds. The list has filters, grouping and ordering; see [Saved views](/using/saved-views/).
+On a project's builds list, press <Kbd keys="x" /> to select builds (or select rows with the checkboxes). A bar at the bottom offers **Approve**, **Reject** (with a reason), **Request review** and **Clear selection**. This works inside one project; a workspace-wide list can't select builds. The list has filters, grouping and ordering; see [Saved views](/dashboard/saved-views/).
 
 ## Use keyboard shortcuts
 

@@ -129,7 +129,7 @@ export const envGroups: EnvGroup[] = [
       { name: 'JOB_RETENTION_DAYS', default: '14', instanceSetting: true, description: 'Finished background jobs (done or failed) are deleted after this many days. `0` keeps them.' },
       { name: 'JOB_RETRY_BASE_SECONDS', default: '2', description: 'First wait before a failed job (webhook, git check, email) is retried; each further wait doubles. Mostly for tests.' },
       { name: 'JOB_RETRY_MAX_SECONDS', default: '300', description: 'The longest wait between two attempts of a job.' },
-      { name: 'LIVE_MAX_STREAMS', default: '2000', description: 'The most [live update](/using/live-updates/) streams (`GET /api/live`) one server process keeps open (1 to 100000). More get a `503` with `Retry-After`.' },
+      { name: 'LIVE_MAX_STREAMS', default: '2000', description: 'The most [live update](/dashboard/live-updates/) streams (`GET /api/live`) one server process keeps open (1 to 100000). More get a `503` with `Retry-After`.' },
     ],
   },
   {

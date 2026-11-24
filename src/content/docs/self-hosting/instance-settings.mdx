@@ -12,7 +12,7 @@ import SettingCard from '../../../components/SettingCard.astro'
 
 Instance admins open **Instance** in the sidebar, then **Instance settings**. The page holds the settings of the whole installation, and most of them can be changed there, with no restart.
 
-<ScreenFrame name="host-instance-settings" loading="eager" alt="The Instance settings page. The dashboard address and its old addresses are read-only and name their variables. Password, Email code and Single sign-on are checked under Sign-in methods. Single sign-on providers says there are none yet, and Who can create workspaces is unchecked." caption="Instance settings in a development instance. The settings that wait for Save changes are on the same page as the ones that name a variable." width={760} />
+<ScreenFrame name="host-instance-settings" loading="eager" alt="The Instance settings page. The dashboard address and its old addresses are read-only and name their variables. Password, Email code and Single sign-on are checked under Sign-in methods. Single sign-on providers says there are none yet, and Who can create workspaces is unchecked." caption="Instance settings in a development instance. The settings that wait for Save changes are on the same page as the ones that name a variable." />
 
 ## Which value applies
 
@@ -83,7 +83,7 @@ A section at the bottom of the page, with a badge: **Not set up**, **Environment
 | A webhook receiver may take up to | `WEBHOOK_TIMEOUT_SECONDS` | 10 seconds | 1 to 600 |
 | Largest hosted site | `STATIC_SITES_MAX_MB` | 200 MB | 1 to 5000 |
 
-<ScreenFrame name="host-instance-limits" alt="The Storage and limits section: Local disk with its variable, then number fields for new project retention, unused files, upload timeout, job retention and webhook timeout, and the Hosted sites section saying Not set up." caption="Storage and limits and Hosted sites. A limit set by its variable shows the variable and a disabled field." width={760} />
+<ScreenFrame name="host-instance-limits" alt="The Storage and limits section: Local disk with its variable, then number fields for new project retention, unused files, upload timeout, job retention and webhook timeout, and the Hosted sites section saying Not set up." caption="Storage and limits and Hosted sites. A limit set by its variable shows the variable and a disabled field." />
 
 **New projects keep builds for** is the retention a new project starts with. It's a real setting with no environment variable: each project then changes its own in its settings, and the instance value doesn't touch existing projects. See [Retention and garbage collection](/self-hosting/retention-and-gc/).
 
@@ -108,6 +108,6 @@ Deployment values that don't appear on the page at all: `DATABASE_URL`, `BETTER_
 | **Workspaces** | Every workspace on the instance, deleted ones too, and creating one. Instance admins see a workspace's projects only if they belong to it. |
 | **Health** | The same checks as `circi admin doctor`, the background jobs per queue, the domains and cookies check, and the **Setup code**. |
 
-<ScreenFrame name="host-health" alt="The Health page, scrolled to Domains and cookies, then Background jobs with waiting, running, oldest waiting, failed and retrying counts, the Queues list and the Setup code state." caption="Health. Run checks again repeats what circi admin doctor reports." width={760} />
+<ScreenFrame name="host-health" alt="The Health page, scrolled to Domains and cookies, then Background jobs with waiting, running, oldest waiting, failed and retrying counts, the Queues list and the Setup code state." caption="Health. Run checks again repeats what circi admin doctor reports." />
 
-See [Instance administration](/using/instance-administration/) for how admins use these pages.
+See [Instance administration](/settings/instance-administration/) for how admins use these pages.

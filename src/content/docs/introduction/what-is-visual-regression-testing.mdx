@@ -1,13 +1,15 @@
 ---
 title: What is visual regression testing?
+sidebar:
+  label: 'Visual regression testing'
 seoTitle: "What is visual regression testing? How it works"
 description: "Visual regression testing compares screenshots of your UI with approved ones to catch unintended changes: how it works, what it catches, flaky screenshots."
 ---
-{/* Source: the concept in general; the CirCI specifics come from the pages linked below: how-screenshots-are-compared (packages/diff), using/baselines-and-ignore-regions (packages/core/src/baselines), using/triage-and-flaky-screenshots, introduction/how-a-build-flows. */}
+{/* Source: the concept in general; the CirCI specifics come from the pages linked below: how-screenshots-are-compared (packages/diff), review/baselines-and-ignore-regions (packages/core/src/baselines), review/triage-and-flaky-screenshots, introduction/how-a-build-flows. */}
 
 import { Aside } from '@astrojs/starlight/components'
 
-Visual regression testing checks that your user interface still looks the way it should. Your tests take screenshots of pages or components, and each one is compared with an approved version of the same screenshot, called the **baseline**. When the two differ, a person looks at the difference and decides whether it was meant: if it was, the new screenshot is approved and becomes the baseline; if it wasn't, it's a bug, a **visual regression**.
+Visual regression testing, also called visual testing, screenshot testing or visual review, checks that your user interface still looks the way it should. Your tests take screenshots of pages or components, and each one is compared with an approved version of the same screenshot, called the **baseline**. When the two differ, a person looks at the difference and decides whether it was meant: if it was, the new screenshot is approved and becomes the baseline; if it wasn't, it's a bug, a **visual regression**.
 
 ## What it catches that other tests miss
 
@@ -28,11 +30,11 @@ It doesn't replace review of the code. It shows reviewers the result of the code
 3. **Review.** Changed, added and removed screenshots are shown to the team side by side with their baselines. Each change is approved or rejected.
 4. **Gate.** Until the changes are reviewed, the pull request can't merge. Approved screenshots become the baselines that later builds are compared with.
 
-CirCI's version of each step: [How a build flows](/introduction/how-a-build-flows/), [How screenshots are compared](/introduction/how-screenshots-are-compared/) and [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
+CirCI's version of each step: [How a build flows](/introduction/how-a-build-flows/), [How screenshots are compared](/introduction/how-screenshots-are-compared/) and [Baselines and ignore regions](/review/baselines-and-ignore-regions/).
 
 ## Choosing the baseline
 
-The baseline should be what the code you're changing looked like. For a pull request, that's the approved screenshots of the commit the branch started from, not the newest ones on `main`, which may include changes your branch doesn't have yet. CirCI walks the commit history back from where the branch started and uses the nearest approved build ([How a build gets its baseline](/using/baselines-and-ignore-regions/#how-a-build-gets-its-baseline)).
+The baseline should be what the code you're changing looked like. For a pull request, that's the approved screenshots of the commit the branch started from, not the newest ones on `main`, which may include changes your branch doesn't have yet. CirCI walks the commit history back from where the branch started and uses the nearest approved build ([How a build gets its baseline](/review/baselines-and-ignore-regions/#how-a-build-gets-its-baseline)).
 
 ## Pixel comparison and thresholds
 
@@ -52,7 +54,7 @@ A screenshot is flaky when it comes out different without the code changing. The
 - **Motion.** Animations, transitions, carousels, blinking cursors, images still loading when the screenshot is taken.
 - **The environment.** A different browser version, operating system, font set or screen density renders text and edges differently.
 
-Most fixes make the page render the same every time: freeze the clock, use fixed test data, disable animations, wait for fonts and images, and take every screenshot in the same browser and container. What can't be made stable can be left out with an ignore region. CirCI also notices screenshots that keep flipping back to an image they already had, marks them flaky, and can let a pull request through when flaky screenshots are the only change ([Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)).
+Most fixes make the page render the same every time: freeze the clock, use fixed test data, disable animations, wait for fonts and images, and take every screenshot in the same browser and container. What can't be made stable can be left out with an ignore region. CirCI also notices screenshots that keep flipping back to an image they already had, marks them flaky, and can let a pull request through when flaky screenshots are the only change ([Triage and flaky screenshots](/review/triage-and-flaky-screenshots/)).
 
 ## Where screenshots come from
 
@@ -66,7 +68,7 @@ Component screenshots are fast and isolate each state; page screenshots catch ho
 
 ## Hosted service or self-hosted
 
-The comparison and review need somewhere to run. Hosted services (Chromatic, Percy, Argos and others) run it for you, and your screenshots are stored on their servers. A self-hosted tool such as CirCI runs on your own servers, so the screenshots of internal apps stay with you, and you take on running it. [Visual regression testing without a SaaS](/introduction/visual-regression-testing-without-saas/) weighs the two, and [Compared with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/) lists the differences. Other open source tools you can run yourself are compared in [Compared with Visual Regression Tracker, BackstopJS and Lost Pixel](/introduction/compared-with-self-hosted-tools/). If you already use Playwright's built-in `toHaveScreenshot`, see [Playwright toHaveScreenshot and CirCI](/ci/playwright-tohavescreenshot/).
+The comparison and review need somewhere to run. Hosted services (Chromatic, Percy, Argos and others) run it for you, and your screenshots are stored on their servers. A self-hosted tool such as CirCI runs on your own servers, so the screenshots of internal apps stay with you, and you take on running it. [Visual regression testing without a SaaS](/compare/visual-regression-testing-without-saas/) weighs the two, and [Compared with Chromatic, Percy and Argos](/compare/compared-with-chromatic-percy-argos/) lists the differences. Other open source tools you can run yourself are compared in [Compared with Visual Regression Tracker, BackstopJS and Lost Pixel](/compare/compared-with-self-hosted-tools/). If you already use Playwright's built-in `toHaveScreenshot`, see [Playwright toHaveScreenshot and CirCI](/compare/playwright-tohavescreenshot/).
 
 <Aside type="tip" title="Try it">
 [Run CirCI locally](/getting-started/run-it-locally/) with Docker Compose and upload a first build in a few minutes, or read [What is CirCI?](/introduction/what-is-circi/) first.

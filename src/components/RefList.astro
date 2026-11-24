@@ -1,0 +1,25 @@
+---
+// A list of reference entries: a long piece of code (an error message, a command) on its own line, and what it means
+// under it. Use it instead of a two-column table when the first column is long code, so the code gets the full
+// column width and nothing scrolls sideways. Holds <RefItem>s.
+//
+// <RefList>
+//   <RefItem label="409">
+//     <Fragment slot="term">`N file(s) weren't uploaded or failed verification`</Fragment>
+//     Send the missing files and finalize again.
+//   </RefItem>
+// </RefList>
+---
+
+<ul class="ref-list" role="list"><slot /></ul>
+
+<style>
+  .ref-list {
+    margin-inline: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--circi-line-subtle);
+    border-radius: var(--circi-radius-popup);
+    overflow: clip;
+  }
+</style>

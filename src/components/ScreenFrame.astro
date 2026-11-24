@@ -18,8 +18,11 @@ interface Props {
   loading?: 'lazy' | 'eager'
   /** Text in the window's title strip (default "CirCI"). */
   title?: string
+  /** How wide the image shows, for picking its resolution (the `sizes` attribute). Default: the docs text column.
+      Set it where the frame is wider, as on the landing page, or the browser picks a copy too small and it blurs. */
+  sizes?: string
 }
-const { name, alt, caption, width, aspect, loading = 'lazy', title = 'CirCI' } = Astro.props
+const { name, alt, caption, width, aspect, loading = 'lazy', title = 'CirCI', sizes = '(min-width: 50rem) 48rem, 100vw' } = Astro.props
 const shots = import.meta.glob<{ default: ImageMetadata }>('/src/assets/screens/*.{jpg,png}', { eager: true })
 const find = (scheme: string) => {
   const key = Object.keys(shots).find((k) => k.includes(`/${name}-${scheme}.`))
@@ -28,6 +31,11 @@ const find = (scheme: string) => {
 }
 const dark = find('dark')
 const light = find('light')
+// The resolutions to offer: the usual steps, and the capture's own width, so a wide frame on a sharp screen gets
+// every pixel there is. The enlarged view (95vw) offers the larger steps.
+const offer = (steps: number[]) => [...new Set([...steps, dark.width].filter((w) => w <= dark.width))].sort((a, b) => a - b)
+const frameWidths = offer([720, 1080, 1440, 2160])
+const zoomWidths = offer([1440, 2160, 2880])
 // The box is reserved before the captures load. Both themes are captured at one size, so one box
 // fits either; a crop may only make it shorter than the image, never taller.
 const natural = dark.width / dark.height
@@ -44,16 +52,16 @@ const ratio = asked !== undefined && Number.isFinite(asked) && asked > natural ?
       <div class="strip" aria-hidden="true"><span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="strip-title">{title}</span></div>
       <button type="button" class="shot-button" aria-label={`Enlarge: ${alt}`}>
         <div class="shot" style={`aspect-ratio:${ratio}`}>
-          <Image src={dark} alt={alt} class="shot-dark" widths={[720, 1080, 1440, 2160]} sizes="(min-width: 50rem) 46rem, 100vw" loading={loading} decoding="async" />
-          <Image src={light} alt="" class="shot-light" widths={[720, 1080, 1440, 2160]} sizes="(min-width: 50rem) 46rem, 100vw" aria-hidden="true" loading={loading} decoding="async" />
+          <Image src={dark} alt={alt} class="shot-dark" widths={frameWidths} sizes={sizes} loading={loading} decoding="async" />
+          <Image src={light} alt="" class="shot-light" widths={frameWidths} sizes={sizes} aria-hidden="true" loading={loading} decoding="async" />
         </div>
       </button>
     </div>
     <dialog class="zoom" aria-label={alt}>
       <div class="zoom-bar"><span class="zoom-title">{title}</span><button type="button" class="zoom-close" aria-label="Close">Close <kbd>Esc</kbd></button></div>
       <div class="zoom-stage">
-        <Image src={dark} alt="" class="zoom-dark" widths={[1440, 2160, 2880]} sizes="95vw" loading="lazy" decoding="async" />
-        <Image src={light} alt="" class="zoom-light" widths={[1440, 2160, 2880]} sizes="95vw" aria-hidden="true" loading="lazy" decoding="async" />
+        <Image src={dark} alt="" class="zoom-dark" widths={zoomWidths} sizes="95vw" loading="lazy" decoding="async" />
+        <Image src={light} alt="" class="zoom-light" widths={zoomWidths} sizes="95vw" aria-hidden="true" loading="lazy" decoding="async" />
       </div>
     </dialog>
   </screen-zoom>

@@ -23,6 +23,14 @@ import Default from '@astrojs/starlight/components/Sidebar.astro'
   let scroll = 0
   const scroller = () => document.getElementById('starlight__sidebar')
 
+  // Mark the clicked page at once, before its HTML has arrived, so the click shows even on a slow connection.
+  document.addEventListener('astro:before-preparation', (event) => {
+    const tree = document.querySelector('[data-sidebar]')
+    const next = tree && [...tree.querySelectorAll<HTMLAnchorElement>('a[href]')].find((a) => path(a.href) === path(event.to))
+    if (!next) return
+    tree.querySelectorAll('a[aria-current]').forEach((a) => a.removeAttribute('aria-current'))
+    next.setAttribute('aria-current', 'page')
+  })
   document.addEventListener('astro:before-swap', (event) => {
     target = path(event.to)
     scroll = scroller()?.scrollTop ?? 0

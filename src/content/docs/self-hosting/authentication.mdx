@@ -7,7 +7,7 @@ description: Every way to sign in, who can get an account, sessions and cookies,
 
 import { Aside } from '@astrojs/starlight/components'
 
-CirCI uses [better-auth](https://better-auth.com) for accounts and sessions. There is no self sign-up: every account is created by someone who already has the right to, and every way in is checked against what the instance and the workspace allow. This page is the whole picture. For the first account, see [Sign in and set up](/getting-started/sign-in-and-set-up/); for what a person does on their own account, see [Account settings](/using/account-settings/).
+CirCI uses [better-auth](https://better-auth.com) for accounts and sessions. There is no self sign-up: every account is created by someone who already has the right to, and every way in is checked against what the instance and the workspace allow. This page is the whole picture. For the first account, see [Sign in and set up](/getting-started/sign-in-and-set-up/); for what a person does on their own account, see [Account settings](/settings/account-settings/).
 
 ## Sign-in methods
 
@@ -18,7 +18,7 @@ CirCI uses [better-auth](https://better-auth.com) for accounts and sessions. The
 | Instance single sign-on | GitHub, Google, GitLab, or one generic OpenID Connect provider, shown as buttons | The `AUTH_*` variables below. `AUTH_SSO_ENABLED` or Instance settings |
 | Workspace single sign-on | A workspace's own OpenID Connect provider | An owner or admin of the workspace, in its settings |
 
-The password switch is read at every sign-in request, so turning it off needs no restart. With it off, a password sign-in is refused with "Password sign-in is turned off on this instance." Each workspace can also narrow the methods people may use to open it: see [Workspace settings](/using/workspace-settings/#sign-in-and-domains). The instance sets the outer limit.
+The password switch is read at every sign-in request, so turning it off needs no restart. With it off, a password sign-in is refused with "Password sign-in is turned off on this instance." Each workspace can also narrow the methods people may use to open it: see [Workspace settings](/settings/workspace-settings/#sign-in-and-domains). The instance sets the outer limit.
 
 <Aside type="note">
 Whether a method is on, and where it is set, is explained in [Instance settings](/self-hosting/instance-settings/): an environment variable, when set, wins and locks the setting.
@@ -45,7 +45,7 @@ Signing in with a provider doesn't create an account by itself. The ways an acco
 
 | How | Condition |
 |---|---|
-| An instance admin creates it | From **Instance** › **Accounts** or `circi admin user create`. See [Instance administration](/using/instance-administration/) |
+| An instance admin creates it | From **Instance** › **Accounts** or `circi admin user create`. See [Instance administration](/settings/instance-administration/) |
 | An emailed code | The address has a pending invitation, or is on a domain some workspace has verified. Anyone else gets no mail and the same answer as everyone |
 | Instance single sign-on | The address has a pending invitation, or the provider is trusted for email, reports the address as verified, and the address is on a verified workspace domain. Otherwise "No account for this address" |
 | A workspace's own single sign-on | The workspace's provider brings its people in as members of that workspace. The account starts out unverified |
@@ -72,7 +72,7 @@ Without mail on the server, email codes can't be switched on, invitations can't 
 
 ## Single sign-on for a workspace
 
-An owner or admin connects the workspace's own OpenID Connect provider in **Settings** › **Sign-in and domains** (see [Workspace settings](/using/workspace-settings/#single-sign-on)). What the code guarantees:
+An owner or admin connects the workspace's own OpenID Connect provider in **Settings** › **Sign-in and domains** (see [Workspace settings](/settings/workspace-settings/#single-sign-on)). What the code guarantees:
 
 - The issuer address must be a public `https` address, with the same private-address rules as a [webhook](/integrations/webhooks/#address-rules) (`WEBHOOK_ALLOW_PRIVATE_ADDRESSES` lifts them, and then plain `http` is allowed too). CirCI fetches the issuer's `/.well-known/openid-configuration` when you save, and refuses an address with no valid discovery document, or one that doesn't answer.
 - The provider ID is `<workspace slug>-sso`, with the scopes `openid`, `email` and `profile`, and PKCE on. The redirect address to register is `<PUBLIC_URL>/api/auth/sso/callback/<workspace slug>-sso`.
@@ -100,7 +100,7 @@ Joining only ever adds. Someone who moves from one domain to another keeps their
 
 ## Invitations
 
-Owners and admins invite an address with a role of admin or member. An invitation is valid for **7 days**, and arrives by mail. Inviting an address that already has an open invitation replaces it: the earlier link stops working, and the answer says so. A person without an account creates one by signing in with an emailed code. Only an owner can remove an owner ("Only owners can remove an owner."). See [Members and roles](/using/members-and-roles/).
+Owners and admins invite an address with a role of admin or member. An invitation is valid for **7 days**, and arrives by mail. Inviting an address that already has an open invitation replaces it: the earlier link stops working, and the answer says so. A person without an account creates one by signing in with an emailed code. Only an owner can remove an owner ("Only owners can remove an owner."). See [Members and roles](/settings/members-and-roles/).
 
 ## Changing an email address
 
@@ -118,7 +118,7 @@ There is no second confirmation from the old mailbox, so a person who lost it ca
 - A signed cookie carries the session for **30 seconds**, so most requests skip the lookup. The dashboard API still checks on each request that the session exists, so a session ended elsewhere, or a banned account, gets "Sign in to continue".
 - A session remembers how it signed in (password, emailed code, instance provider or a workspace's own provider). A workspace that doesn't allow that method answers "not found" to it. Instance admins are never refused by a workspace's method switches.
 - A sign-in from a browser an account hasn't been used from sends the owner a "New sign-in to your CirCI account" mail, naming the method, time, browser and address. The account's very first sign-in doesn't send one. The browser is recognized by a hash of its user agent, so two browsers of the same kind count as one.
-- People end their own sessions in [Account settings](/using/account-settings/); an instance admin can sign an account out everywhere or ban it ([Instance administration](/using/instance-administration/)).
+- People end their own sessions in [Account settings](/settings/account-settings/); an instance admin can sign an account out everywhere or ban it ([Instance administration](/settings/instance-administration/)).
 - Changing `BETTER_AUTH_SECRET` signs everyone out.
 
 ## Limits and origins

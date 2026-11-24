@@ -6,6 +6,8 @@ description: What every exit code of circi upload means, the messages the CLI an
 {/* Source: packages/cli/src/errors.ts, main.ts, upload.ts, files.ts, site.ts, git.ts, api.ts, apps/server/src/http/lib/errors.ts, apps/server/src/http/lib/validation.ts, apps/server/src/http/hooks/project-token.ts, apps/server/src/http/routes/v1, packages/core/src/builds (limits.ts, outcome.ts), packages/db/src/repositories/builds-shards.ts */}
 
 import { Aside } from '@astrojs/starlight/components'
+import RefList from '../../../components/RefList.astro'
+import RefItem from '../../../components/RefItem.astro'
 
 A CI job sees a failure in two places: the exit code of `circi upload`, and the one-line `error:` message it prints. Both come from the CLI, which relays what the CI API answered. For the endpoints themselves, see the [CI API reference](/reference/ci-api/).
 
@@ -24,78 +26,242 @@ A build that failed to process or that holds unreadable screenshots exits `2` on
 
 With `--wait`, a build whose result is `pending` is polled until it isn't, first every 0.5 seconds and then every 2 seconds at most, until `--timeout` (default 600 seconds). If the server can't be reached while waiting, the CLI prints `warning: <reason>; still waiting` once and keeps polling until the timeout.
 
-## Messages the CLI prints before any upload
+## CLI messages
 
-| Message | Cause and fix |
-|---|---|
-| `Set CIRCI_TOKEN to the project CI token` | No `CIRCI_TOKEN` in the environment. Add the project's token as a CI secret. |
-| `Set CIRCI_API_URL (or --api-url) to your CirCI address` | Neither the variable nor the flag is set. |
-| `--timeout must be a positive number of seconds` | The value isn't a number above zero. |
-| `--gate must be "status" or "exit-code"` | Any other value. |
-| `--shard must look like 1/4` or `--shard must look like 1/4: this job's number, then how many jobs there are` | The shard isn't `n/total`, or `n` is outside `1` to `total`. |
-| `Could not tell which CI run these shards belong to. Set CIRCI_PARALLEL_NONCE (or --nonce) to the same value in every shard.` | A sharded upload on a CI the CLI doesn't recognize. |
-| `Could not determine the commit. Run inside a git checkout or set CIRCI_COMMIT.` | Not in a git checkout and no `CIRCI_COMMIT`. |
-| `No such directory: <dir>`, `<dir> is not a directory` | The folder argument is wrong. |
-| `No .png files found in <dir>` | The folder holds no PNG, or only hidden folders and `node_modules`. |
-| `<path> is 31.2 MB; the limit is 25 MB per screenshot` | A screenshot over 25 MB. |
-| `<path>.json isn't valid JSON (…)`, `<path>.json must contain a JSON object` | The metadata file next to a screenshot is broken. |
-| `<dir> contains symbolic links or special files, which hosted sites can't have: …` | `circi site upload` refuses links and special files; the first five are named. |
-| `Couldn't run git. Is it installed and on PATH?` | The CLI needs `git`. |
-| `Too many open files. Raise the limit (ulimit -n) and retry.` | The operating system's file descriptor limit. |
-| `No such file or directory: <path>`, `Not a directory: <path>`, `Is a directory, not a file: <path>`, `Permission denied: <path>` | A file problem on the CI machine, named by path. |
+What `circi upload` prints, by the stage it was at: before uploading anything, while talking to the server, while waiting for the result, and when it reads the git history.
 
-## Messages about reaching or being refused by the server
+### Before the upload
 
-| Message | Cause and fix |
-|---|---|
-| `Couldn't reach https://ci.acme.io (connection refused)` followed by `Check CIRCI_API_URL.` | The server isn't reachable. The detail can be `host not found`, `connection reset`, `timed out`, `certificate expired`, `self-signed certificate` or `not a valid URL`. Check the address, the proxy and the certificate. |
-| `The server refused the token (…). Check that CIRCI_TOKEN is this project's CI token.` | The server answered `401` or `403`. The token is wrong, belongs to another project, or was rotated or deleted with the project. The text in parentheses is the server's own. |
-| `The server failed: … (HTTP 502)` | A `5xx` answer after the retries. See the server log. |
-| `Upload of 3fa9c1d20b4e failed: 413 …` | One file couldn't be sent; the first 12 characters of its hash say which. The server's reason follows. |
-| `Server asked for unknown file <sha256>` | The server asked for a file the CLI didn't offer. Report it. |
-| `<n> files didn't arrive; sending again` | Not an error: finalizing reported missing files and the CLI sent them again once. If finalizing then fails again, the message is the server's. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`Set CIRCI_TOKEN to the project CI token`</Fragment>
+
+No `CIRCI_TOKEN` in the environment. Add the project's token as a CI secret.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Set CIRCI_API_URL (or --api-url) to your CirCI address`</Fragment>
+
+Neither the variable nor the flag is set.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`--timeout must be a positive number of seconds`</Fragment>
+
+The value isn't a number above zero.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`--gate must be "status" or "exit-code"`</Fragment>
+
+Any other value.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`--shard must look like 1/4` or `--shard must look like 1/4: this job's number, then how many jobs there are`</Fragment>
+
+The shard isn't `n/total`, or `n` is outside `1` to `total`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Could not tell which CI run these shards belong to. Set CIRCI_PARALLEL_NONCE (or --nonce) to the same value in every shard.`</Fragment>
+
+A sharded upload on a CI the CLI doesn't recognize.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Could not determine the commit. Run inside a git checkout or set CIRCI_COMMIT.`</Fragment>
+
+Not in a git checkout and no `CIRCI_COMMIT`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`No such directory: <dir>`, `<dir> is not a directory`</Fragment>
+
+The folder argument is wrong.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`No .png files found in <dir>`</Fragment>
+
+The folder holds no PNG, or only hidden folders and `node_modules`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`<path> is 31.2 MB; the limit is 25 MB per screenshot`</Fragment>
+
+A screenshot over 25 MB.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`<path>.json isn't valid JSON (…)`, `<path>.json must contain a JSON object`</Fragment>
+
+The metadata file next to a screenshot is broken.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`<dir> contains symbolic links or special files, which hosted sites can't have: …`</Fragment>
+
+`circi site upload` refuses links and special files; the first five are named.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Couldn't run git. Is it installed and on PATH?`</Fragment>
+
+The CLI needs `git`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Too many open files. Raise the limit (ulimit -n) and retry.`</Fragment>
+
+The operating system's file descriptor limit.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`No such file or directory: <path>`, `Not a directory: <path>`, `Is a directory, not a file: <path>`, `Permission denied: <path>`</Fragment>
+
+A file problem on the CI machine, named by path.
+</RefItem>
+</RefList>
+
+### Reaching the server
+
+<RefList>
+<RefItem>
+<Fragment slot="term">`Couldn't reach https://ci.acme.io (connection refused)` followed by `Check CIRCI_API_URL.`</Fragment>
+
+The server isn't reachable. The detail can be `host not found`, `connection reset`, `timed out`, `certificate expired`, `self-signed certificate` or `not a valid URL`. Check the address, the proxy and the certificate.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`The server refused the token (…). Check that CIRCI_TOKEN is this project's CI token.`</Fragment>
+
+The server answered `401` or `403`. The token is wrong, belongs to another project, or was rotated or deleted with the project. The text in parentheses is the server's own.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`The server failed: … (HTTP 502)`</Fragment>
+
+A `5xx` answer after the retries. See the server log.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Upload of 3fa9c1d20b4e failed: 413 …`</Fragment>
+
+One file couldn't be sent; the first 12 characters of its hash say which. The server's reason follows.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Server asked for unknown file <sha256>`</Fragment>
+
+The server asked for a file the CLI didn't offer. Report it.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`<n> files didn't arrive; sending again`</Fragment>
+
+Not an error: finalizing reported missing files and the CLI sent them again once. If finalizing then fails again, the message is the server's.
+</RefItem>
+</RefList>
 
 Every API call is retried up to 4 times in all, with waits of about 0.5, 1 and 2 seconds (each scaled by a random 50 to 100 percent), after a network failure, a `429` or any `5xx` answer. A request times out after 30 seconds, and a file or site upload after 2 minutes. `400`, `401`, `403`, `404`, `409`, `413`, `415` and `422` aren't retried: they won't change. Every call the CLI makes is safe to repeat.
 
-## Messages while waiting for the result
+### Waiting for the result
 
-| Message | Meaning |
-|---|---|
-| `error: timed out waiting for the build to be processed` | `--timeout` ran out. Exit `2`. The build keeps processing; look at it in the dashboard, or raise `--timeout`. |
-| `error: Build #12 failed to process: <reason>` | The pipeline failed. The line after it is `Details: <build url>`. |
-| `error: <screenshot name>: <reason>` and `Upload the build again with valid PNGs: <url>` | A screenshot couldn't be read, for example because it isn't a valid PNG. One line per screenshot. |
-| `Review the changes at <url>` and `After approving, re-run this job to unblock the merge: <job url>` | Exit `1`. The job is the gate. |
-| `warning: <text>` after the summary | The build passes, but something needs a look; for example merges aren't blocked for this project. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`error: timed out waiting for the build to be processed`</Fragment>
+
+`--timeout` ran out. Exit `2`. The build keeps processing; look at it in the dashboard, or raise `--timeout`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`error: Build #12 failed to process: <reason>`</Fragment>
+
+The pipeline failed. The line after it is `Details: <build url>`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`error: <screenshot name>: <reason>` and `Upload the build again with valid PNGs: <url>`</Fragment>
+
+A screenshot couldn't be read, for example because it isn't a valid PNG. One line per screenshot.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Review the changes at <url>` and `After approving, re-run this job to unblock the merge: <job url>`</Fragment>
+
+Exit `1`. The job is the gate.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`warning: <text>` after the summary</Fragment>
+
+The build passes, but something needs a look; for example merges aren't blocked for this project.
+</RefItem>
+</RefList>
 
 The summary line reads `<outcome>: N changed, N added, N removed, N unchanged`, with `, N couldn't be read` when some are unreadable. The outcomes are listed in the [CI API reference](/reference/ci-api/#get-v1buildsidstatus).
 
-## Git history warnings
+### Git history warnings
 
 The CLI collects the history CirCI uses to choose a baseline. When it can't, it prints `warning: <reason>. CirCI will compare against the latest <default branch> build instead.` and the upload carries on.
 
-| Reason | Fix |
-|---|---|
-| `Not inside a git repository` | Run in a checkout. |
-| `Commit <sha> is not available locally` | The checkout lacks the head commit. |
-| `Could not read the commit history (shallow clone)` | Deepen the checkout. |
-| `Base branch "<name>" is not available from origin` | Fetch the base branch, or check `CIRCI_BASE_BRANCH`. |
-| `No common history with "<name>" within 2000 commits; use a deeper checkout (e.g. fetch-depth: 0)` | Use a full clone, or a deeper one. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`Not inside a git repository`</Fragment>
+
+Run in a checkout.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Commit <sha> is not available locally`</Fragment>
+
+The checkout lacks the head commit.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Could not read the commit history (shallow clone)`</Fragment>
+
+Deepen the checkout.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Base branch "<name>" is not available from origin`</Fragment>
+
+Fetch the base branch, or check `CIRCI_BASE_BRANCH`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`No common history with "<name>" within 2000 commits; use a deeper checkout (e.g. fetch-depth: 0)`</Fragment>
+
+Use a full clone, or a deeper one.
+</RefItem>
+</RefList>
 
 ## Errors from the CI API
 
 The reply is `{ "error": "…" }`, with `fields` on validation failures; see [Conventions](/reference/ci-api/#conventions).
 
-| Status | When | What to do |
-|---|---|---|
-| `400` | The request is invalid. Messages are plain sentences about a field ("Commit sha isn't in the right format", "Branch must be 255 characters or fewer"), or one of: `Invalid build name "<name>": use letters, digits, ".", "_" or "-" (max 64)`, `Invalid commit SHA "<sha>"`, `ancestorShas must be at most 2000 commit SHAs`, `parallel.total must be between 1 and 1000`, `Invalid screenshot name "<name>"`, `Duplicate screenshot name "<name>"`, `The archive contains no files`, `A <kind> needs <entry page> at its top level` (for example `A Storybook needs index.html at its top level`), or a message about an unsafe site archive. | Fix the request. |
-| `401` | `A valid project token is required (Authorization: Bearer circi_…)`. | Send the project's CI token. |
-| `403` | `Static site hosting is off for this project: turn it on in the project settings`. | Turn **Host static sites** on. |
-| `404` | `Build not found`; `This file wasn't requested by any build (POST /v1/builds first)`; `Static site hosting isn't set up on this server`. | The build isn't in this project; create the build first; set `STATIC_SITES_HOST`. |
-| `409` | `N file(s) weren't uploaded or failed verification` with `missing`; `Build #N is already <status>; it can't take more screenshots`; `Another shard of this build already uploaded a screenshot with one of these names`. | Send the missing files and finalize again; upload a new build; use unique names across shards. |
-| `413` | `Files are limited to 26214400 bytes`, or a hosted site over a limit (see [Limits](/reference/limits/)), or a JSON body over 16 MB. | Shrink the file, or split the build. |
-| `415` | `Send the file as image/png or application/octet-stream`; `Send the site as application/gzip (a .tar.gz)`. | Fix the `content-type`. |
-| `422` | `The uploaded bytes hash to <hash>, not <hash>`. | The file changed or was damaged in transit; send it again. |
-| `500` | `Internal server error`. | See the server log. |
+<RefList>
+<RefItem labelName="HTTP status" label="400">
+<Fragment slot="term">The request is invalid.</Fragment>
+
+Messages are plain sentences about a field ("Commit sha isn't in the right format", "Branch must be 255 characters or fewer"), or one of: `Invalid build name "<name>": use letters, digits, ".", "_" or "-" (max 64)`, `Invalid commit SHA "<sha>"`, `ancestorShas must be at most 2000 commit SHAs`, `parallel.total must be between 1 and 1000`, `Invalid screenshot name "<name>"`, `Duplicate screenshot name "<name>"`, `The archive contains no files`, `A <kind> needs <entry page> at its top level` (for example `A Storybook needs index.html at its top level`), or a message about an unsafe site archive. Fix the request.
+</RefItem>
+<RefItem labelName="HTTP status" label="401">
+<Fragment slot="term">`A valid project token is required (Authorization: Bearer circi_…)`.</Fragment>
+
+Send the project's CI token.
+</RefItem>
+<RefItem labelName="HTTP status" label="403">
+<Fragment slot="term">`Static site hosting is off for this project: turn it on in the project settings`.</Fragment>
+
+Turn **Host static sites** on.
+</RefItem>
+<RefItem labelName="HTTP status" label="404">
+<Fragment slot="term">`Build not found`; `This file wasn't requested by any build (POST /v1/builds first)`; `Static site hosting isn't set up on this server`.</Fragment>
+
+The build isn't in this project; create the build first; set `STATIC_SITES_HOST`.
+</RefItem>
+<RefItem labelName="HTTP status" label="409">
+<Fragment slot="term">`N file(s) weren't uploaded or failed verification` with `missing`; `Build #N is already <status>; it can't take more screenshots`; `Another shard of this build already uploaded a screenshot with one of these names`.</Fragment>
+
+Send the missing files and finalize again; upload a new build; use unique names across shards.
+</RefItem>
+<RefItem labelName="HTTP status" label="413">
+<Fragment slot="term">`Files are limited to 26214400 bytes`, or a hosted site over a limit (see [Limits](/reference/limits/)), or a JSON body over 16 MB.</Fragment>
+
+Shrink the file, or split the build.
+</RefItem>
+<RefItem labelName="HTTP status" label="415">
+<Fragment slot="term">`Send the file as image/png or application/octet-stream`; `Send the site as application/gzip (a .tar.gz)`.</Fragment>
+
+Fix the `content-type`.
+</RefItem>
+<RefItem labelName="HTTP status" label="422">
+<Fragment slot="term">`The uploaded bytes hash to <hash>, not <hash>`.</Fragment>
+
+The file changed or was damaged in transit; send it again.
+</RefItem>
+<RefItem labelName="HTTP status" label="500">
+<Fragment slot="term">`Internal server error`.</Fragment>
+
+See the server log.
+</RefItem>
+</RefList>
 
 <Aside type="note">
 A request that fails in the dashboard's own JSON API (`/api`) uses the same `{ "error": "…" }` shape, with `400` for invalid input, `403` for a forbidden action and `404` for something that doesn't exist or that you can't see. Errors from an integration's provider map to `400`, `404`, `409` or `502` when the provider is unreachable.

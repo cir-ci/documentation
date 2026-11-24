@@ -12,7 +12,7 @@ CirCI has no Playwright plugin, and it doesn't need one. Playwright takes the sc
 
 ## Write screenshots to a folder
 
-Playwright's `toHaveScreenshot()` normally compares against reference images committed next to your tests and fails the test on a difference ([when that's enough, and when it isn't](/ci/playwright-tohavescreenshot/)). With CirCI doing the comparing, point it at an output folder and let it overwrite on every run:
+Playwright's `toHaveScreenshot()` normally compares against reference images committed next to your tests and fails the test on a difference ([when that's enough, and when it isn't](/compare/playwright-tohavescreenshot/)). With CirCI doing the comparing, point it at an output folder and let it overwrite on every run:
 
 ```ts title="playwright.config.ts"
 import { defineConfig } from '@playwright/test'
@@ -79,7 +79,7 @@ CirCI marks a pixel as changed when its color moves past a fixed tolerance, and 
 - `mask` for content that changes (dates, avatars, ads): `toHaveScreenshot('home.png', { mask: [page.locator('.timestamp')] })`.
 - Fixed data and a fixed clock in the test, not a live service.
 
-For a part of a page that still moves, draw an [ignore region](/using/baselines-and-ignore-regions/#ignore-regions) in the dashboard, and for a screenshot that flips back and forth see [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+For a part of a page that still moves, draw an [ignore region](/review/baselines-and-ignore-regions/#ignore-regions) in the dashboard, and for a screenshot that flips back and forth see [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/).
 
 ## Other tools
 
@@ -87,7 +87,7 @@ For Storybook stories there's [`@circi/storybook`](/ci/storybook/), and for Cypr
 
 ## Host the Playwright report
 
-The same job can put the HTML report next to the screenshots: `npx @circi/cli site upload ./playwright-report --name playwright`. See [Hosted sites](/using/hosted-sites/).
+The same job can put the HTML report next to the screenshots: `npx @circi/cli site upload ./playwright-report --name playwright`. See [Hosted sites](/dashboard/hosted-sites/).
 
 <Aside type="caution" title="What was tested">
 The Playwright configuration on this page was run with `@playwright/test` 1.65.1 on Chromium, and it wrote the files named above. The upload itself is the ordinary `circi upload` documented in the [CLI reference](/ci/cli/); it wasn't run against a CirCI server in this check.

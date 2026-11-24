@@ -1,8 +1,12 @@
 ---
-// A table of environment variables from src/data/env.ts. Pass `group` (an id) for one group,
-// or nothing for every group with its heading. `marked` badges the Instance settings ones.
+// The environment variables from src/data/env.ts, as a <RefList>: each variable's name on its own line with its
+// default (or "Required") at the end, and its meaning under it. Pass `group` (an id) for one group, or nothing for
+// every group with its heading. `instanceSetting` badges the ones also editable in Instance settings.
 import { envGroups } from '../data/env'
 import type { EnvGroup } from '../data/env'
+import RefList from './RefList.astro'
+import RefItem from './RefItem.astro'
+import { codeHtml } from '../lib/code-words.mjs'
 
 interface Props {
   group?: string
@@ -11,50 +15,34 @@ interface Props {
 const { group, headings = true } = Astro.props
 const groups: EnvGroup[] = group ? envGroups.filter((g) => g.id === group) : envGroups
 
-const code = (text: string) => text.replace(/`([^`]+)`/g, '<code>$1</code>')
+// Backticks become code that wraps like Markdown's (see src/lib/code-words.mjs); the code's text is escaped.
+const code = (text: string) => text.replace(/`([^`]+)`/g, (_, inner: string) => `<code>${codeHtml(inner)}</code>`)
 ---
 
 {
   groups.map((g) => (
-    <section class="env-group">
+    <section>
       {headings && <h2 id={g.id}>{g.title}</h2>}
       {g.intro && <p set:html={code(g.intro)} />}
-      <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Variable</th>
-            <th>Default</th>
-            <th>Meaning</th>
-          </tr>
-        </thead>
-        <tbody>
-          {g.vars.map((v) => (
-            <tr>
-              <td>
-                <code>{v.name}</code>
-                {v.instanceSetting && <span class="env-badge" title="Also editable in Instance settings; when set, this variable wins and locks it">Instance settings</span>}
-              </td>
-              <td>{v.required ? <strong>required</strong> : v.default ? <code>{v.default}</code> : <span class="env-none">none</span>}</td>
-              <td set:html={code(v.description)} />
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      </div>
+      <RefList>
+        {g.vars.map((v) => (
+          <RefItem>
+            <Fragment slot="term">
+              <code set:html={codeHtml(v.name)} />
+              {v.instanceSetting && <span class="env-badge" title="Also editable in Instance settings; when set, this variable wins and locks it">Instance settings</span>}
+            </Fragment>
+            <Fragment slot="meta">
+              {v.required ? <strong class="env-required">Required</strong> : v.default ? <>Default <code set:html={codeHtml(v.default)} /></> : <span class="env-none">No default</span>}
+            </Fragment>
+            <p set:html={code(v.description)} />
+          </RefItem>
+        ))}
+      </RefList>
     </section>
   ))
 }
 
 <style>
-  /* Short values: the Default column stays narrow so the Meaning column gets the room. */
-  table :is(th, td):nth-child(2) {
-    width: 9rem;
-  }
-  table td:nth-child(2) > code {
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
   .env-badge {
     display: inline-block;
     margin-inline-start: 0.5em;
@@ -65,6 +53,9 @@ const code = (text: string) => text.replace(/`([^`]+)`/g, '<code>$1</code>')
     font-size: 0.7rem;
     font-weight: 600;
     white-space: nowrap;
+  }
+  .env-required {
+    color: var(--circi-state-review-text);
   }
   .env-none {
     color: var(--circi-text-tertiary);

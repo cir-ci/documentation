@@ -1,13 +1,15 @@
 ---
 title: Visual regression testing without a SaaS
+sidebar:
+  label: 'Self-hosted or SaaS'
 seoTitle: Self-hosted visual regression testing, no SaaS
 description: "Run visual regression testing on your own servers instead of a hosted service: what you gain, what it costs to run, and what you take on yourself."
 ---
-{/* Source: README.md, apps/server (self-hosting), packages/config/src/schema.ts, and the pages linked below: self-hosting/security (what leaves the instance), self-hosting/requirements, self-hosting/performance, compared-with-chromatic-percy-argos. Nothing on this page was measured beyond what those pages report. */}
+{/* Source: README.md, apps/server (self-hosting), packages/config/src/schema.ts, and the pages linked below: self-hosting/security (what leaves the instance), self-hosting/requirements, self-hosting/performance, compared-with-chromatic-percy-argos. Nothing on this page was measured beyond what those pages report. Hosting prices (list, on November 24, 2026): hetzner.com/cloud (cost-optimized plans), digitalocean.com/pricing/droplets, /managed-databases and /spaces-object-storage, developers.cloudflare.com/r2/pricing, backblaze.com/cloud-storage/pricing, and AWS's public price list for us-east-1 (EC2, EBS, RDS for PostgreSQL, S3 and data transfer, published November 19 to 23, 2026). */}
 
 import { Aside } from '@astrojs/starlight/components'
 
-Most visual regression testing tools are services: your CI uploads screenshots to someone else's servers, and you review them in their dashboard. CirCI is the other kind. It's open source software that you run yourself, and there is no hosted CirCI to sign up for. This page is for deciding whether that trade suits your team. It doesn't rank products: [Compared with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/) lists what each product's own pages say.
+Most visual regression testing tools are services: your CI uploads screenshots to someone else's servers, and you review them in their dashboard. CirCI is the other kind. It's open source software that you run yourself, and there is no hosted CirCI to sign up for. This page is for deciding whether that trade suits your team. It doesn't rank products: [Compared with Chromatic, Percy and Argos](/compare/compared-with-chromatic-percy-argos/) lists what each product's own pages say.
 
 ## What the work is, with or without a service
 
@@ -16,7 +18,7 @@ Whichever tool you use, the loop is the same. Your tests take screenshots, a too
 ## Why teams self-host
 
 - **The screenshots stay with you.** Screenshots can show unreleased designs, customer data in a test fixture or an internal tool. With CirCI, builds, reviews and settings live in your Postgres and every image in your storage, local disk or an S3-compatible bucket you own ([Storage](/self-hosting/storage/)). No screenshot goes to a third party.
-- **No per-screenshot bill.** Hosted services commonly price by the number of screenshots or builds, which is a reason to take fewer of them. CirCI is GPL-3.0-only free software with no plan or meter: you pay for the machine and the storage, and nothing is metered ([Limits](/reference/limits/) lists what is capped per screenshot and per build). Check each vendor's pricing page for theirs; this site doesn't quote prices that change.
+- **No per-screenshot bill.** Hosted services commonly price by the number of screenshots or builds, which is a reason to take fewer of them. CirCI is free software (the server GPL-3.0-only, the CLI and test plugins MIT) with no plan or meter: you pay for the machine and the storage ([Limits](/reference/limits/) lists what is capped per screenshot and per build). [Pricing](/compare/compared-with-chromatic-percy-argos/#pricing) sets the hosted plans beside what CirCI costs to run.
 - **Few outside connections.** CirCI makes outbound requests only to services you configure, such as your storage, your mail server and the git hosts you link, and its code has no analytics, error-reporting client or update check ([What leaves the instance](/self-hosting/security/#what-leaves-the-instance)). With local-disk storage and no integrations, that list is short enough to run on a network with no route to the internet. Running it in a fully air-gapped network hasn't been tried, so check your own setup, for example whether your CI can pull the image and the `circi` CLI from a mirror.
 - **You set the rules around it.** Sign-in through your own identity provider, your own TLS and proxy, retention to match your policy, backups on your schedule ([Authentication](/self-hosting/authentication/), [Retention and garbage collection](/self-hosting/retention-and-gc/)).
 
@@ -27,7 +29,24 @@ CirCI is one Docker image (the server, the dashboard and the background worker),
 - **A small install is one machine.** About 2 vCPUs and 4 GB with a small Postgres serves dozens to a couple of hundred people browsing and a few CI builds per minute. These are estimates from reading the code and one set of load tests, not a promise: measure on your own hardware.
 - **Image processing is the limit, not browsing.** Comparing screenshots is the only CPU-heavy work. In the load tests, on a 12-core Mac, the default native engine finished about 260 builds of 10 screenshots per minute, and the worker's memory peaked near 700 MB. A server with fewer cores gets less ([Performance](/self-hosting/performance/)).
 - **Storage is usually the biggest bill.** Every screenshot, diff and thumbnail is an object, though an unchanged screenshot is stored once. Object storage with free egress and shorter retention keep it down ([Performance](/self-hosting/performance/#cost-levers)).
-- **The browsers are yours, too.** CirCI doesn't take screenshots. Your tests do, in CI minutes you already pay for, using Playwright, Vitest, Cypress, Storybook or anything that writes PNG files ([Upload from CI](/ci/cli/)).
+- **The browsers are yours, too.** CirCI doesn't take screenshots. Your tests do, in your CI minutes, and each browser you test takes its own run, using Playwright, Vitest, Cypress, Storybook or anything that writes PNG files ([Upload from CI](/ci/cli/)).
+
+### What hosting costs
+
+Estimates from list prices on November 24, 2026, before tax, a month. Hetzner prices in euros, the others in US dollars. AWS is on-demand in us-east-1, including a public IPv4 address ($0.005 an hour, $3.65 a month); savings plans or reserved instances cost less.
+
+| Setup | What you pay for | About a month |
+|---|---|---|
+| **One small server** | DigitalOcean Basic Droplet (2 vCPU, 4 GiB, 80 GiB disk, 4,000 GiB transfer), with CirCI, Postgres and the files on it in Docker Compose | $24 |
+| **One small server** | AWS EC2 t4g.medium (2 vCPU, 4 GiB, $24.53) with a 40 GB gp3 disk ($3.20) and a public IPv4 ($3.65), the same way | $31 |
+| **One small server** | Hetzner CX23 (2 vCPU, 4 GB), the same way. Listed from €5.99, but shown as not available to order on November 24, 2026 | €5.99 when available |
+| **Managed database and a bucket** | DigitalOcean Droplet ($24), the smallest Managed PostgreSQL with its smallest storage ($15.15) and Cloudflare R2 for files | $39 and up |
+| **Managed database and a bucket** | AWS EC2 t4g.medium ($24.53) with an 8 GB disk ($0.64) and a public IPv4 ($3.65), RDS for PostgreSQL db.t4g.micro ($11.68) with 20 GB of storage ($2.30), and S3 for files | $43 and up |
+| **More builds and people** | DigitalOcean Droplet with 4 vCPU and 8 GiB ($48), Managed PostgreSQL with 2 GiB ($30.45) and R2 | $79 and up |
+
+- **Files cost little at this size.** Cloudflare R2 has no egress fee, the first 10 GB a month free, then $0.015 a GB-month. Backblaze B2 is $6.95 a TB-month with free egress up to three times what you store. DigitalOcean Spaces is $5 a month for 250 GiB and 1 TiB of transfer. AWS S3 Standard is $0.023 a GB-month, and data out to the internet is $0.09 a GB after the first 100 GB a month.
+- **An estimate of the files themselves.** Storage grows with what changes, so count changed screenshots, not builds. Suppose a screenshot, its diff and its thumbnail come to about 300 KB, and 5% of 150 screenshots change in each of 200 builds a month. That's 1,500 changed screenshots, about 450 MB a month, so under 1 GB with 30 days of history, and about three times that in three browsers: inside R2's free tier. These sizes are assumptions; [`circi admin storage usage`](/reference/admin-cli/) reports what yours take.
+- **Not in the table:** backups and snapshots, which most providers charge extra for ([Backups](/self-hosting/backups/)), a domain name, and the time someone spends running it. TLS is free with the Caddy setup in the repository ([TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/)).
 
 ## What you give up
 
@@ -45,4 +64,4 @@ Try it where it costs nothing: [run it locally](/getting-started/run-it-locally/
 
 Pick a hosted service when nobody on the team wants to run another server, when you need the same page rendered in several real browsers without building that yourself, or when a vendor's support contract matters more to you than where the images live. Pick CirCI when the data has to stay on your side, when per-screenshot pricing shapes what you test, or when you already run your CI and your Postgres and one more container is cheap.
 
-Moving from a hosted service? See the [Percy](/introduction/percy-alternative/) and [Chromatic](/introduction/chromatic-alternative/) guides. To go on: [Run it locally](/getting-started/run-it-locally/), [Self-host it](/self-hosting/requirements/), or [set up CI for GitHub Actions](/ci/github-actions/) or [another CI](/ci/ci-examples/).
+Moving from a hosted service? See the [Percy](/compare/percy-alternative/) and [Chromatic](/compare/chromatic-alternative/) guides. To go on: [Run it locally](/getting-started/run-it-locally/), [Self-host it](/self-hosting/requirements/), or [set up CI for GitHub Actions](/ci/github-actions/) or [another CI](/ci/ci-examples/).

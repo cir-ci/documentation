@@ -1,34 +1,36 @@
 ---
 title: Self-hosted Chromatic alternative
+sidebar:
+  label: 'Chromatic alternative'
 seoTitle: Self-hosted, open source Chromatic alternative
 description: "Run Storybook visual testing without Chromatic: how CirCI differs, when each one fits, and a step-by-step guide to moving your CI from Chromatic to CirCI."
 ---
-{/* Sources for CirCI: packages/storybook (README, src/main.ts), packages/cypress, packages/vitest, packages/cli in cir-ci/repo, and the ci/storybook, ci/cypress, ci/vitest, ci/playwright, ci/github-actions and using/hosted-sites pages of this site. Sources for Chromatic: the public pages listed at the end, read on November 23, 2026. */}
+{/* Sources for CirCI: packages/storybook (README, src/main.ts), packages/cypress, packages/vitest, packages/cli in cir-ci/repo, and the ci/storybook, ci/cypress, ci/vitest, ci/playwright, ci/github-actions and dashboard/hosted-sites pages of this site. Sources for Chromatic: the public pages listed at the end, read on November 23, 2026.; prices and billing rules read on November 24, 2026. */}
 
 import { Aside, Steps } from '@astrojs/starlight/components'
 
 Chromatic and CirCI both compare screenshots of your UI with approved baselines and ask your team to review what changed before it merges. The difference is where the work happens. Chromatic is a hosted service: it builds and renders your stories and tests in its own cloud browsers. CirCI is open source software you run yourself: your CI takes the screenshots and uploads them to your CirCI server, which compares them and hosts the review.
 
-This page covers Chromatic only. For Percy and Argos as well, see [Compared with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/). Facts about Chromatic come from its own public pages, read on **November 23, 2026**; it can change after that. Prices and plan limits are left out because they change: check Chromatic's pricing page.
+This page covers Chromatic only. For Percy and Argos as well, see [Compared with Chromatic, Percy and Argos](/compare/compared-with-chromatic-percy-argos/). Facts about Chromatic come from its own public pages, read on **November 23, 2026**; it can change after that. Its prices were read on **November 24, 2026**; [Pricing](/compare/compared-with-chromatic-percy-argos/#pricing) compares them with what CirCI costs to host.
 
 ## At a glance
 
 | | CirCI | Chromatic |
 |---|---|---|
 | **Where it runs** | Your servers: one Docker image, Postgres and file storage ([Requirements](/self-hosting/requirements/)) | Chromatic's hosted service |
-| **License** | GPL-3.0-only | Not stated on the pages read |
+| **License** | GPL-3.0-only for the server; MIT for the CLI and test plugins | Not stated on the pages read |
 | **Who renders the screenshots** | Your CI, with your browsers. CirCI compares and reviews PNG files | Chromatic's cloud browsers. For Storybook it builds and publishes your Storybook; for Vitest, Playwright and Cypress it uploads an archive of the page (DOM, styles and assets) and renders it in the cloud |
 | **Storybook** | [`@circi/storybook`](/ci/storybook/) screenshots every story with Playwright in your CI job | Stories become tests automatically |
 | **Other test tools** | [Vitest plugin](/ci/vitest/), [Cypress plugin](/ci/cypress/), and any tool that writes PNG files, such as [Playwright](/ci/playwright/) | Vitest, Playwright and Cypress integrations, which capture an archive of the UI (DOM, styles and assets) and render it in Chromatic's cloud browsers |
 | **Testing only what changed** | No equivalent. Every screenshot is taken each run; split a slow run into [shards](/ci/github-actions/#4-shard-a-slow-suite) | TurboSnap: snapshots only the stories that depend on files changed since the baseline (off by default) |
 | **Baselines** | The nearest earlier approved build of the same project and build name, found from the pull request's merge base ([How a build flows](/introduction/how-a-build-flows/#which-baseline)) | Tracked independently for each branch ([Branches and baselines](https://www.chromatic.com/docs/branching-and-baselines/)) |
-| **Review** | Approve or reject per screenshot or per build, comments on regions, review requests by rule, and a check on the pull request ([Reviewing a build](/using/reviewing-a-build/)) | Approve or reject changes in UI Tests; UI Review, a separate workflow, has reviewers approve a changeset |
+| **Review** | Approve or reject per screenshot or per build, comments on regions, review requests by rule, and a check on the pull request ([Reviewing a build](/review/reviewing-a-build/)) | Approve or reject changes in UI Tests; UI Review, a separate workflow, has reviewers approve a changeset |
 | **Where the images live** | Your Postgres and your own storage: local disk or an S3-compatible bucket ([Storage](/self-hosting/storage/)) | Chromatic's service |
 
 ## When CirCI fits
 
 - **Screenshots must stay on your network.** Nothing about a build leaves your servers ([Security](/self-hosting/security/)).
-- **You want free software with no per-snapshot bill.** CirCI is GPL-3.0-only, with nothing to buy to use all of it.
+- **You want free software with no per-snapshot bill.** The server is GPL-3.0-only and the CLI and plugins are MIT, with nothing to buy to use all of it. Chromatic's Starter plan is $179 a month for 35,000 snapshots, and each browser and mode counts as its own snapshot; CirCI costs the server it runs on, about $24 to $80 a month ([Pricing](/compare/compared-with-chromatic-percy-argos/#pricing), prices from November 24, 2026).
 - **You already take screenshots in tests.** CirCI takes any PNG files, so Playwright, Vitest, Cypress or your own script can feed it without a vendor SDK.
 - **You use GitLab or Bitbucket as well as GitHub.** CirCI reports to all three ([Integrations](/integrations/overview/)).
 
@@ -66,7 +68,7 @@ There's no import from Chromatic and no compatible API: Chromatic's CLI, action 
 
 6. **Turn on the pull request check.** Link the project to its repository, and require the `CirCI / <build name>` check in your branch rules instead of Chromatic's ([GitHub](/integrations/github/), [GitLab](/integrations/gitlab/), [Bitbucket](/integrations/bitbucket/)).
 
-7. **Host the built Storybook, if you published it with Chromatic.** `npx circi-storybook upload --site` also uploads the built Storybook as a [hosted site](/using/hosted-sites/), behind sign-in, with an address per commit and per branch. Your instance needs a sites domain for this ([Site domains](/self-hosting/site-domains/)).
+7. **Host the built Storybook, if you published it with Chromatic.** `npx circi-storybook upload --site` also uploads the built Storybook as a [hosted site](/dashboard/hosted-sites/), behind sign-in, with an address per commit and per branch. Your instance needs a sites domain for this ([Site domains](/self-hosting/site-domains/)).
 
 </Steps>
 
@@ -109,6 +111,7 @@ Expect the first CirCI screenshots to differ from Chromatic's even where nothing
 - [TurboSnap setup](https://www.chromatic.com/docs/turbosnap/setup/) and [Configuration reference](https://www.chromatic.com/docs/configure/): TurboSnap and `onlyChanged`.
 - [Automate Chromatic with GitHub Actions](https://www.chromatic.com/docs/github-actions/) and [CLI](https://www.chromatic.com/docs/cli/): `chromaui/action` and `CHROMATIC_PROJECT_TOKEN`.
 - [Review](https://www.chromatic.com/docs/review/): UI Review.
+- [Pricing](https://www.chromatic.com/pricing) and [Billing](https://www.chromatic.com/docs/billing/): plans, and how billed snapshots are counted (read on November 24, 2026).
 
 <Aside type="note" title="Spot a mistake?">
 If a statement about Chromatic is wrong or out of date, [open a documentation issue](https://github.com/cir-ci/documentation/issues) with a link to Chromatic's page and it will be corrected.

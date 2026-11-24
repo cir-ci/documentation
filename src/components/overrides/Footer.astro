@@ -1,26 +1,45 @@
 ---
-// Pagination (Starlight's), then a quiet footer with the places people look things up.
+// Pagination (Starlight's), then one quiet line: the project's own places (what changed, what's next, how to help,
+// the code, a problem with CirCI or with these docs) on the left, and who made CirCI on the right. On a narrow
+// screen the credit wraps below, still at the right.
 import Default from '@astrojs/starlight/components/Footer.astro'
 ---
 
 <Default {...Astro.props}><slot /></Default>
 
-<nav class="more" aria-label="Look things up">
-  <a href="/reference/glossary/">Glossary</a>
-  <a href="/reference/environment-variables/">Environment variables</a>
-  <a href="/reference/http-api/">HTTP API</a>
-  <a href="/ci/cli/">CLI reference</a>
-</nav>
+<div class="site-footer">
+  <nav aria-label="About the project">
+    <a href="/changelog/">Changelog</a>
+    <a href="/roadmap/">Roadmap</a>
+    <a href="/contributing/how-to-contribute/">Contribute</a>
+    <a href="https://github.com/cir-ci/repo" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <a href="https://github.com/cir-ci/repo/issues/new/choose" target="_blank" rel="noopener noreferrer">Issues</a>
+    <a href="https://github.com/cir-ci/documentation/issues/new/choose" target="_blank" rel="noopener noreferrer">Docs issues</a>
+  </nav>
+  <p class="credit">made with &lt;3 by <a href="https://hilma.tech" target="_blank" rel="noopener noreferrer">hilma</a></p>
+</div>
 
 <style>
-  .more {
+  .site-footer {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem 1.25rem;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1.25rem;
     margin-block-start: 1.5rem;
     padding-block-start: 1rem;
     border-block-start: 1px solid var(--circi-line-subtle);
     font-size: var(--sl-text-sm);
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+  }
+  .credit {
+    margin: 0 0 0 auto;
+    white-space: nowrap;
+    color: var(--circi-text-tertiary);
   }
   a {
     color: var(--circi-text-secondary);
@@ -29,5 +48,9 @@ import Default from '@astrojs/starlight/components/Footer.astro'
   a:hover {
     color: var(--circi-text-primary);
     text-decoration: underline;
+  }
+  .credit a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 </style>

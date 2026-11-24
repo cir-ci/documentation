@@ -1,5 +1,7 @@
 ---
 title: CI API reference
+sidebar:
+  label: 'CI API'
 seoTitle: CirCI CI API reference (/v1)
 description: Every endpoint under /v1 with its fields, status codes and retry rules, plus the health and proxy endpoints.
 ---
@@ -11,7 +13,7 @@ The [HTTP API overview](/reference/http-api/) says what each group of paths is f
 
 ## Conventions
 
-**Authentication.** Every `/v1` call carries the project's CI token as `Authorization: Bearer circi_…`. A token belongs to one project and can only act on it. A missing, malformed or revoked token answers `401` with `www-authenticate: Bearer` and no handler runs. Tokens have no request rate limit. Rotating the token is described in [Project settings](/using/project-settings/#ci-token).
+**Authentication.** Every `/v1` call carries the project's CI token as `Authorization: Bearer circi_…`. A token belongs to one project and can only act on it. A missing, malformed or revoked token answers `401` with `www-authenticate: Bearer` and no handler runs. Tokens have no request rate limit. Rotating the token is described in [Project settings](/settings/project-settings/#ci-token).
 
 **Bodies.** Requests and replies are JSON (`content-type: application/json`), except file and site uploads. The JSON endpoints that list screenshots take bodies up to 16 MB.
 
@@ -140,7 +142,7 @@ A `404` means no such build in the project.
 
 ## `POST /v1/sites` and `GET /v1/sites/served`
 
-`POST /v1/sites` uploads a built static site as a `.tar.gz` body (`content-type: application/gzip`). The CLI's `circi site upload` packs the folder and calls it; see [Hosted sites](/using/hosted-sites/) for what the sites are. The query:
+`POST /v1/sites` uploads a built static site as a `.tar.gz` body (`content-type: application/gzip`). The CLI's `circi site upload` packs the folder and calls it; see [Hosted sites](/dashboard/hosted-sites/) for what the sites are. The query:
 
 | Parameter | Meaning |
 |---|---|

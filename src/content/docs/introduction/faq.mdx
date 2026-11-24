@@ -29,7 +29,7 @@ Make one [project](/getting-started/create-a-project/) per thing you test. Each 
 
 ### Can I switch from Argos?
 
-Yes, by changing how screenshots get uploaded: CirCI doesn't accept uploads from the Argos SDKs. Write your tests' screenshots to a folder and upload it with `circi upload`: see [Playwright](/ci/playwright/), [Cypress](/ci/cypress/) and [The CLI](/ci/cli/). Old builds aren't imported, so the first approved build on your default branch becomes the baseline. See also [how CirCI compares with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/).
+Yes, by changing how screenshots get uploaded: CirCI doesn't accept uploads from the Argos SDKs. Write your tests' screenshots to a folder and upload it with `circi upload`: see [Playwright](/ci/playwright/), [Cypress](/ci/cypress/) and [The CLI](/ci/cli/). Old builds aren't imported, so the first approved build on your default branch becomes the baseline. See also [how CirCI compares with Chromatic, Percy and Argos](/compare/compared-with-chromatic-percy-argos/).
 
 ## Baselines and reviews
 
@@ -39,11 +39,11 @@ A project's first build has nothing to compare with, so all its screenshots are 
 
 ### How does CirCI choose the baseline?
 
-For a pull request it walks the history from the merge base with the base branch. For a default-branch build it walks from the commit before. If the history isn't available it falls back to the newest eligible build on the default branch, and the build page says which source it used. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
+For a pull request it walks the history from the merge base with the base branch. For a default-branch build it walks from the commit before. If the history isn't available it falls back to the newest eligible build on the default branch, and the build page says which source it used. See [Baselines and ignore regions](/review/baselines-and-ignore-regions/).
 
 ### Who can approve changes?
 
-Any workspace member who can see the project. Changing settings, rules, tokens and integrations needs an owner or an admin. See [Members and roles](/using/members-and-roles/).
+Any workspace member who can see the project. Changing settings, rules, tokens and integrations needs an owner or an admin. See [Members and roles](/settings/members-and-roles/).
 
 ### Will an unreviewed change block my merge?
 
@@ -51,11 +51,11 @@ It can. By default, unreviewed changes keep the check red. With a linked reposit
 
 ### Can I take back an approval?
 
-Yes. Decisions act at once and the toast has **Undo**. See [Reviewing a build](/using/reviewing-a-build/).
+Yes. Decisions act at once and the toast has **Undo**. See [Reviewing a build](/review/reviewing-a-build/).
 
 ### A screenshot changes on every run. What can I do?
 
-A screenshot is called flaky when its image keeps returning to one it already had in the last 10 default-branch commits (3 flip-flops by default), or when two builds of the same commit produced different images. Flaky screenshots go to a triage queue instead of blocking review. You can also draw an [ignore region](/using/baselines-and-ignore-regions/#ignore-regions) over the part that moves, or raise the project's diff threshold ([How screenshots are compared](/introduction/how-screenshots-are-compared/)). See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+A screenshot is called flaky when its image keeps returning to one it already had in the last 10 default-branch commits (3 flip-flops by default), or when two builds of the same commit produced different images. Flaky screenshots go to a triage queue instead of blocking review. You can also draw an [ignore region](/review/baselines-and-ignore-regions/#ignore-regions) over the part that moves, or raise the project's diff threshold ([How screenshots are compared](/introduction/how-screenshots-are-compared/)). See [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/).
 
 ### Can I get notified in Slack, or file an issue from a build?
 
@@ -73,7 +73,11 @@ One container image and Postgres, plus storage. A small VM is enough to start. S
 
 ### How much does it cost to run?
 
-Mostly storage and its egress, then CPU for comparing images. Storage grows with changed screenshots rather than with builds, because files are stored once by their hash. Shorter retention and cheaper object storage are the biggest levers. See [Performance](/self-hosting/performance/) and [Retention and garbage collection](/self-hosting/retention-and-gc/).
+Mostly storage and its egress, then CPU for comparing images. Storage grows with changed screenshots rather than with builds, because files are stored once by their hash. Shorter retention and cheaper object storage are the biggest levers. A small install is about $24 to $80 a month at list prices ([What hosting costs](/compare/visual-regression-testing-without-saas/#what-hosting-costs)). See [Performance](/self-hosting/performance/) and [Retention and garbage collection](/self-hosting/retention-and-gc/).
+
+### What license is CirCI under?
+
+Two licenses, by what you install where. The server (the Docker image, its dashboard and worker) is GPL-3.0-only. Running it for your own team creates no obligations; the GPL's terms apply only if you give a modified copy to others. The packages that go into your own projects, `@circi/cli`, `@circi/vitest`, `@circi/cypress` and `@circi/storybook`, are MIT, so they can sit in any project's dependencies. Your tests talk to the server over HTTP, so nothing of yours is combined with GPL code. This is a summary, not legal advice.
 
 ### How long are builds kept?
 
@@ -97,7 +101,7 @@ Run `circi admin doctor`, then read [Troubleshooting](/self-hosting/troubleshoot
 
 ### Can I use it on my phone?
 
-The dashboard has a phone layout and can be installed as an app. See [Mobile and the installed app](/using/mobile-and-installed-app/).
+The dashboard has a phone layout and can be installed as an app. See [Mobile and the installed app](/dashboard/mobile-and-installed-app/).
 
 ### What's coming next, and can I help?
 
