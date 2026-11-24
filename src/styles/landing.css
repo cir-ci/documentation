@@ -1,9 +1,13 @@
 /*
- * The landing page (content/docs/index.mdx, template: splash). Wide column, no sidebar; every
- * color is a token. Section pages never use these classes.
+ * The landing page (content/docs/index.mdx, template: splash). No sidebar: its content spans the whole frame the
+ * section pages use (sidebar, panel and table of contents; docs.css), from the logo's left edge to the theme
+ * control's right edge, so the header and the page line up as on every other page. Every color is a token.
+ * Section pages never use these classes.
  */
-:root:not([data-has-sidebar]) {
-  --sl-content-width: 74rem;
+@media (min-width: 50rem) {
+  :root:not([data-has-sidebar]) {
+    --sl-content-width: calc(var(--circi-frame-width) - 2 * var(--sl-nav-pad-x));
+  }
 }
 /* Starlight spaces siblings in prose; the landing page spaces its own sections. */
 .landing * {
@@ -25,29 +29,6 @@
 :root:not([data-has-sidebar]) .main-pane {
   background-size: 100% 560px, auto;
   min-height: 100vh;
-}
-/* Below 50rem the header has no menu on a splash page: the sections and the theme sit in the page. */
-.l-mobile-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-}
-.l-mobile-nav a {
-  display: inline-flex;
-  align-items: center;
-  height: 1.75rem;
-  padding-inline: 0.75rem;
-  border: 1px solid var(--circi-line-strong);
-  border-radius: 999px;
-  color: var(--circi-text-secondary);
-  font-size: var(--sl-text-sm);
-  text-decoration: none;
-}
-@media (min-width: 50rem) {
-  .l-mobile-nav {
-    display: none;
-  }
 }
 .l-closing {
   display: grid;

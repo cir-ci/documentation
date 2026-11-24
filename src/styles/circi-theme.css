@@ -168,10 +168,22 @@
   --sl-color-purple-high: var(--circi-state-approved-text);
 
   --sl-nav-height: 3.25rem;
-  --sl-sidebar-width: 17rem;
-  --sl-content-width: 46rem;
+  /* The layout, centered as one frame (docs.css): the sidebar, the panel holding the 48rem text column (with 3rem
+     each side, --circi-panel-width) and the table of contents. The sidebar is 18rem, 20rem from 90rem (1440px). The
+     table of contents (a column from 80rem) takes what the viewport has left after the sidebar and the panel,
+     between 17rem and 22rem. On a screen wider than the frame, the rest is an equal margin on both sides. */
+  --sl-sidebar-width: 18rem;
+  --circi-text-width: 48rem;
+  --sl-content-width: var(--circi-text-width);
+  --circi-panel-width: calc(var(--circi-text-width) + 6rem);
+  --circi-toc-width: clamp(17rem, 100vw - var(--sl-sidebar-width) - var(--circi-panel-width), 22rem);
   --sl-text-body: 0.9375rem;
   --sl-line-height: 1.65;
+}
+@media (min-width: 90rem) {
+  :root {
+    --sl-sidebar-width: 20rem;
+  }
 }
 
 :root[data-theme='light'] {

@@ -1,5 +1,7 @@
 ---
 title: Project settings
+sidebar:
+  label: 'Project'
 seoTitle: CirCI project settings
 description: Every project setting, what it changes, who can change it, and which ones save on their own.
 ---
@@ -15,7 +17,7 @@ A project's settings decide how its builds are compared, what holds back a merge
 
 - The project page's **Settings** button, and the **Project settings** item when you right-click a project in the sidebar. Both are shown only to owners and admins.
 - <Kbd keys="Mod+K" />, then type the page's name (for example "Webhooks"). Inside settings the menu offers that area's pages and the way back, and nothing of the app.
-- **Settings** in the workspace menu, then **Projects**, then the project. See [Workspace settings](/using/workspace-settings/).
+- **Settings** in the workspace menu, then **Projects**, then the project. See [Workspace settings](/settings/workspace-settings/).
 
 The hub lists the project's pages in three groups, each with a one-line summary such as "2 webhooks" or "3 rules". Inside a page, the sidebar lists the same pages under the project's name (General, Members, CI token and the rest), next to the account, instance and workspace entries. The sidebar's **Back to …** at the top, named for the page of the app you came from, is the only way out of settings. The section of the page you're on is listed first and open, and the other sections (Account, Workspace, Projects, and Instance for instance admins) are folded until you open them. On a phone the sections open from a sheet, and the header's close button is the way out:
 
@@ -27,7 +29,7 @@ The hub lists the project's pages in three groups, each with a one-line summary 
 
 ## Who can do what
 
-Owners and admins of the workspace change a project's settings. A project member who isn't an owner or admin sees only **Members** and **Ignore regions**, read-only, and is sent back to the hub from the other pages. Someone who can't see the project at all gets "not found". See [Members and roles](/using/members-and-roles/).
+Owners and admins of the workspace change a project's settings. A project member who isn't an owner or admin sees only **Members** and **Ignore regions**, read-only, and is sent back to the hub from the other pages. Someone who can't see the project at all gets "not found". See [Members and roles](/settings/members-and-roles/).
 
 ## Creating a project
 
@@ -37,7 +39,7 @@ Owners and admins create projects from the **Projects** page with **New project*
 
 The page is split into sections. What only changes how the project looks saves by itself, and every section that changes how builds are judged or linked has its own **Save changes** and **Discard**:
 
-<ScreenFrame name="use-project-settings" alt="The General page of project settings for Web app. The Details section has the icon and color tile, Display name, URL slug and Default branch fields. Below it are Repository with no repository linked, and Comparison with a diff threshold of 0.5 percent and keep builds for 365 days." caption="General: the display name saves by itself, each section below has its own Save changes." />
+<ScreenFrame name="use-project-settings" alt="The General page of project settings for Web app. Identity has the icon and color tile and the Display name field; Details has the URL slug and Default branch fields. Below them are Repository with no repository linked, and Comparison with a diff threshold of 0.5 percent and keep builds for 365 days." caption="General: the display name saves by itself, each section below has its own Save changes." />
 
 At the top, with no Save button:
 
@@ -68,12 +70,12 @@ See [How screenshots are compared](/introduction/how-screenshots-are-compared/) 
 What the check on a pull request says while changes wait for review. It only blocks merging if the repository marks the check as required.
 
 - **Unreviewed changes block merging**: the check stays pending until someone approves. Off: it passes with a "changes to review" summary.
-- **Flaky-only changes block merging**: when the only changes are to flaky screenshots. Choose Inherit from workspace, On or Off. See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+- **Flaky-only changes block merging**: when the only changes are to flaky screenshots. Choose Inherit from workspace, On or Off. See [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/).
 - **Approve default-branch builds automatically**: builds on the default branch become the new baseline without review. Needs an approved baseline, so a project's first build is always reviewed.
 
 ### Hosted sites
 
-**Host static sites** is shown only when the instance has a sites domain. With it on and a linked GitHub repository, **Upload sites from GitHub Actions** (off by default) publishes the artifact of each successful workflow run; its **Artifact name** (default `circi-site`) and optional **Site name** are saved with the rest of the section, and the latest run's outcome shows under them. See [Hosted sites](/using/hosted-sites/) and [Sites from GitHub Actions](/integrations/github/#sites-from-github-actions).
+**Host static sites** is shown only when the instance has a sites domain. With it on and a linked GitHub repository, **Upload sites from GitHub Actions** (off by default) publishes the artifact of each successful workflow run; its **Artifact name** (default `circi-site`) and optional **Site name** are saved with the rest of the section, and the latest run's outcome shows under them. See [Hosted sites](/dashboard/hosted-sites/) and [Sites from GitHub Actions](/integrations/github/#sites-from-github-actions).
 
 ### Danger zone
 
@@ -89,11 +91,11 @@ The page shows the token as a hint (never the full secret), when it was created 
 
 ## Reviews and triage
 
-The **Reviews** group's page: review rules, the review target, automation, the triage rotation, the flaky threshold and the snooze default. Rules apply as soon as you confirm them; the rest saves with **Save changes**. See [Review requests and rules](/using/review-requests-and-rules/) and [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+The **Reviews** group's page: review rules, the review target, automation, the triage rotation, the flaky threshold and the snooze default. Rules apply as soon as you confirm them; the rest saves with **Save changes**. See [Review requests and rules](/review/review-requests-and-rules/) and [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/).
 
 ## Ignore regions
 
-A list of the screenshots that have ignore regions, each opening its baseline inside settings. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
+A list of the screenshots that have ignore regions, each opening its baseline inside settings. See [Baselines and ignore regions](/review/baselines-and-ignore-regions/).
 
 ## Webhooks
 
@@ -103,7 +105,7 @@ Each webhook offers **Send test**, **Regenerate secret** (the old secret stops s
 
 ## Sites
 
-Each hosted site's branch addresses, uploads and custom domain, in the same page the sidebar's **Sites** opens. See [Hosted sites](/using/hosted-sites/).
+Each hosted site's branch addresses, uploads and custom domain, in the same page the sidebar's **Sites** opens. See [Hosted sites](/dashboard/hosted-sites/).
 
 <Aside type="tip">
 Channels, issue trackers and Figma are set per project in the workspace's integrations, not here. See [Integrations](/integrations/overview/).

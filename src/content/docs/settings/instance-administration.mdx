@@ -9,7 +9,7 @@ import { Aside } from '@astrojs/starlight/components'
 import ScreenFrame from '../../../components/ScreenFrame.astro'
 import InstanceSettingNote from '../../../components/InstanceSettingNote.astro'
 
-An **instance** is one CirCI installation. **Instance admins** run it: they manage every account and workspace, the server's settings and its health. This is separate from the workspace roles in [Members and roles](/using/members-and-roles/): an instance admin isn't automatically a member of any workspace, and sees a workspace's projects only if they belong to it.
+An **instance** is one CirCI installation. **Instance admins** run it: they manage every account and workspace, the server's settings and its health. This is separate from the workspace roles in [Members and roles](/settings/members-and-roles/): an instance admin isn't automatically a member of any workspace, and sees a workspace's projects only if they belong to it.
 
 ## Where to open it
 
@@ -39,11 +39,11 @@ The same actions exist in `circi admin user` on the server. See [Admin CLI](/ref
 
 ## Workspaces
 
-Every workspace with its size, each opening its settings hub. **New workspace** asks for a **Name** and the **Owner's email**, which must already have an account; the owner invites the rest. Deleted workspaces are in a group of their own with the days left. When a workspace's owner deletes it, it's gone for everyone at once and deleted for good after 30 days. Until then an instance admin can **Restore** it or **Delete permanently** from its hub. See [Workspace settings](/using/workspace-settings/).
+Every workspace with its size, each opening its settings hub. **New workspace** asks for a **Name** and the **Owner's email**, which must already have an account; the owner invites the rest. Deleted workspaces are in a group of their own with the days left. When a workspace's owner deletes it, it's gone for everyone at once and deleted for good after 30 days. Until then an instance admin can **Restore** it or **Delete permanently** from its hub. See [Workspace settings](/settings/workspace-settings/).
 
 ## Instance settings
 
-<ScreenFrame name="host-instance-settings" alt="The top of Instance settings: the dashboard address with its variable, the three sign-in methods checked, an empty list of single sign-on providers and the workspace creation checkbox." caption="The top of Instance settings in a development instance. Edits wait for Save changes at the bottom of each section." width={760} />
+<ScreenFrame name="host-instance-settings" alt="The top of Instance settings: the dashboard address with its variable, the three sign-in methods checked, an empty list of single sign-on providers and the workspace creation checkbox." caption="The top of Instance settings in a development instance. Edits wait for Save changes at the bottom of each section." />
 
 <InstanceSettingNote title="An environment variable wins">
 A setting fixed by an environment variable shows **Set by VARIABLE** and can't be edited here: a save is refused, so change the variable and restart. Otherwise what you save applies within about 30 seconds on every server process, with no restart, and a saved secret is never shown again and is stored encrypted. See [Instance settings](/self-hosting/instance-settings/) for every setting, its variable and its default.

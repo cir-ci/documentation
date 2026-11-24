@@ -1,5 +1,7 @@
 ---
 title: How screenshots are compared
+sidebar:
+  label: 'How comparison works'
 seoTitle: "Visual diff: how CirCI compares screenshots"
 description: Pairing by name, the pixel comparison and its tolerances, ignore regions, size changes, the diff image, and the settings that change the result.
 ---
@@ -32,7 +34,7 @@ Which build is the baseline is explained in [Which baseline?](/introduction/how-
 For each pair that is compared:
 
 1. **Both images go on one canvas.** The canvas is as wide as the wider image and as tall as the taller one. The smaller image is placed at the top left and the rest is transparent.
-2. **Ignore regions are blanked.** Every [ignore region](/using/baselines-and-ignore-regions/#ignore-regions) of that screenshot name is made transparent on both images, clipped to the canvas (whole pixels). Pixels in those rectangles can't differ.
+2. **Ignore regions are blanked.** Every [ignore region](/review/baselines-and-ignore-regions/#ignore-regions) of that screenshot name is made transparent on both images, clipped to the canvas (whole pixels). Pixels in those rectangles can't differ.
 3. **Pixels are compared one by one** with a perceptual color distance, not by comparing raw values. A pixel counts as changed when its distance goes past a tolerance of 0.1 (on a scale of 0 to 1), so imperceptible noise doesn't count. The tolerance is fixed: no setting or API field changes it. A semi-transparent pixel is judged as blended over a background.
 4. **Anti-aliasing is left out.** A pixel that differs only because an edge was smoothed differently isn't counted as changed.
 5. **The score is the share of changed pixels:** the number of changed pixels divided by the canvas's width times its height. A 0 means identical, and 0.01 means 1% of the canvas.
@@ -46,11 +48,11 @@ With the default diff threshold of 0%, a single changed pixel makes a screenshot
 
 For each compared screenshot the worker keeps the verdict, the score, the number of changed pixels, whether the size changed, and the diff image. A changed screenshot gets a diff image. An unchanged one has none, even when a few pixels differed within the threshold.
 
-The pixels that ignore regions hid are counted too, with the same tolerance, and per region. That is what **Insights** shows as the effect of ignore regions. See [Insights](/using/insights/).
+The pixels that ignore regions hid are counted too, with the same tolerance, and per region. That is what **Insights** shows as the effect of ignore regions. See [Insights](/dashboard/insights/).
 
 ## The diff image
 
-The diff is a PNG the size of the canvas. It shows a faded copy of the screenshot (15% opacity) with the changed pixels drawn over it in red. The build page shows it in **Diff**, where the **This build** pill sets how much of the build shows under the red. See [Reviewing a build](/using/reviewing-a-build/#look-at-a-change).
+The diff is a PNG the size of the canvas. It shows a faded copy of the screenshot (15% opacity) with the changed pixels drawn over it in red. The build page shows it in **Diff**, where the **This build** pill sets how much of the build shows under the red. See [Reviewing a build](/review/reviewing-a-build/#look-at-a-change).
 
 ## Thumbnails
 
@@ -60,8 +62,8 @@ For lists, the worker makes a WebP thumbnail of each screenshot: the top of the 
 
 | Where | Setting | Effect on the comparison |
 |---|---|---|
-| Project settings › General › Comparison | **Diff threshold** | The share of the canvas that may differ before a screenshot counts as changed. Stored as a share from 0 to 1, shown as a percentage from 0 to 100. Default 0%. See [Project settings](/using/project-settings/) |
-| Baseline page, build page, or `circi admin ignore` | **Ignore regions** | Rectangles left out of the comparison, per screenshot name. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/) |
+| Project settings › General › Comparison | **Diff threshold** | The share of the canvas that may differ before a screenshot counts as changed. Stored as a share from 0 to 1, shown as a percentage from 0 to 100. Default 0%. See [Project settings](/settings/project-settings/) |
+| Baseline page, build page, or `circi admin ignore` | **Ignore regions** | Rectangles left out of the comparison, per screenshot name. See [Baselines and ignore regions](/review/baselines-and-ignore-regions/) |
 | CI | `--name` build name | A baseline is only taken from a build with the same name, so each name has its own baseline history |
 | Server | `CIRCI_DIFF_ENGINE`, `CIRCI_DIFF_THREADS` | Where the pixels are compared, below. Not what counts as different |
 

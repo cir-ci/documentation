@@ -6,6 +6,8 @@ description: The health endpoints, what the logs say, what the Health page and t
 {/* Source: apps/server/src/http/routes/health.ts, apps/server/src/composition (server-options.ts, doctor.ts, runtime.ts, shutdown.ts), apps/server/src/cli/commands/doctor.ts, apps/worker/src (run-job.ts, sweeps.ts, claim-loop.ts, listen.ts), apps/server/src/http/routes/dashboard/instance/health.ts, packages/db/src/queue/jobs.ts, deploy/Dockerfile, packages/config/src/schema.ts */}
 
 import { Aside } from '@astrojs/starlight/components'
+import RefList from '../../../components/RefList.astro'
+import RefItem from '../../../components/RefItem.astro'
 
 CirCI gives you three things to watch: two HTTP probes for the process, structured logs, and the checks behind `circi admin doctor` and **Instance** › **Health**. The background queue has its own numbers on the Health page.
 
@@ -34,20 +36,68 @@ On a stop signal the process logs `shutting down`, closes, and exits `0`. If clo
 
 ### Lines worth knowing
 
-| Level | Message | Means |
-|---|---|---|
-| warn | `No accounts yet. Open <URL> and set up CirCI with the setup code <code>` | A fresh install: finish [sign-in and setup](/getting-started/sign-in-and-set-up/). |
-| warn | `The dashboard address changed from <old> to <new>. Finish the address-change checklist.` | `PUBLIC_URL` moved. The checklist is on **Instance** › **Health**. |
-| warn | `lost a database connection` | The pool reconnects; `/readyz` reports an outage while it lasts. |
-| warn | `readiness check failed` | `/readyz` returned `503`; the line names the check. |
-| warn | `lost the job notification connection; polling until it is back` | The worker is still working, by polling; jobs start a little later. `job notifications are back` follows. |
-| warn | `lost the lease on a running job`, `could not extend a job lease` | A job ran longer than its lease, or the database was unreachable. Its result is dropped if another worker claimed it. |
-| warn | `failed builds that stopped uploading` | Builds whose upload never completed were failed after `UPLOAD_TIMEOUT_MINUTES`. |
-| warn | `failed jobs whose lease expired too many times` | A job kept killing its worker (for example out of memory). |
-| error | `could not claim a job` | The worker can't read the queue; check the database. |
-| error | `retention pass failed`, `review sweep failed`, `could not expire stalled builds`, `could not prune finished jobs` | A periodic sweep failed; the next run tries again. |
-| error | `the give-up of an expired job failed` | A job past its retries couldn't be marked failed. |
-| info | `retention pass finished`, `deleted finished jobs`, `told reviewers about overdue requests` | Routine sweeps. |
+<RefList>
+<RefItem labelName="Level" label="warn">
+<Fragment slot="term">`No accounts yet. Open <URL> and set up CirCI with the setup code <code>`</Fragment>
+
+A fresh install: finish [sign-in and setup](/getting-started/sign-in-and-set-up/).
+</RefItem>
+<RefItem labelName="Level" label="warn">
+<Fragment slot="term">`The dashboard address changed from <old> to <new>. Finish the address-change checklist.`</Fragment>
+
+`PUBLIC_URL` moved. The checklist is on **Instance** › **Health**.
+</RefItem>
+<RefItem labelName="Level" label="warn">
+<Fragment slot="term">`lost a database connection`</Fragment>
+
+The pool reconnects; `/readyz` reports an outage while it lasts.
+</RefItem>
+<RefItem labelName="Level" label="warn">
+<Fragment slot="term">`readiness check failed`</Fragment>
+
+`/readyz` returned `503`; the line names the check.
+</RefItem>
+<RefItem labelName="Level" label="warn">
+<Fragment slot="term">`lost the job notification connection; polling until it is back`</Fragment>
+
+The worker is still working, by polling; jobs start a little later. `job notifications are back` follows.
+</RefItem>
+<RefItem labelName="Level" label="warn">
+<Fragment slot="term">`lost the lease on a running job`, `could not extend a job lease`</Fragment>
+
+A job ran longer than its lease, or the database was unreachable. Its result is dropped if another worker claimed it.
+</RefItem>
+<RefItem labelName="Level" label="warn">
+<Fragment slot="term">`failed builds that stopped uploading`</Fragment>
+
+Builds whose upload never completed were failed after `UPLOAD_TIMEOUT_MINUTES`.
+</RefItem>
+<RefItem labelName="Level" label="warn">
+<Fragment slot="term">`failed jobs whose lease expired too many times`</Fragment>
+
+A job kept killing its worker (for example out of memory).
+</RefItem>
+<RefItem labelName="Level" label="error">
+<Fragment slot="term">`could not claim a job`</Fragment>
+
+The worker can't read the queue; check the database.
+</RefItem>
+<RefItem labelName="Level" label="error">
+<Fragment slot="term">`retention pass failed`, `review sweep failed`, `could not expire stalled builds`, `could not prune finished jobs`</Fragment>
+
+A periodic sweep failed; the next run tries again.
+</RefItem>
+<RefItem labelName="Level" label="error">
+<Fragment slot="term">`the give-up of an expired job failed`</Fragment>
+
+A job past its retries couldn't be marked failed.
+</RefItem>
+<RefItem labelName="Level" label="info">
+<Fragment slot="term">`retention pass finished`, `deleted finished jobs`, `told reviewers about overdue requests`</Fragment>
+
+Routine sweeps.
+</RefItem>
+</RefList>
 
 Each job logs its queue and job ID, so a failing build can be followed from the build ID to its `process-build` job.
 

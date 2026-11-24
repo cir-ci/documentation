@@ -6,109 +6,331 @@ description: From a symptom to its cause and fix, with the messages CirCI prints
 {/* Source: packages/config/src/load.ts, apps/server/src/composition (doctor.ts, startup.ts), apps/server/src/cli/index.ts, apps/server/src/http/routes/v1 (builds.ts, files.ts, schemas.ts, sites.ts), packages/cli/src/errors.ts, packages/core/src/builds/limits.ts, packages/services/src (builds/lifecycle.ts, pipeline/process.ts, uploads/status.ts, jobs), packages/db/src/queue, apps/worker/src, packages/auth/src/hooks/request-guard.ts, apps/server/src/http/routes/dashboard/instance/setup.ts */}
 
 import { Aside } from '@astrojs/starlight/components'
+import RefList from '../../../components/RefList.astro'
+import RefItem from '../../../components/RefItem.astro'
 
 Start with `docker compose exec circi circi admin doctor`: it checks storage, the database and its migrations, mail, disk space, the dashboard address and the cookie scope of the domains, and prints a `fix:` under each warning. **Instance** › **Health** shows the same checks. Then find the symptom below. The server's log (`docker compose logs circi`) has the rest: see [Monitoring](/self-hosting/monitoring/).
 
 ## The server won't start or reports unhealthy
 
-| Symptom | Cause and fix |
-|---|---|
-| `Invalid configuration:` followed by a list, and exit code 1 | An environment variable is missing or malformed. Each line names the variable. Fix it and start again. The common ones are below. |
-| `S3_BUCKET: required when STORAGE_DRIVER=s3` | Set `S3_BUCKET`. With `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`, set both, or neither to use the default AWS credential chain (an IAM role). See [Storage](/self-hosting/storage/). |
-| `AUTH_GITHUB_CLIENT_ID / AUTH_GITHUB_CLIENT_SECRET: set both, or neither` (also GitLab, Google) | A sign-in provider needs its ID and its secret together. |
-| `AUTH_OIDC_ISSUER / AUTH_OIDC_CLIENT_ID / AUTH_OIDC_CLIENT_SECRET: set all three` | The OIDC provider needs all three. The issuer must be an `http(s)://` address. |
-| `PREVIOUS_PUBLIC_URLS: <host> is the current PUBLIC_URL host` | Remove the current host from `PREVIOUS_PUBLIC_URLS`. |
-| `STATIC_SITES_HOST: …` | The sites domain was refused. See [Site domains](/self-hosting/site-domains/). |
-| Log warning `PUBLIC_URL uses plain http on <host>. Logins need https outside local development` | Put a TLS proxy in front and set `PUBLIC_URL` to the https address: [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/). |
-| `/readyz` answers `503` | The `checks` object in the answer shows which of `database` or `storage` is `fail`. The log has `readiness check failed` with the error. The doctor's **Database** or **Storage** line says what to check. |
-| Doctor: `Database: Not reachable: …` | Check `DATABASE_URL` and that Postgres is running. |
-| Doctor: `only N of M migrations are applied` | Run `circi migrate`, or restart: the server migrates on start unless `--no-migrate` is set. See [Upgrades and migrations](/self-hosting/upgrades-and-migrations/). |
-| Doctor: `Migrated by a newer version of CirCI` | Something ran a newer version against this database. Run the same version everywhere, or roll the database back from a backup ([Backups](/self-hosting/backups/)). |
-| Doctor: `Storage: Not usable: …` | S3: check `S3_BUCKET`, `S3_ENDPOINT`, the credentials and that the bucket exists. Local disk: check that `STORAGE_PATH` exists and the server may write to it. |
-| Doctor: `Disk space: The storage disk is running low` | Less than 10% or 2 GB is free. Free space with `circi admin storage gc`, lower the projects' retention, grow the volume or move to S3: [Retention and garbage collection](/self-hosting/retention-and-gc/). |
+<RefList>
+<RefItem>
+<Fragment slot="term">`Invalid configuration:` followed by a list, and exit code 1</Fragment>
+
+An environment variable is missing or malformed. Each line names the variable. Fix it and start again. The common ones are below.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`S3_BUCKET: required when STORAGE_DRIVER=s3`</Fragment>
+
+Set `S3_BUCKET`. With `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`, set both, or neither to use the default AWS credential chain (an IAM role). See [Storage](/self-hosting/storage/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">`AUTH_GITHUB_CLIENT_ID / AUTH_GITHUB_CLIENT_SECRET: set both, or neither` (also GitLab, Google)</Fragment>
+
+A sign-in provider needs its ID and its secret together.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`AUTH_OIDC_ISSUER / AUTH_OIDC_CLIENT_ID / AUTH_OIDC_CLIENT_SECRET: set all three`</Fragment>
+
+The OIDC provider needs all three. The issuer must be an `http(s)://` address.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`PREVIOUS_PUBLIC_URLS: <host> is the current PUBLIC_URL host`</Fragment>
+
+Remove the current host from `PREVIOUS_PUBLIC_URLS`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`STATIC_SITES_HOST: …`</Fragment>
+
+The sites domain was refused. See [Site domains](/self-hosting/site-domains/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">Log warning `PUBLIC_URL uses plain http on <host>. Logins need https outside local development`</Fragment>
+
+Put a TLS proxy in front and set `PUBLIC_URL` to the https address: [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">`/readyz` answers `503`</Fragment>
+
+The `checks` object in the answer shows which of `database` or `storage` is `fail`. The log has `readiness check failed` with the error. The doctor's **Database** or **Storage** line says what to check.
+</RefItem>
+<RefItem>
+<Fragment slot="term">Doctor: `Database: Not reachable: …`</Fragment>
+
+Check `DATABASE_URL` and that Postgres is running.
+</RefItem>
+<RefItem>
+<Fragment slot="term">Doctor: `only N of M migrations are applied`</Fragment>
+
+Run `circi migrate`, or restart: the server migrates on start unless `--no-migrate` is set. See [Upgrades and migrations](/self-hosting/upgrades-and-migrations/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">Doctor: `Migrated by a newer version of CirCI`</Fragment>
+
+Something ran a newer version against this database. Run the same version everywhere, or roll the database back from a backup ([Backups](/self-hosting/backups/)).
+</RefItem>
+<RefItem>
+<Fragment slot="term">Doctor: `Storage: Not usable: …`</Fragment>
+
+S3: check `S3_BUCKET`, `S3_ENDPOINT`, the credentials and that the bucket exists. Local disk: check that `STORAGE_PATH` exists and the server may write to it.
+</RefItem>
+<RefItem>
+<Fragment slot="term">Doctor: `Disk space: The storage disk is running low`</Fragment>
+
+Less than 10% or 2 GB is free. Free space with `circi admin storage gc`, lower the projects' retention, grow the volume or move to S3: [Retention and garbage collection](/self-hosting/retention-and-gc/).
+</RefItem>
+</RefList>
 
 ## Setting up and signing in
 
-| Symptom | Cause and fix |
-|---|---|
-| `That setup code is wrong. Find it in the server log.` | The first account needs the setup code. It's logged at start (`No accounts yet. Open … with the setup code …`), or `circi admin setup-code` prints it. The setup pages answer "Not found" once an account exists. |
-| No email arrives: sign-in codes, invitations, notifications | SMTP isn't set up or doesn't accept the login. The doctor's **Mail** line says which (`SMTP_HOST is not set`, or `Did not accept the connection: …`). `circi admin mail test --to <address>` sends a real test message. With `AUTH_EMAIL_ENABLED=true` and no SMTP, email sign-in stays off. See [Configuration](/self-hosting/configuration/). |
-| `Too many sign-in codes requested for this address. Try again later.` | Code requests are limited per address, whether or not it has an account: 5 per 15 minutes. |
-| Signing in works, then you're signed out, or the cookie is dropped | `PUBLIC_URL` is plain `http` on a real host. Sign-in cookies need https. |
-| Behind a proxy, everyone shares one rate limit | `TRUSTED_PROXIES` isn't set, so every request appears to come from the proxy's address. Set it to the proxy's address or range. See [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/). |
-| A "moving to" banner after changing `PUBLIC_URL` | Expected: the startup log says `The dashboard address changed from … to …`. Finish the checklist on **Instance** › **Health**; a few registrations outside CirCI, such as the GitHub App's webhook, still name the old address. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`That setup code is wrong. Find it in the server log.`</Fragment>
+
+The first account needs the setup code. It's logged at start (`No accounts yet. Open … with the setup code …`), or `circi admin setup-code` prints it. The setup pages answer "Not found" once an account exists.
+</RefItem>
+<RefItem>
+<Fragment slot="term">No email arrives: sign-in codes, invitations, notifications</Fragment>
+
+SMTP isn't set up or doesn't accept the login. The doctor's **Mail** line says which (`SMTP_HOST is not set`, or `Did not accept the connection: …`). `circi admin mail test --to <address>` sends a real test message. With `AUTH_EMAIL_ENABLED=true` and no SMTP, email sign-in stays off. See [Configuration](/self-hosting/configuration/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Too many sign-in codes requested for this address. Try again later.`</Fragment>
+
+Code requests are limited per address, whether or not it has an account: 5 per 15 minutes.
+</RefItem>
+<RefItem>
+<Fragment slot="term">Signing in works, then you're signed out, or the cookie is dropped</Fragment>
+
+`PUBLIC_URL` is plain `http` on a real host. Sign-in cookies need https.
+</RefItem>
+<RefItem>
+<Fragment slot="term">Behind a proxy, everyone shares one rate limit</Fragment>
+
+`TRUSTED_PROXIES` isn't set, so every request appears to come from the proxy's address. Set it to the proxy's address or range. See [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">A "moving to" banner after changing `PUBLIC_URL`</Fragment>
+
+Expected: the startup log says `The dashboard address changed from … to …`. Finish the checklist on **Instance** › **Health**; a few registrations outside CirCI, such as the GitHub App's webhook, still name the old address.
+</RefItem>
+</RefList>
 
 ## Uploads from CI
 
 `circi upload` prints one line, `error: …`, and exits `2`. Run it again with `--debug` (or `DEBUG=1`) for the stack trace. The exit codes are in [The CLI](/ci/cli/), and every error message in [Errors and exit codes](/reference/errors-and-exit-codes/). The size and count limits are in [Limits](/reference/limits/).
 
-| Message | Cause and fix |
-|---|---|
-| `The server refused the token (…). Check that CIRCI_TOKEN is this project's CI token.` | A `401` or `403`: the token is wrong, belongs to another project, or was rotated. Copy the current one from the project's settings. |
-| `… Check CIRCI_API_URL.` | The server couldn't be reached from the CI job: check the address, DNS and the proxy. |
-| `Couldn't run git. Is it installed and on PATH?` | The upload reads git history. Install git in the CI image, or pass the commit and branch explicitly ([CI examples](/ci/ci-examples/)). |
-| `No such directory: ./screenshotz` | The folder doesn't exist. Only `*.png` files are uploaded, and hidden folders and `node_modules` are skipped. |
-| `Too many open files. Raise the limit (ulimit -n) and retry.` | A large upload hit the job's file limit. |
-| `Files are limited to 26214400 bytes` (HTTP 413) | One file is over 25 MiB. |
-| `N file(s) weren't uploaded or failed verification` (HTTP 409) | The server's check of the uploaded files found some missing or corrupt. The CLI sends them again (`N files didn't arrive; sending again`). If it keeps failing, check the storage and any proxy that limits request bodies. |
-| `Invalid build name "…": use letters, digits, ".", "_" or "-" (max 64)` | The `--name` isn't valid. |
-| `Invalid commit SHA "…"` | The commit isn't 7 to 64 hex characters. |
-| `parallel.total must be between 1 and 1000` | A bad `--shard`. |
-| `Build not found` (HTTP 404) | The build ID doesn't belong to this project's token. |
-| The build stays in **Uploading** and then fails: `Timed out waiting for N of M shard(s): shard 3. The CI job(s) that should have uploaded them probably failed or never ran.` | A shard never arrived. After `UPLOAD_TIMEOUT_MINUTES` (default 60) the build fails and names the missing shards. Re-run the failed job. A build whose job stopped early says `The upload never finished: the CI job stopped before sending the screenshot list.` |
+<RefList>
+<RefItem>
+<Fragment slot="term">`The server refused the token (…). Check that CIRCI_TOKEN is this project's CI token.`</Fragment>
+
+A `401` or `403`: the token is wrong, belongs to another project, or was rotated. Copy the current one from the project's settings.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`… Check CIRCI_API_URL.`</Fragment>
+
+The server couldn't be reached from the CI job: check the address, DNS and the proxy.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Couldn't run git. Is it installed and on PATH?`</Fragment>
+
+The upload reads git history. Install git in the CI image, or pass the commit and branch explicitly ([CI examples](/ci/ci-examples/)).
+</RefItem>
+<RefItem>
+<Fragment slot="term">`No such directory: ./screenshotz`</Fragment>
+
+The folder doesn't exist. Only `*.png` files are uploaded, and hidden folders and `node_modules` are skipped.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Too many open files. Raise the limit (ulimit -n) and retry.`</Fragment>
+
+A large upload hit the job's file limit.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Files are limited to 26214400 bytes` (HTTP 413)</Fragment>
+
+One file is over 25 MiB.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`N file(s) weren't uploaded or failed verification` (HTTP 409)</Fragment>
+
+The server's check of the uploaded files found some missing or corrupt. The CLI sends them again (`N files didn't arrive; sending again`). If it keeps failing, check the storage and any proxy that limits request bodies.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Invalid build name "…": use letters, digits, ".", "_" or "-" (max 64)`</Fragment>
+
+The `--name` isn't valid.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Invalid commit SHA "…"`</Fragment>
+
+The commit isn't 7 to 64 hex characters.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`parallel.total must be between 1 and 1000`</Fragment>
+
+A bad `--shard`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Build not found` (HTTP 404)</Fragment>
+
+The build ID doesn't belong to this project's token.
+</RefItem>
+<RefItem>
+<Fragment slot="term">The build stays in **Uploading** and then fails: `Timed out waiting for N of M shard(s): shard 3. The CI job(s) that should have uploaded them probably failed or never ran.`</Fragment>
+
+A shard never arrived. After `UPLOAD_TIMEOUT_MINUTES` (default 60) the build fails and names the missing shards. Re-run the failed job. A build whose job stopped early says `The upload never finished: the CI job stopped before sending the screenshot list.`
+</RefItem>
+</RefList>
 
 Site uploads (`circi site upload`, `circi storybook upload`) have their own refusals:
 
-| Message | Cause and fix |
-|---|---|
-| `Static site hosting isn't set up on this server` | The server has no `STATIC_SITES_HOST`. |
-| `Static site hosting is off for this project: turn it on in the project settings` | Switch on **Host static sites** in the project. |
-| `Send the site as application/gzip (a .tar.gz)` | Use the CLI, or send a gzip tarball. |
-| `The archive contains no files` | The folder was empty. |
-| `A <kind> needs <entry> at its top level` | A typed site, such as a Storybook, needs its entry file at the root of the folder you upload. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`Static site hosting isn't set up on this server`</Fragment>
+
+The server has no `STATIC_SITES_HOST`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Static site hosting is off for this project: turn it on in the project settings`</Fragment>
+
+Switch on **Host static sites** in the project.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Send the site as application/gzip (a .tar.gz)`</Fragment>
+
+Use the CLI, or send a gzip tarball.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`The archive contains no files`</Fragment>
+
+The folder was empty.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`A <kind> needs <entry> at its top level`</Fragment>
+
+A typed site, such as a Storybook, needs its entry file at the root of the folder you upload.
+</RefItem>
+</RefList>
 
 ## Builds and reviews
 
-| Symptom | Cause and fix |
-|---|---|
-| A build stays **Processing** | The worker isn't running or is busy. `circi serve` runs only HTTP: a split install needs a `circi worker` too (`circi all` runs both). Look at **Background jobs** on **Instance** › **Health**: the oldest waiting job keeps getting older, and the log shows `could not claim a job` if the worker can't read the queue. See [Scaling the worker](/self-hosting/scaling-the-worker/). |
-| **N screenshots couldn't be read** and `--wait` exits `2` | The server couldn't decode a file. Each is listed with the reason, for example `Couldn't read this image: …`. Check that the file is a complete PNG. See [How a build flows](/introduction/how-a-build-flows/#couldnt-read). |
-| Every screenshot is **Added** on a build that has a baseline | The screenshot names changed, or the build name differs: a screenshot is compared with the baseline of the same name in a build of the same name. A screenshot's name is its path under the upload folder without `.png`. See [Baselines](/using/baselines-and-ignore-regions/). |
-| Everything shows as changed on the first build of a project | A first build has nothing to compare with, so every screenshot needs review, even on the default branch. |
-| A build page says it fell back to the default branch's newest build | The history wasn't available: a shallow checkout the CLI couldn't deepen, or `--no-fetch`. See [The CLI](/ci/cli/). |
-| Slow comparisons, or the worker runs out of memory | Check the diff engine and its threads, or give the worker more memory: [Performance](/self-hosting/performance/) and [Scaling the worker](/self-hosting/scaling-the-worker/). A job that keeps killing its worker is failed after its lease expires too many times (`lease expired too many times`). |
+<RefList>
+<RefItem>
+<Fragment slot="term">A build stays **Processing**</Fragment>
+
+The worker isn't running or is busy. `circi serve` runs only HTTP: a split install needs a `circi worker` too (`circi all` runs both). Look at **Background jobs** on **Instance** › **Health**: the oldest waiting job keeps getting older, and the log shows `could not claim a job` if the worker can't read the queue. See [Scaling the worker](/self-hosting/scaling-the-worker/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">**N screenshots couldn't be read** and `--wait` exits `2`</Fragment>
+
+The server couldn't decode a file. Each is listed with the reason, for example `Couldn't read this image: …`. Check that the file is a complete PNG. See [How a build flows](/introduction/how-a-build-flows/#couldnt-read).
+</RefItem>
+<RefItem>
+<Fragment slot="term">Every screenshot is **Added** on a build that has a baseline</Fragment>
+
+The screenshot names changed, or the build name differs: a screenshot is compared with the baseline of the same name in a build of the same name. A screenshot's name is its path under the upload folder without `.png`. See [Baselines](/review/baselines-and-ignore-regions/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">Everything shows as changed on the first build of a project</Fragment>
+
+A first build has nothing to compare with, so every screenshot needs review, even on the default branch.
+</RefItem>
+<RefItem>
+<Fragment slot="term">A build page says it fell back to the default branch's newest build</Fragment>
+
+The history wasn't available: a shallow checkout the CLI couldn't deepen, or `--no-fetch`. See [The CLI](/ci/cli/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">Slow comparisons, or the worker runs out of memory</Fragment>
+
+Check the diff engine and its threads, or give the worker more memory: [Performance](/self-hosting/performance/) and [Scaling the worker](/self-hosting/scaling-the-worker/). A job that keeps killing its worker is failed after its lease expires too many times (`lease expired too many times`).
+</RefItem>
+</RefList>
 
 ## Git hosts and checks
 
-| Symptom | Cause and fix |
-|---|---|
-| No check or status appears on the pull request | The project isn't linked to a repository. A job for an unlinked project is skipped with `project is not linked to a repository`. Check the repository in the project's settings, and that the app or token can reach it. |
-| The integration shows **Needs attention** | The host removed the installation or rejected the token. Nothing is queued for it until you reconnect or reinstall. See [Integrations](/integrations/overview/). |
-| Commands such as `/circi approve` do nothing | The commenter's host account must belong to exactly one member of the workspace. CirCI matches by account ID, never by email. |
-| The webhook from the host is refused | The signature or token didn't verify: GitHub's secret is the App's; GitLab's and Bitbucket's are shown on the integration's page. |
+<RefList>
+<RefItem>
+<Fragment slot="term">No check or status appears on the pull request</Fragment>
+
+The project isn't linked to a repository. A job for an unlinked project is skipped with `project is not linked to a repository`. Check the repository in the project's settings, and that the app or token can reach it.
+</RefItem>
+<RefItem>
+<Fragment slot="term">The integration shows **Needs attention**</Fragment>
+
+The host removed the installation or rejected the token. Nothing is queued for it until you reconnect or reinstall. See [Integrations](/integrations/overview/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">Commands such as `/circi approve` do nothing</Fragment>
+
+The commenter's host account must belong to exactly one member of the workspace. CirCI matches by account ID, never by email.
+</RefItem>
+<RefItem>
+<Fragment slot="term">The webhook from the host is refused</Fragment>
+
+The signature or token didn't verify: GitHub's secret is the App's; GitLab's and Bitbucket's are shown on the integration's page.
+</RefItem>
+</RefList>
 
 Each host has its own table of symptoms: [GitHub](/integrations/github/), [GitLab](/integrations/gitlab/), [Bitbucket](/integrations/bitbucket/).
 
 ## Webhooks out
 
-| Symptom | Cause and fix |
-|---|---|
-| A delivery shows `The address is on a private network` | A webhook can't point at `localhost` or a private network by default. Use a public address, or set `WEBHOOK_ALLOW_PRIVATE_ADDRESSES=true`. |
-| Deliveries time out | The receiver must answer within `WEBHOOK_TIMEOUT_SECONDS` (default 10). |
-| The same delivery arrives twice | A retry. Ignore repeats of the same `CirCI-Delivery` value. |
+<RefList>
+<RefItem>
+<Fragment slot="term">A delivery shows `The address is on a private network`</Fragment>
+
+A webhook can't point at `localhost` or a private network by default. Use a public address, or set `WEBHOOK_ALLOW_PRIVATE_ADDRESSES=true`.
+</RefItem>
+<RefItem>
+<Fragment slot="term">Deliveries time out</Fragment>
+
+The receiver must answer within `WEBHOOK_TIMEOUT_SECONDS` (default 10).
+</RefItem>
+<RefItem>
+<Fragment slot="term">The same delivery arrives twice</Fragment>
+
+A retry. Ignore repeats of the same `CirCI-Delivery` value.
+</RefItem>
+</RefList>
 
 See [Webhooks](/integrations/webhooks/) for the retry schedule and the delivery history.
 
 ## Hosted sites and TLS
 
-| Symptom | Cause and fix |
-|---|---|
-| `Site not found`: "No site is published at this address. It may have expired, or the link is wrong." | The address names a site that was never published or has been removed. Check the address against the upload's output. |
-| `Site expired`: "This site was removed once it was older than the retention period." | Publish it again. Sites follow the project's retention. See [Hosted sites](/using/hosted-sites/). |
-| A custom domain gets no certificate | Caddy asks `GET /internal/tls-ask?domain=<host>` and only a verified custom domain answers `200`. The proxy must be able to reach the server's internal path. See [Site domains](/self-hosting/site-domains/). |
-| Doctor: `Sets cookies for a whole domain` | Another host on the domain sets cookies for the whole domain, and they would reach the dashboard. Make that host's cookies host-only (no `Domain` attribute). |
-| Doctor: `Serves content at its apex` | The sites domain must serve nothing at its own name, only the sites under its subdomains. |
-| Wildcard certificate fails | The sites domain's wildcard needs the DNS challenge (DNS-01); the bundled Caddy covers it. See [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/). |
+<RefList>
+<RefItem>
+<Fragment slot="term">`Site not found`: "No site is published at this address. It may have expired, or the link is wrong."</Fragment>
+
+The address names a site that was never published or has been removed. Check the address against the upload's output.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`Site expired`: "This site was removed once it was older than the retention period."</Fragment>
+
+Publish it again. Sites follow the project's retention. See [Hosted sites](/dashboard/hosted-sites/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">A custom domain gets no certificate</Fragment>
+
+Caddy asks `GET /internal/tls-ask?domain=<host>` and only a verified custom domain answers `200`. The proxy must be able to reach the server's internal path. See [Site domains](/self-hosting/site-domains/).
+</RefItem>
+<RefItem>
+<Fragment slot="term">Doctor: `Sets cookies for a whole domain`</Fragment>
+
+Another host on the domain sets cookies for the whole domain, and they would reach the dashboard. Make that host's cookies host-only (no `Domain` attribute).
+</RefItem>
+<RefItem>
+<Fragment slot="term">Doctor: `Serves content at its apex`</Fragment>
+
+The sites domain must serve nothing at its own name, only the sites under its subdomains.
+</RefItem>
+<RefItem>
+<Fragment slot="term">Wildcard certificate fails</Fragment>
+
+The sites domain's wildcard needs the DNS challenge (DNS-01); the bundled Caddy covers it. See [TLS and reverse proxy](/self-hosting/tls-and-reverse-proxy/).
+</RefItem>
+</RefList>
 
 <Aside type="note">
 If a problem isn't here, run the doctor, then read the log around the time it happened: jobs log their queue and job ID, and a failing check logs its name. Raise `LOG_LEVEL` to `debug` for more.

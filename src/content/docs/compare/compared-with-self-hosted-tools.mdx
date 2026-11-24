@@ -1,5 +1,7 @@
 ---
 title: Compared with Visual Regression Tracker, BackstopJS and Lost Pixel
+sidebar:
+  label: 'Other self-hosted tools'
 seoTitle: Open source visual regression testing tools
 description: "How CirCI compares with the open source tools you can run yourself: Visual Regression Tracker, BackstopJS and Lost Pixel, and how to move your screenshots over."
 ---
@@ -7,7 +9,7 @@ description: "How CirCI compares with the open source tools you can run yourself
 
 import { Aside } from '@astrojs/starlight/components'
 
-[Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/) are services. If you want visual regression testing that runs on your own machines, the open source tools people compare CirCI with are Visual Regression Tracker, BackstopJS and Lost Pixel. They don't all do the same job: one is a server with a review dashboard like CirCI, one is a command line tool that captures and compares on its own, and one has been archived.
+[Chromatic, Percy and Argos](/compare/compared-with-chromatic-percy-argos/) are services. If you want visual regression testing that runs on your own machines, the open source tools people compare CirCI with are Visual Regression Tracker, BackstopJS and Lost Pixel. They don't all do the same job: one is a server with a review dashboard like CirCI, one is a command line tool that captures and compares on its own, and one has been archived.
 
 This page lists what each project's own README, repository and npm package say. It doesn't rank them. Facts about the other projects were read on **November 23, 2026**, and a project can change after that. Where a source says nothing about a point, this page says so and doesn't guess.
 
@@ -20,7 +22,7 @@ This page lists what each project's own README, repository and npm package say. 
 | **Review** | In the dashboard: approve or reject per screenshot or per build, comments on regions | In the dashboard: side by side, diff and fade, bulk approve or reject, undo, comments | An HTML report in the browser; `backstop approve` promotes the last test run to the reference | The approval flow and review UI are listed as **Lost Pixel Platform only**, the hosted product |
 | **Pull requests** | Checks on GitHub, commit statuses and comments on GitLab and Bitbucket, and a merge gate | Not stated in the README | A JUnit report for CI; pull request checks aren't stated | The job can fail on a difference (`failOnDifference`) |
 | **Runs on** | Docker image, Postgres and file storage; Docker Compose, Terraform or Helm | Docker Compose; images on local disk or S3 | Node.js, with an optional `--docker` flag for rendering | Node.js or its GitHub Action |
-| **License** | GPL-3.0-only | Apache-2.0 | MIT | MIT |
+| **License** | GPL-3.0-only for the server; MIT for the CLI and test plugins | Apache-2.0 | MIT | MIT |
 | **Status** | Pre-1.0, in active development | Active: release 6.1.0 on November 13, 2026 | The README says it "needs a new maintainer/owner"; the latest npm release, 6.3.25, is from September 7, 2024 | Archived on GitHub; the README says the team is joining Figma and "sunsetting the product". Last release v3.22.0, November 14, 2024 |
 
 ## Visual Regression Tracker
@@ -43,11 +45,11 @@ If you used Lost Pixel for Storybook, [`@circi/storybook`](/ci/storybook/) scree
 
 ## What CirCI adds
 
-- **A shared review with a merge gate.** Builds, per-screenshot decisions, comments on regions, review requests by rule, and a check that blocks the pull request until it's reviewed. See [How a build flows](/introduction/how-a-build-flows/) and [Reviewing a build](/using/reviewing-a-build/).
+- **A shared review with a merge gate.** Builds, per-screenshot decisions, comments on regions, review requests by rule, and a check that blocks the pull request until it's reviewed. See [How a build flows](/introduction/how-a-build-flows/) and [Reviewing a build](/review/reviewing-a-build/).
 - **Works with what your tests already write.** Any tool that writes PNG files, plus plugins for [Vitest](/ci/vitest/), [Cypress](/ci/cypress/) and [Storybook](/ci/storybook/); [Playwright](/ci/playwright/) needs no plugin.
-- **Flaky screenshots over time.** A [triage queue](/using/triage-and-flaky-screenshots/) and [insights](/using/insights/) across builds.
+- **Flaky screenshots over time.** A [triage queue](/review/triage-and-flaky-screenshots/) and [insights](/dashboard/insights/) across builds.
 - **Integrations.** GitHub, GitLab, Bitbucket, Slack, Linear, Jira, Figma and signed webhooks. See [Integrations](/integrations/overview/).
-- **Hosted sites.** A built Storybook or test report next to the screenshots ([Hosted sites](/using/hosted-sites/)).
+- **Hosted sites.** A built Storybook or test report next to the screenshots ([Hosted sites](/dashboard/hosted-sites/)).
 
 ## What CirCI doesn't do
 

@@ -9,7 +9,7 @@ import ScreenFrame from '../../../components/ScreenFrame.astro'
 
 Insights answers "how is review going?" for a workspace: how long builds wait, how they end, how many screenshots are flaky, what fails, and what is stored. Open it from the sidebar, under the workspace's name. Any member of the workspace can see it.
 
-<ScreenFrame name="use-insights" alt="The Insights page of the Acme workspace on the 30 days range. Six summary tiles, such as a median time to first review of 18 hours and 66 percent of first reviews within target, then the first trend charts, a bar chart of median time to first review per week and a line chart of time to decision." caption="The summary tiles and the first two charts, over 30 days. Each tile says how it compares with the 30 days before." />
+<ScreenFrame name="use-insights" alt="The Insights page of the Acme workspace on the 30 days range. Six summary tiles, such as a median time to first review of 18 hours and 73 percent of first reviews within target, then the first trend charts, a bar chart of median time to first review per week and a line chart of time to decision." caption="The summary tiles and the first two charts, over 30 days. Each tile says how it compares with the 30 days before." />
 
 ## Choose what to look at
 
@@ -30,7 +30,7 @@ Six tiles open the page. Each has its value, a note, and how it compares with th
 |---|---|---|
 | Median time to first review | Minutes, hours or days (`18h`) | From a build being ready to the first approval or rejection by a person (automatic approvals don't count), with the slowest 10% in the note |
 | Median time to decision | Minutes, hours or days | From the build being ready to it being approved or rejected, with the slowest 10% |
-| First reviews within target | Percent | The share of reviews that came within the project's review target, weekends not counted. "No review target set" when there is none. See [Review requests and rules](/using/review-requests-and-rules/) |
+| First reviews within target | Percent | The share of reviews that came within the project's review target, weekends not counted. "No review target set" when there is none. See [Review requests and rules](/review/review-requests-and-rules/) |
 | Builds reviewed | Builds | How many builds got a review in the range |
 | Builds with changes | Percent | The share of finished builds that had changes, with the count in the note |
 | Failed builds | Builds | How many failed, with their share of finished builds in the note |
@@ -41,7 +41,7 @@ Six tiles open the page. Each has its value, a note, and how it compares with th
 - **Time to decision**: the median and the slowest 10% as two lines, in hours.
 - **Outcomes**: finished builds per period, stacked as Approved, Auto-approved, Rejected and Failed.
 - **Waiting for review**: builds waiting at the end of each day.
-- **Flaky screenshots** at the end of each period, **Failed builds** per period and **Processing time** (median and slowest 10%, in minutes). See [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/).
+- **Flaky screenshots** at the end of each period, **Failed builds** per period and **Processing time** (median and slowest 10%, in minutes). See [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/).
 
 Hover a bar or point for its exact numbers.
 
@@ -50,8 +50,8 @@ Hover a bar or point for its exact numbers.
 - **Projects**: a table with builds, how many had changes, review time, flaky and failed counts for each project.
 - **Why builds failed**: failed builds grouped by error message, most common first.
 - **Rejection reasons**: how many builds were rejected and how many came with a reason, with the reasons listed.
-- **Ignore regions**: how many screenshots would have changed without them, and which regions suppressed the most. See [Baselines and ignore regions](/using/baselines-and-ignore-regions/).
-- **Storage by project**: screenshots, diffs and baselines, with the total. A note says how long retention keeps branch builds; see [Workspace settings](/using/workspace-settings/).
+- **Ignore regions**: how many screenshots would have changed without them, and which regions suppressed the most. See [Baselines and ignore regions](/review/baselines-and-ignore-regions/).
+- **Storage by project**: screenshots, diffs and baselines, with the total. A note says how long retention keeps branch builds; see [Workspace settings](/settings/workspace-settings/).
 - **Reviewer load**: for each person, how many reviews, how many requests are open, their median response time and how many were overdue.
 
 ## Tables to act on
@@ -68,5 +68,5 @@ Every table sorts when you click a column header. The sort is kept in the page's
 ## See also
 
 - [Webhooks](/integrations/webhooks/), to collect build and review events in your own system instead of reading them here
-- [Triage and flaky screenshots](/using/triage-and-flaky-screenshots/)
-- [Review requests and rules](/using/review-requests-and-rules/)
+- [Triage and flaky screenshots](/review/triage-and-flaky-screenshots/)
+- [Review requests and rules](/review/review-requests-and-rules/)

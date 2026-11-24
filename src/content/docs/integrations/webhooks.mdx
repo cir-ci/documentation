@@ -38,7 +38,7 @@ Owners and admins of the project's workspace can add, test, regenerate and remov
 
 Each webhook in the list has **Send test**, **Regenerate secret** and **Remove**, and a table of recent deliveries.
 
-<ScreenFrame name="int-webhooks" alt="The Webhooks settings page of a project: two webhooks with their events and a Failing badge, each with Send test, Regenerate secret and Remove, and a table of recent deliveries." caption="A Project's Webhooks page. Both addresses here fail because nothing listens on them." width={760} />
+<ScreenFrame name="int-webhooks" alt="The Webhooks settings page of a project: three webhooks with their events, two marked Delivered and one with a Failing badge, each with Send test, Regenerate secret and Remove, then tables of recent deliveries." caption="A Project's Webhooks page. Two addresses take deliveries; the third answers 500, so it shows Failing." />
 
 </TabItem>
 <TabItem label="Command line">
@@ -181,4 +181,4 @@ There's no way to read a secret again later. If you didn't copy it, regenerate i
 ## See also
 
 - [Integrations overview](/integrations/overview/): ready-made integrations for git hosts, Slack, trackers and Figma.
-- [Project settings](/using/project-settings/): the rest of a project's settings.
+- [Project settings](/settings/project-settings/): the rest of a project's settings.

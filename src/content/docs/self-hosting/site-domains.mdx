@@ -10,7 +10,7 @@ import SettingCard from '../../../components/SettingCard.astro'
 import Diagram from '../../../components/Diagram.astro'
 import ScreenFrame from '../../../components/ScreenFrame.astro'
 
-Hosted sites (a built Storybook, a test report, coverage) are optional and off until you set the sites domain and switch on **Host static sites** in a project's settings. How people use them is described in [Hosted sites](/using/hosted-sites/). This page is for the operator.
+Hosted sites (a built Storybook, a test report, coverage) are optional and off until you set the sites domain and switch on **Host static sites** in a project's settings. How people use them is described in [Hosted sites](/dashboard/hosted-sites/). This page is for the operator.
 
 <SettingCard name="STATIC_SITES_HOST" type="domain">
 A separate, dedicated domain for hosted sites, such as `acme-sites.com`. Hosting is off until it's set. Instance settings shows it read-only, or "Not set up" with a **Check domain rules** link to Health. To change it, edit the variable and restart.
@@ -38,7 +38,7 @@ curl -sI https://www.acme.io | grep -i 'set-cookie.*domain='
 
 `circi admin doctor` does a best-effort version. It can't see every host, so it repeats this warning.
 
-<ScreenFrame name="host-instance-limits" alt="Instance settings, Hosted sites section: Not set up, with the note that projects can't host sites until a separate domain is configured." caption="Without STATIC_SITES_HOST the section says Not set up." width={760} />
+<ScreenFrame name="host-instance-limits" alt="Instance settings, Hosted sites section: Not set up, with the note that projects can't host sites until a separate domain is configured." caption="Without STATIC_SITES_HOST the section says Not set up." />
 
 ## Addresses
 

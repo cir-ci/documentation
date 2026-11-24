@@ -1,5 +1,7 @@
 ---
 title: Integrations overview
+sidebar:
+  label: 'Overview'
 seoTitle: CirCI integrations overview
 description: What integrations are, which kinds exist, who can add them and how each one connects.
 ---
@@ -33,7 +35,7 @@ Open **Workspace settings**, then **Integrations**. The page lists the integrati
 - **Planned**: the kind isn't built.
 - **Not set up on this server**: the kind needs an app of its own on this instance (the GitHub App, the Slack app) and none is configured yet.
 
-<ScreenFrame name="int-add-dialog" alt="The Add an integration dialog: git hosts, chat and design tools, each with an Add button, and Planned or Not set up on this server where a kind isn't available." caption="The Add integration dialog on an instance without a Slack app." width={760} />
+<ScreenFrame name="int-add-dialog" alt="The Add an integration dialog: git hosts, chat and design tools, each with an Add button, and Planned or Not set up on this server where a kind isn't available." caption="The Add integration dialog on an instance without a Slack app." />
 
 Adding an integration connects it. Its own page then maps projects to targets: which repository, channel, tracker project or Figma file each project uses. Some kinds also keep project-wide links there (Figma's frame links). A project can map to one git host and to one connection per tracker kind, and mapping it to another moves it.
 
@@ -43,10 +45,10 @@ An external account connects to one workspace of the instance. A second workspac
 
 ## Who can add them
 
-Owners and admins of the workspace connect, map and remove integrations. Other members can look at the integrations and their mappings. Credentials are stored encrypted and never sent back to the dashboard. See [Members and roles](/using/members-and-roles/).
+Owners and admins of the workspace connect, map and remove integrations. Other members can look at the integrations and their mappings. Credentials are stored encrypted and never sent back to the dashboard. See [Members and roles](/settings/members-and-roles/).
 
 A GitHub link can also be made from a project's own settings page and by `circi admin github link`; see [GitHub](/integrations/github/).
 
 ## Events
 
-The events a workspace's integrations can hear about are `review.requested`, `review.overdue`, `build.rejected`, `build.approved` and `build.completed`. Slack is the only chat integration and lets you choose among the first four per project. Git hosts get their status and comment from the build itself, not from these events. See [Review requests and rules](/using/review-requests-and-rules/) for when review requests are sent.
+The events a workspace's integrations can hear about are `review.requested`, `review.overdue`, `build.rejected`, `build.approved` and `build.completed`. Slack is the only chat integration and lets you choose among the first four per project. Git hosts get their status and comment from the build itself, not from these events. See [Review requests and rules](/review/review-requests-and-rules/) for when review requests are sent.

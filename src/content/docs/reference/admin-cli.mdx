@@ -6,6 +6,8 @@ description: The circi server command and its admin subcommands, run on the serv
 {/* Source: apps/server/src/cli (index.ts, server.ts, admin.ts, commands/*), README.md (Server commands) */}
 
 import { Aside } from '@astrojs/starlight/components'
+import RefList from '../../../components/RefList.astro'
+import RefItem from '../../../components/RefItem.astro'
 
 The `circi` command inside the Docker image is the **server** command. It reads the same environment variables as the server (it needs `DATABASE_URL` and the storage settings for most commands), so run it in the container:
 
@@ -17,12 +19,28 @@ It's not the upload CLI (see [CLI reference](/ci/cli/)). Commands that act insid
 
 ## Processes
 
-| Command | What it does |
-|---|---|
-| `circi all` | HTTP server and worker in one process (small installs). |
-| `circi serve` | The HTTP API and web UI. |
-| `circi worker` | Background jobs (diffing, notifications). |
-| `circi migrate` | Apply database migrations and exit. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`circi all`</Fragment>
+
+HTTP server and worker in one process (small installs).
+</RefItem>
+<RefItem>
+<Fragment slot="term">`circi serve`</Fragment>
+
+The HTTP API and web UI.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`circi worker`</Fragment>
+
+Background jobs (diffing, notifications).
+</RefItem>
+<RefItem>
+<Fragment slot="term">`circi migrate`</Fragment>
+
+Apply database migrations and exit.
+</RefItem>
+</RefList>
 
 `serve`, `worker` and `all` migrate on start unless `--no-migrate`.
 
@@ -32,51 +50,143 @@ Every command starts with `circi admin`. Add `--help` to any of them.
 
 ### Accounts and workspaces
 
-| Command | What it does |
-|---|---|
-| `user create --email --name [--password] [--instance-admin] [--json]` | Create an account. There's no self sign-up. The password needs at least 12 characters; without `--password` one is generated and printed once. |
-| `user set-password --email [--password] [--json]` | Set a new password. |
-| `workspace create --name --owner <email> [--slug] [--json]` | Create a workspace owned by an existing account. |
-| `workspace list [--json]` | List workspaces. |
-| `member add --org --email [--role owner\|admin\|member]` | Add an existing account to a workspace (default role `member`). |
-| `auth enable\|disable <email\|password> --org` | Change a workspace's allowed sign-in methods. Skips the check that refuses a change leaving nobody able to sign in, so it's the way back in when a setting locked everyone out. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`user create --email --name [--password] [--instance-admin] [--json]`</Fragment>
+
+Create an account. There's no self sign-up. The password needs at least 12 characters; without `--password` one is generated and printed once.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`user set-password --email [--password] [--json]`</Fragment>
+
+Set a new password.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`workspace create --name --owner <email> [--slug] [--json]`</Fragment>
+
+Create a workspace owned by an existing account.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`workspace list [--json]`</Fragment>
+
+List workspaces.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`member add --org --email [--role owner|admin|member]`</Fragment>
+
+Add an existing account to a workspace (default role `member`).
+</RefItem>
+<RefItem>
+<Fragment slot="term">`auth enable|disable <email|password> --org`</Fragment>
+
+Change a workspace's allowed sign-in methods. Skips the check that refuses a change leaving nobody able to sign in, so it's the way back in when a setting locked everyone out.
+</RefItem>
+</RefList>
 
 ### Projects
 
-| Command | What it does |
-|---|---|
-| `project create --org --name [--slug] [--default-branch main] [--member <email>…] [--json]` | Create a project and print its CI token. |
-| `project list --org [--json]` | List a workspace's projects. |
-| `project rotate-token --org --project [--json]` | Replace the CI token; the old one stops at once. |
-| `ignore add --org --project --name <screenshot> --region <x,y,width,height>` | Ignore a rectangle (pixels from the top left) in screenshots with that name. |
-| `ignore list --org --project` | List ignored regions. |
-| `ignore remove <id> --org --project` | Stop ignoring a region. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`project create --org --name [--slug] [--default-branch main] [--member <email>…] [--json]`</Fragment>
+
+Create a project and print its CI token.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`project list --org [--json]`</Fragment>
+
+List a workspace's projects.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`project rotate-token --org --project [--json]`</Fragment>
+
+Replace the CI token; the old one stops at once.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`ignore add --org --project --name <screenshot> --region <x,y,width,height>`</Fragment>
+
+Ignore a rectangle (pixels from the top left) in screenshots with that name.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`ignore list --org --project`</Fragment>
+
+List ignored regions.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`ignore remove <id> --org --project`</Fragment>
+
+Stop ignoring a region.
+</RefItem>
+</RefList>
 
 ### Integrations
 
-| Command | What it does |
-|---|---|
-| `github link --org --project --repo <owner/name> --installation <id>` | Link a project to a GitHub repository (needs the GitHub App). |
-| `github unlink --org --project` | Stop reporting a project to GitHub. |
-| `webhook add --org --project --url --events <list> [--json]` | Add a webhook; the signing secret is printed once. Events: `build.completed`, `build.reviewed`. At least one is required. |
-| `webhook list --org --project` | List a project's webhooks. |
-| `webhook remove --org --project --id` | Remove one (ID from `list`). |
+<RefList>
+<RefItem>
+<Fragment slot="term">`github link --org --project --repo <owner/name> --installation <id>`</Fragment>
+
+Link a project to a GitHub repository (needs the GitHub App).
+</RefItem>
+<RefItem>
+<Fragment slot="term">`github unlink --org --project`</Fragment>
+
+Stop reporting a project to GitHub.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`webhook add --org --project --url --events <list> [--json]`</Fragment>
+
+Add a webhook; the signing secret is printed once. Events: `build.completed`, `build.reviewed`. At least one is required.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`webhook list --org --project`</Fragment>
+
+List a project's webhooks.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`webhook remove --org --project --id`</Fragment>
+
+Remove one (ID from `list`).
+</RefItem>
+</RefList>
 
 ### Storage
 
-| Command | What it does |
-|---|---|
-| `storage usage [--json]` | Files and bytes by kind, and what waits to be deleted. |
-| `storage migrate --to fs\|s3 [--path] [--bucket] [--region] [--endpoint] [--force-path-style]` | Copy every stored file to another storage under the same keys. |
-| `storage gc [--grace-hours <h>] [--dry-run]` | Run retention now. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`storage usage [--json]`</Fragment>
+
+Files and bytes by kind, and what waits to be deleted.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`storage migrate --to fs|s3 [--path] [--bucket] [--region] [--endpoint] [--force-path-style]`</Fragment>
+
+Copy every stored file to another storage under the same keys.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`storage gc [--grace-hours <h>] [--dry-run]`</Fragment>
+
+Run retention now.
+</RefItem>
+</RefList>
 
 ### Checks and setup
 
-| Command | What it does |
-|---|---|
-| `doctor` | Check storage, database and migrations, mail, free disk space, the dashboard address and the cookie scope of the domains. Exits 1 on a warning or failure. |
-| `setup-code` | Print the code the first-run setup page asks for. |
-| `mail test --to <email>` | Send a test mail through the configured SMTP server. |
+<RefList>
+<RefItem>
+<Fragment slot="term">`doctor`</Fragment>
+
+Check storage, database and migrations, mail, free disk space, the dashboard address and the cookie scope of the domains. Exits 1 on a warning or failure.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`setup-code`</Fragment>
+
+Print the code the first-run setup page asks for.
+</RefItem>
+<RefItem>
+<Fragment slot="term">`mail test --to <email>`</Fragment>
+
+Send a test mail through the configured SMTP server.
+</RefItem>
+</RefList>
 
 <Aside type="tip">
 Accounts, workspaces, projects, webhooks and storage can all be managed from here, which is the way to script a fresh install or to recover from a lockout.

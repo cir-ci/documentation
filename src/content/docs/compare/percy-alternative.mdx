@@ -1,15 +1,17 @@
 ---
 title: Self-hosted Percy alternative
+sidebar:
+  label: 'Percy alternative'
 seoTitle: Open source, self-hosted Percy alternative
 description: "Moving from Percy to CirCI, an open source tool you host yourself: how the two differ, when each fits, and how to port Playwright, Cypress and Storybook setups."
 ---
-{/* Sources for CirCI: packages/cli (main.ts: CIRCI_API_URL, CIRCI_TOKEN), packages/cypress, packages/storybook in cir-ci/repo, and this site's ci/playwright, ci/cypress, ci/storybook, ci/github-actions and getting-started/first-review pages. Sources for Percy: the public pages listed at the end, read on November 23, 2026. */}
+{/* Sources for CirCI: packages/cli (main.ts: CIRCI_API_URL, CIRCI_TOKEN), packages/cypress, packages/storybook in cir-ci/repo, and this site's ci/playwright, ci/cypress, ci/storybook, ci/github-actions and getting-started/first-review pages. Sources for Percy: the public pages listed at the end, read on November 23, 2026.; prices and billing rules read on November 24, 2026. */}
 
 import { Aside, Steps } from '@astrojs/starlight/components'
 
 Percy and CirCI both take the screenshots of your UI from CI, compare them with approved ones and ask your team to review what changed. Percy is a hosted service, part of BrowserStack. CirCI is open source software (GPL-3.0-only) that you run on your own servers, and there's no hosted version of it.
 
-This page is for teams weighing a move from Percy to CirCI: what's different, when Percy is still the better fit, and how each kind of Percy setup maps to CirCI. Facts about Percy come from its public documentation, read on **November 23, 2026**, and Percy can change after that. Prices and plan limits are left out because they change: check BrowserStack's pricing page. For Chromatic and Argos too, see [Compared with Chromatic, Percy and Argos](/introduction/compared-with-chromatic-percy-argos/).
+This page is for teams weighing a move from Percy to CirCI: what's different, when Percy is still the better fit, and how each kind of Percy setup maps to CirCI. Facts about Percy come from its public documentation, read on **November 23, 2026**, and Percy can change after that. Its prices were read on **November 24, 2026**; [Pricing](/compare/compared-with-chromatic-percy-argos/#pricing) compares them with what CirCI costs to host. For Chromatic and Argos too, see [Compared with Chromatic, Percy and Argos](/compare/compared-with-chromatic-percy-argos/).
 
 ## At a glance
 
@@ -17,7 +19,7 @@ This page is for teams weighing a move from Percy to CirCI: what's different, wh
 |---|---|---|
 | **Where it runs** | On your own servers: one Docker image, Postgres and file storage ([Requirements](/self-hosting/requirements/)) | Percy's hosted service, a BrowserStack product |
 | **Self-hosting** | The only way to run it | Not mentioned on the pages read |
-| **License** | GPL-3.0-only | The service's license isn't stated on the pages read; the SDKs are public repositories on GitHub |
+| **License** | GPL-3.0-only for the server; MIT for the CLI and test plugins | The service's license isn't stated on the pages read; the SDKs are public repositories on GitHub |
 | **What gets compared** | The PNG files your tests write. CirCI doesn't render pages | The SDK captures the page's DOM in your test browser, and Percy renders it into screenshots in its own browsers and at the widths you choose |
 | **Browsers** | Whatever your tests run. Upload one build per browser to keep them apart | Chrome, Firefox, Edge and Safari, plus Safari on iPhone and Chrome on Android, rendered by Percy |
 | **How a run uploads** | `circi upload` after the tests, or a plugin for [Cypress](/ci/cypress/), [Storybook](/ci/storybook/) or [Vitest](/ci/vitest/) | Tests run inside `percy exec --`, with a `PERCY_TOKEN` |
@@ -26,9 +28,9 @@ This page is for teams weighing a move from Percy to CirCI: what's different, wh
 ## When CirCI fits
 
 - **Screenshots can't leave your network.** Every image, build and review stays in your own Postgres and storage ([Security](/self-hosting/security/), [Storage](/self-hosting/storage/)).
-- **You want free software with nothing to buy.** All of CirCI is GPL-3.0-only.
+- **You want free software with nothing to buy.** The server is GPL-3.0-only and the CLI and plugins are MIT. Percy's Desktop plan is $249 a month ($199 billed annually) for 10,000 screenshots, then $0.036 each, and every browser and width is its own screenshot; CirCI costs the server it runs on, about $24 to $80 a month ([Pricing](/compare/compared-with-chromatic-percy-argos/#pricing), prices from November 24, 2026).
 - **Your tests already take the screenshots.** Playwright, Cypress, Storybook or any tool that writes PNG files works, and what your tests render is exactly what gets compared.
-- **You want to review from your git host.** A check per build on the pull request with Approve and Reject buttons, review rules, and [flaky screenshot triage](/using/triage-and-flaky-screenshots/).
+- **You want to review from your git host.** A check per build on the pull request with Approve and Reject buttons, review rules, and [flaky screenshot triage](/review/triage-and-flaky-screenshots/).
 
 ## When Percy fits
 
@@ -117,7 +119,7 @@ Percy's per-story `percy` parameter has a CirCI counterpart, `parameters.circi`:
 
 ### Baselines
 
-Old Percy builds aren't imported. The first build of each name has nothing to compare with, so every screenshot is new: approve it once on your default branch and it becomes the baseline for later builds ([First review](/getting-started/first-review/), [Baselines and ignore regions](/using/baselines-and-ignore-regions/)).
+Old Percy builds aren't imported. The first build of each name has nothing to compare with, so every screenshot is new: approve it once on your default branch and it becomes the baseline for later builds ([First review](/getting-started/first-review/), [Baselines and ignore regions](/review/baselines-and-ignore-regions/)).
 
 ### Pull request checks
 
@@ -131,6 +133,7 @@ Link the project to its repository and every build shows on the pull request as 
 - [Integrate your Cypress tests with Percy](https://www.browserstack.com/docs/percy/cypress/getting-started/integrate-your-tests) and [percy/percy-cypress](https://github.com/percy/percy-cypress): `cy.percySnapshot()`, the support file import, the name defaulting to the test title.
 - [percy/percy-storybook](https://github.com/percy/percy-storybook) and [Storybook advanced topics](https://www.browserstack.com/docs/percy/references/storybook-advance-topics): `percy storybook`, the per-story `percy` parameter.
 - [The Percy product page](https://www.browserstack.com/percy).
+- [Pricing](https://www.browserstack.com/pricing?product=percy) and [Plans and billing](https://www.browserstack.com/docs/percy/overview/plans-and-billing): plans, and how screenshots are counted (read on November 24, 2026).
 
 <Aside type="note" title="Spot a mistake?">
 If a statement about Percy is wrong or out of date, [open a documentation issue](https://github.com/cir-ci/documentation/issues) with a link to Percy's page and it will be corrected.

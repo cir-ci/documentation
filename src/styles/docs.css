@@ -32,16 +32,11 @@ footer .meta:not(:has(*)) {
   --sl-text-h3: 1.0625rem;
   --sl-text-h4: 1rem;
 }
-/* Body is 16px, line-height 1.6; at 62ch a line holds about 70 characters. Tables, code and figures use the full column. */
+/* Body is 16px, line-height 1.6. The column itself is the reading measure (--sl-content-width: 48rem, 768px),
+   so prose, tables, asides, code and figures all share one right edge. Don't cap individual blocks. */
 .sl-markdown-content {
   font-size: var(--sl-text-base);
   line-height: 1.6;
-}
-.sl-markdown-content :is(p, ul, ol, dl, blockquote):not(.sl-steps, [role='tablist']) {
-  max-width: 62ch;
-}
-.sl-markdown-content :is(.starlight-aside, .sl-steps) :is(p, ul, ol) {
-  max-width: none;
 }
 .sl-markdown-content h2 {
   font-weight: 650;
@@ -92,6 +87,20 @@ footer .meta:not(:has(*)) {
 .header .right-group {
   gap: 0.75rem;
 }
+/* Phones: the header keeps the theme control (Starlight hides the whole right group below 50rem); the GitHub link is
+   in the footer. The search is an icon there, so its keyboard shortcut hint is hidden too (our kbd style would
+   otherwise override Starlight's sl-hidden). */
+@media (max-width: 49.99rem) {
+  .header .right-group {
+    display: flex;
+  }
+  .header .social-icons {
+    display: none;
+  }
+  site-search kbd.sl-hidden:not(.key):not(.keys) {
+    display: none;
+  }
+}
 
 /* The app's shell: chrome all round, the page an inset panel (AppFrame.module.css .panel). */
 body {
@@ -104,17 +113,38 @@ header.header {
   border-inline-end: 0;
 }
 @media (min-width: 50rem) {
-  /* 8px of chrome between the sidebar and the panel, as the app's AppFrame. */
-  :root[data-has-sidebar] {
-    --sl-content-inline-start: calc(var(--sl-sidebar-width) + 8px);
+  /* The frame (sidebar, panel and, from 80rem, the table of contents) is centered: on a screen wider than it,
+     --circi-gutter is the margin on each side, and the sidebar, the panel and the header's contents move in by it.
+     8px of chrome between the sidebar and the panel, and after the panel, as the app's AppFrame. The landing page
+     (no sidebar) has the same frame, so the header doesn't move between it and a section page (landing.css). */
+  :root {
+    --circi-frame-width: calc(var(--sl-sidebar-width) + var(--circi-panel-width) + 16px);
+    --circi-gutter: max(0px, (100vw - var(--circi-frame-width)) / 2);
   }
-  /* The search sits at the panel's left edge on every page, with or without a sidebar. */
+  :root[data-has-sidebar] {
+    --sl-content-inline-start: calc(var(--circi-gutter) + var(--sl-sidebar-width) + 8px);
+  }
+  [data-has-sidebar] .sidebar-pane {
+    inset-inline-start: var(--circi-gutter);
+  }
+  :root header.header {
+    padding-inline: calc(var(--circi-gutter) + var(--sl-nav-pad-x));
+  }
+  /* The header's three parts sit over the three columns: the logo over the sidebar, the search at the panel's left
+     edge, the GitHub and theme controls at the right (from 80rem, over the table of contents; see below). */
   div.header {
     grid-template-columns: calc(var(--sl-sidebar-width) - 2.5rem) minmax(0, 1fr) auto;
   }
   .main-frame {
-    padding-inline-end: 8px;
     padding-bottom: 8px;
+    padding-inline-end: 8px;
+  }
+  [data-has-sidebar] .main-frame {
+    padding-inline-end: calc(var(--circi-gutter) + 8px);
+  }
+  /* The landing page's panel has 8px of chrome on both sides, so its centered content lines up with the header. */
+  :root:not([data-has-sidebar]) .main-frame {
+    padding-inline-start: 8px;
   }
   [data-has-sidebar] .main-pane {
     min-height: calc(100vh - var(--sl-nav-height) - 8px);
@@ -123,25 +153,65 @@ header.header {
     background: var(--circi-surface-panel);
   }
 }
-/* Wide screens: a fixed table-of-contents column, the panel takes the rest and its text column is centered in it. */
-@media (min-width: 72rem) {
-  :root {
-    --sl-content-width: 56rem;
+/* Wide screens: a fixed table-of-contents column (--circi-toc-width, set with the sidebar's in circi-theme.css),
+   the panel takes the rest and its text column is centered in it. The column needs the sidebar, the 48rem text
+   column with its padding, and the TOC side by side, so it starts at 80rem, not at Starlight's 72rem: from 72 to
+   80rem the TOC stays the "On this page" dropdown above the panel, as on smaller screens. */
+@media (min-width: 72rem) and (max-width: 79.99rem) {
+  :root[data-has-toc] {
+    --sl-mobile-toc-height: 3rem;
+  }
+  /* The dropdown lives inside the (empty, zero-width) column; it is position: fixed, so it still shows. */
+  .lg\:sl-hidden:has(> mobile-starlight-toc) {
+    display: block;
+  }
+  .right-sidebar-panel {
+    display: none;
+  }
+  .right-sidebar-container,
+  .right-sidebar {
+    position: static;
+    width: 0;
+    height: auto;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+  [data-has-sidebar][data-has-toc] .main-pane {
+    --sl-content-margin-inline: auto;
+    width: 100%;
+  }
+}
+@media (min-width: 80rem) {
+  :root[data-has-sidebar][data-has-toc],
+  :root:not([data-has-sidebar]) {
+    --circi-frame-width: calc(var(--sl-sidebar-width) + var(--circi-panel-width) + var(--circi-toc-width) + 16px);
+  }
+  /* The GitHub and theme controls start where the table of contents' text starts: its column, less the 8px of
+     chrome after it and the header's own padding, plus the TOC's 1rem of padding inside. On the landing page they
+     keep that place. */
+  :root[data-has-sidebar][data-has-toc] div.header,
+  :root:not([data-has-sidebar]) div.header {
+    grid-template-columns: calc(var(--sl-sidebar-width) - 2.5rem) minmax(0, 1fr) calc(var(--circi-toc-width) - var(--sl-nav-pad-x) - 8px);
+  }
+  :root[data-has-sidebar][data-has-toc] .header .right-group,
+  :root:not([data-has-sidebar]) .header .right-group {
+    justify-self: start;
   }
   .right-sidebar-container {
-    width: 16rem;
+    width: var(--circi-toc-width);
   }
   /* The TOC is position: fixed, so its percentages are the viewport's: give it the column's width by hand. */
   .right-sidebar {
-    width: 16rem;
+    width: var(--circi-toc-width);
   }
   .right-sidebar-panel .sl-container {
-    width: calc(16rem - 2 * var(--sl-sidebar-pad-x));
+    width: calc(var(--circi-toc-width) - 2 * var(--sl-sidebar-pad-x));
     max-width: none;
   }
   [data-has-sidebar][data-has-toc] .main-pane {
     --sl-content-margin-inline: auto;
-    width: calc(100% - 16rem);
+    width: calc(100% - var(--circi-toc-width));
   }
 }
 @media (max-width: 49.99rem) {
@@ -338,6 +408,14 @@ starlight-toc nav > .sl-container > h2,
 .sl-markdown-content tr:last-child td {
   border-block-end: 0;
 }
+/* Phones: squeezing a table into the screen leaves columns a word or two wide. A column of text never gets
+   narrower than 7rem; a cell that is only a short code, key or status chip may. The table still fills the column,
+   and scrolls sideways in its wrapper only when its columns can't fit. */
+@media (max-width: 49.99rem) {
+  .sl-markdown-content td:not(:has(> :is(code, kbd, .status-chip):only-child)) {
+    min-width: 7rem;
+  }
+}
 
 /* Code blocks (Expressive Code reads these variables). No ligatures: `--flag` must read as typed. */
 code,
@@ -426,9 +504,26 @@ kbd:not(.key):not(.keys) {
   font-weight: 500;
   line-height: 1;
 }
-/* Flags and commands in tables never wrap. */
-.sl-markdown-content td > code {
+/* Inline code wraps only between words, so a long message or command fits the column without splitting a flag at
+   its hyphen: each word is a span.nw (src/lib/code-words.mjs, used by the Markdown plugin and EnvTable). */
+.sl-markdown-content code:has(> .nw) {
+  white-space: normal;
+}
+.sl-markdown-content code > .nw {
   white-space: nowrap;
+}
+/* Phones: a long word in code may also break at its <wbr> (after _ / . : or a hyphen inside a word), never
+   inside a piece; table cells are a little tighter. */
+@media (max-width: 50rem) {
+  .sl-markdown-content code > .nw:has(> .seg) {
+    white-space: normal;
+  }
+  .sl-markdown-content code .seg {
+    white-space: nowrap;
+  }
+  .sl-markdown-content :is(th, td) {
+    padding-inline: 0.5rem;
+  }
 }
 
 /* Steps: the dashboard's numbered circles on a hairline (Starlight's <Steps>) */

@@ -34,7 +34,7 @@ Secrets in the dashboard are write-only: a saved password or client secret is ne
 
 ## Other people's projects
 
-A person who isn't allowed to see something gets "not found", not "forbidden". A project someone isn't in, or a workspace they don't belong to, looks like one that doesn't exist, so its existence isn't revealed. "Forbidden" appears only to someone who can see the thing but lacks the role. Membership is always decided before the role. The full list of who may do what is in [Members and roles](/using/members-and-roles/#who-can-do-what).
+A person who isn't allowed to see something gets "not found", not "forbidden". A project someone isn't in, or a workspace they don't belong to, looks like one that doesn't exist, so its existence isn't revealed. "Forbidden" appears only to someone who can see the thing but lacks the role. Membership is always decided before the role. The full list of who may do what is in [Members and roles](/settings/members-and-roles/#who-can-do-what).
 
 A workspace can also refuse some sign-in methods, and a session made through a workspace's own single sign-on opens that workspace only. See [Authentication](/self-hosting/authentication/).
 
@@ -92,7 +92,7 @@ CirCI makes outbound requests only to services you configure:
 | Sign-in providers | When a person signs in with one |
 | Browser push services | Notifications; the payload is encrypted for the browser (RFC 8291), so the push service only carries ciphertext |
 
-The code has no analytics or error-reporting client and no update check. Profile pictures come from the account you sign in with, with a generated avatar when it has none, so no avatar service is contacted (see [Account settings](/using/account-settings/#details)).
+The code has no analytics or error-reporting client and no update check. Profile pictures come from the account you sign in with, with a generated avatar when it has none, so no avatar service is contacted (see [Account settings](/settings/account-settings/#details)).
 
 <Aside type="caution">
 What is not covered here: the security of your own host, database, storage and reverse proxy, and your CI's handling of the project token. Treat a CI token like a deploy key: keep it in the CI provider's secret store, and rotate it from **Project settings** if it leaks.
